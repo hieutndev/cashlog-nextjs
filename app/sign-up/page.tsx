@@ -13,6 +13,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { TSignUp } from "@/types/user";
+import { getFieldError } from "@/utils/get-field-error";
 
 export default function SignUpPage() {
 	const router = useRouter();
@@ -39,8 +40,10 @@ export default function SignUpPage() {
 	});
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const handleSubmit = () => {
+		setErrorMessage(null);
 		signUp();
 	};
 
@@ -61,11 +64,7 @@ export default function SignUpPage() {
 			if (parseError.validateErrors) {
 				setValidateErrors(parseError.validateErrors);
 			} else {
-				addToast({
-					title: "Error",
-					description: parseError.message || "An error occurred during sign up.",
-					color: "danger",
-				});
+				setErrorMessage(parseError.message || "An error occurred during sign up.");
 			}
 		}
 	}, [signUpResponse, signUpError]);
@@ -94,6 +93,8 @@ export default function SignUpPage() {
 					>
 						<Input
 							isRequired
+							errorMessage={getFieldError(validateErrors, "email")?.message}
+							isInvalid={!!getFieldError(validateErrors, "email")}
 							label={"Email"}
 							labelPlacement={"outside"}
 							placeholder={"example@email.com"}
@@ -106,6 +107,8 @@ export default function SignUpPage() {
 
 						<Input
 							isRequired
+							errorMessage={getFieldError(validateErrors, "password")?.message}
+							isInvalid={!!getFieldError(validateErrors, "password")}
 							label={"Password"}
 							labelPlacement={"outside"}
 							placeholder={"Enter your password"}
@@ -119,6 +122,8 @@ export default function SignUpPage() {
 						/>
 						<Input
 							isRequired
+							errorMessage={getFieldError(validateErrors, "confirmPassword")?.message}
+							isInvalid={!!getFieldError(validateErrors, "confirmPassword")}
 							label={"Confirm Password"}
 							labelPlacement={"outside"}
 							placeholder={"Re-enter your password"}
@@ -130,6 +135,7 @@ export default function SignUpPage() {
 								setForm("confirmPassword", e, validateErrors, setValidateErrors, setSignUpForm)
 							}
 						/>
+						{errorMessage && <p className={"text-danger text-sm"}>{errorMessage}</p>}
 					</CustomForm>
 					<Divider />
 					<p className={"text-center text-sm"}>

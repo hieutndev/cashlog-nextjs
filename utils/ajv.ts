@@ -2,6 +2,7 @@ import Ajv, { ErrorObject, JSONSchemaType } from "ajv";
 import addFormats from "ajv-formats";
 
 import { upperFirstLetter } from "@/utils/text-transform";
+import { REGEX } from "@/config/regex";
 
 const ajv = new Ajv({ strict: false }); // reusable instance
 
@@ -16,6 +17,20 @@ const parseError = (
   const mapErrors = errors?.map((error) => {
     if (error.keyword === "enum") {
       error.message = `${error.message}: [${error.params.allowedValues.join(", ")}]`;
+    }
+
+    if (error.keyword === "minLength" && error.params.limit === 1) {
+      error.message = "This field is required.";
+    }
+
+    // parse error for password pattern
+    if (error.keyword === "pattern") {
+      switch (error.params.pattern) {
+        case REGEX.PASSWORD:
+          error.message = "Password must contain at least one uppercase, one lowercase, one number, and one special character.";
+          break;
+
+      }
     }
 
     return {

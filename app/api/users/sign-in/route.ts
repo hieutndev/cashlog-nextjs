@@ -9,13 +9,14 @@ import { validateRequest } from "@/utils/ajv";
 
 export const POST = async (request: Request) => {
     try {
+
         const requestBody = await request.json();
 
         const validateSchema: JSONSchemaType<TSignIn> = {
             type: "object",
             properties: {
-                email: { type: "string", format: "email" },
-                password: { type: "string", minLength: 8, pattern: "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$" },
+                email: { type: "string", format: "email", minLength: 1 },
+                password: { type: "string", minLength: 1 },
             },
             required: ["email", "password"],
             additionalProperties: false,

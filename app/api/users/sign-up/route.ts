@@ -6,6 +6,7 @@ import { handleError, handleValidateError } from "../../_helpers/handle-error";
 
 import { TSignUp } from "@/types/user";
 import { validateRequest } from "@/utils/ajv";
+import { REGEX } from "@/config/regex";
 
 export const POST = async (request: Request) => {
     try {
@@ -14,8 +15,8 @@ export const POST = async (request: Request) => {
         const validateSchema: JSONSchemaType<TSignUp> = {
             type: "object",
             properties: {
-                email: { type: "string", format: "email" },
-                password: { type: "string", minLength: 8, pattern: "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$" },
+                email: { type: "string", format: "email", minLength: 1 },
+                password: { type: "string", minLength: 1, pattern: REGEX.PASSWORD },
                 confirmPassword: { type: "string", minLength: 6 },
             },
             required: ["email", "password", "confirmPassword"],

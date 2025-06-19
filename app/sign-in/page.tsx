@@ -13,6 +13,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TSignIn, TSignInResponse } from "@/types/user";
 import { setForm } from "@/utils/set-form";
+import { getFieldError } from "@/utils/get-field-error";
 
 export default function SignInPage() {
 	const router = useRouter();
@@ -23,6 +24,8 @@ export default function SignInPage() {
 		email: "",
 		password: "",
 	});
+
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
@@ -52,6 +55,16 @@ export default function SignInPage() {
 			setCookie("email", signInResponse.results.email, { maxAge: 60 * 60 * 24, path: "/" });
 			setCookie("username", signInResponse.results.username, { maxAge: 60 * 60 * 24, path: "/" });
 		}
+
+		if (signInError) {
+			const parseError = JSON.parse(signInError);
+
+			if (parseError.validateErrors) {
+				setValidateErrors(parseError.validateErrors);
+			} else {
+				setErrorMessage(parseError.message || "An error occurred during sign in.");
+			}
+		}
 	}, [signInResponse, signInError]);
 
 	return (
@@ -78,6 +91,8 @@ export default function SignInPage() {
 					>
 						<Input
 							isRequired
+							errorMessage={getFieldError(validateErrors, "email")?.message}
+							isInvalid={!!getFieldError(validateErrors, "email")}
 							label={"Email"}
 							labelPlacement={"outside"}
 							placeholder={"example@email.com"}
@@ -90,6 +105,8 @@ export default function SignInPage() {
 
 						<Input
 							isRequired
+							errorMessage={getFieldError(validateErrors, "password")?.message}
+							isInvalid={!!getFieldError(validateErrors, "password")}
 							label={"Password"}
 							labelPlacement={"outside"}
 							placeholder={"Enter your password"}
@@ -101,6 +118,7 @@ export default function SignInPage() {
 								setForm("password", e, validateErrors, setValidateErrors, setSignInForm)
 							}
 						/>
+						{errorMessage && <p className={"text-danger text-sm"}>{errorMessage}</p>}
 					</CustomForm>
 					<Divider className={"w-5/6"} />
 					<p className={"text-center text-sm"}>
