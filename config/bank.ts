@@ -38,6 +38,10 @@ export const ListBankCode: { key: TBankCode; value: string }[] = [
   {
     key: "LIOBANK",
     value: "Liobank"
+  },
+  {
+    key: "CASH",
+    value: "Cash"
   }
 ];
 
@@ -51,7 +55,8 @@ export function getBankLogo(bankCode: TBankCode, variant: number): string {
     VIETCOMBANK: "vietcombank",
     VPBANK: "vpbank",
     ZALOPAY: "zalopay",
-    LIOBANK: "liobank"
+    LIOBANK: "liobank",
+    CASH: "cash"
   };
 
   if (!(bankCode in MAP_BANK_FOLDER)) {

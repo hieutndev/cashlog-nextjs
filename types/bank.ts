@@ -7,4 +7,5 @@ export type TBankCode =
   | "VIETCOMBANK"
   | "VPBANK"
   | "ZALOPAY"
-  | "LIOBANK";
+  | "LIOBANK"
+  | "CASH";
