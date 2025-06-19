@@ -221,7 +221,11 @@ WHERE
                     SET category_name = ?,
                         color         = ?
                     WHERE category_id = ? AND user_id = ?;`,
-    REMOVE_CATEGORY: `DELETE
+    REMOVE_CATEGORY: `
+    UPDATE transactions
+    SET transaction_category = NULL
+    WHERE transaction_category = ?;
+    DELETE
                     FROM transaction_categories
                     WHERE category_id = ? AND user_id = ?;`,
     GET_CATEGORY_BY_ID: `SELECT *

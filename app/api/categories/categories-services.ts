@@ -104,7 +104,7 @@ export const deleteCategory = async (categoryId: string | number, userId: string
   let deleteStatus: ResultSetHeader | null = null;
 
   try {
-    deleteStatus = await dbQuery(QUERY_STRING.REMOVE_CATEGORY, [categoryId, userId]);
+    deleteStatus = await dbQuery(QUERY_STRING.REMOVE_CATEGORY, [categoryId, categoryId, userId]);
   } catch (error: unknown) {
     throw new ApiError(error instanceof Error ? error.message : "Error in deleteCategory", 500);
   }

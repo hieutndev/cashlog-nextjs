@@ -19,10 +19,12 @@ const categoryColumns = [
 ];
 
 export default function CategoriesPage() {
-	const [categories, setCategories] = useState<TCategory[]>([]);
-
 	const [formAction, setFormAction] = useState<"add" | "edit">("add");
 	const [selectedCategory, setSelectedCategory] = useState<TCategory | undefined>(undefined);
+
+	// HANDLE FETCH CATEGORY
+
+	const [categories, setCategories] = useState<TCategory[]>([]);
 
 	const {
 		data: fetchCategoriesResult,
@@ -30,42 +32,6 @@ export default function CategoriesPage() {
 		error: fetchCategoriesError,
 		fetch: fetchCategories,
 	} = useFetch<IAPIResponse<TCategory[]>>(`/categories`);
-
-	const onSuccess = async () => {
-		await fetchCategories();
-		setFormAction("add");
-	};
-
-	const onEdit = (category: TCategory) => {
-		setFormAction("edit");
-		setSelectedCategory(category);
-	};
-
-	const onDelete = (categoryId: string | number) => {
-		fetch(`/api/categories/${categoryId}`, {
-			method: "DELETE",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		})
-			.then((response) => response.json())
-			.then(async (response) => {
-				if (response.status === "success") {
-					addToast({
-						title: "Success",
-						description: "Category deleted successfully.",
-						color: "success",
-					});
-					await fetchCategories();
-				} else {
-					addToast({
-						title: "Error",
-						description: response.message || "An error occurred while deleting the category.",
-						color: "danger",
-					});
-				}
-			});
-	};
 
 	useEffect(() => {
 		if (fetchCategoriesResult) {
@@ -82,6 +48,58 @@ export default function CategoriesPage() {
 			});
 		}
 	}, [fetchCategoriesResult, fetchCategoriesError]);
+
+	// HANDLE DELETE CATEGORY
+
+	const [selectedDeleteCategory, setSelectedDeleteCategory] = useState<string | null>(null);
+
+	const {
+		data: deleteCategoryResult,
+		error: deleteCategoryError,
+		fetch: deleteCategory,
+	} = useFetch<IAPIResponse>(`categories/${selectedDeleteCategory}`, {
+		method: "DELETE",
+		skip: true,
+	});
+
+	useEffect(() => {
+		if (selectedDeleteCategory) {
+			deleteCategory();
+		}
+	}, [selectedDeleteCategory]);
+
+	useEffect(() => {
+		if (deleteCategoryResult) {
+			addToast({
+				color: "success",
+				description: deleteCategoryResult.message,
+				title: "Success",
+			});
+			fetchCategories();
+		}
+
+		if (deleteCategoryError) {
+			const parseError = JSON.parse(deleteCategoryError);
+
+			addToast({
+				color: "danger",
+				description: parseError.message || "An error occurred while deleting the category.",
+				title: "Error",
+			});
+		}
+	}, [deleteCategoryResult, deleteCategoryError]);
+
+	// HANDLE ACTIONS
+
+	const onSuccess = async () => {
+		await fetchCategories();
+		setFormAction("add");
+	};
+
+	const onEdit = (category: TCategory) => {
+		setFormAction("edit");
+		setSelectedCategory(category);
+	};
 
 	return (
 		<div className={"grid grid-cols-6 gap-4"}>
@@ -130,7 +148,7 @@ export default function CategoriesPage() {
 														isIconOnly
 														color={"danger"}
 														variant={"ghost"}
-														onPress={() => onDelete(item.category_id)}
+														onPress={() => setSelectedDeleteCategory(item.category_id)}
 													>
 														{SYS_ICONS.TRASH.MD}
 													</Button>
