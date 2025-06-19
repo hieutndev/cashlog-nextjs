@@ -7,7 +7,7 @@ import NonAuthLayout from "./nonauth-layout";
 import AuthLayout from "./auth-layout";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { SITE_CONFIG } from "@/config/site";
+import { SITE_CONFIG } from "@/config/site-config";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 	const { isLoggedIn, detecting } = useAuth();

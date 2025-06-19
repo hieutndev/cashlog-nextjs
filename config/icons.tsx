@@ -11,6 +11,7 @@ import {
 	FaArrowTrendDown,
 	FaArrowTrendUp,
 	FaArrowUpWideShort,
+	FaBars,
 	FaBarsProgress,
 	FaCreditCard,
 	FaEllipsis,
@@ -193,6 +194,12 @@ const SYS_ICONS = {
 		MD: <IoLogOutOutline size={SIZE_ICON.md} />,
 		LG: <IoLogOutOutline size={SIZE_ICON.lg} />,
 		XL: <IoLogOutOutline size={SIZE_ICON.xl} />,
+	},
+	BARS: {
+		SM: <FaBars size={SIZE_ICON.sm} />,
+		MD: <FaBars size={SIZE_ICON.md} />,
+		LG: <FaBars size={SIZE_ICON.lg} />,
+		XL: <FaBars size={SIZE_ICON.xl} />,
 	},
 };
 

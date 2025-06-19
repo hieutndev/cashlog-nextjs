@@ -30,7 +30,6 @@ export const SITE_CONFIG = {
 
 export type TSiteConfig = typeof SITE_CONFIG;
 
-
 export type TSettingMenu = {
   label: string[];
   key: string;
@@ -49,7 +48,6 @@ export const SETTING_MENU: TSettingMenu[] = [
     label: ["Settings", "Cards"],
     key: "/settings/cards",
     urls: ["^/settings/cards"],
-
     icon: SYS_ICONS.CARD.MD
   },
   {

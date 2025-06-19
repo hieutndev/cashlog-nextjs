@@ -2,12 +2,17 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Spinner } from "@heroui/spinner";
+import clsx from "clsx";
 
 import { Sidebar } from "@/components/shared/partials/sidebar";
 import HorizontalNav from "@/components/shared/partials/horizontal-nav";
 import { useAuth } from "@/components/providers/auth-provider";
+import { BREAK_POINT } from "@/config/break-point";
+import useScreenSize from "@/hooks/useScreenSize";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
+	const { width } = useScreenSize();
+
 	const { isLoggedIn, detecting } = useAuth();
 
 	const router = useRouter();
@@ -21,11 +26,27 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
 	return (
 		<div className={"w-screen h-screen flex flex-col"}>
-			<div className={"w-full h-full grid grid-cols-12"}>
-				<div className={"col-span-2"}>
+			<div
+				className={clsx("w-screen h-full", {
+					"grid grid-cols-12": width > BREAK_POINT.XL,
+					flex: width <= BREAK_POINT.XL,
+				})}
+			>
+				<div
+					className={clsx({
+						"col-span-2": width > BREAK_POINT.XL,
+						"w-max": width <= BREAK_POINT.XL,
+						hidden: width <= BREAK_POINT.L,
+					})}
+				>
 					<Sidebar />
 				</div>
-				<div className={"col-span-10 flex flex-col gap-4"}>
+				<div
+					className={clsx("flex flex-col gap-4", {
+						"col-span-10": width > BREAK_POINT.XL,
+						"w-full": width <= BREAK_POINT.XL,
+					})}
+				>
 					<HorizontalNav />
 					<div className={"px-8 pb-8"}>
 						{detecting ? (

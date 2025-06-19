@@ -4,7 +4,7 @@ import clsx from "clsx";
 
 import { Providers } from "../components/providers/providers";
 
-import { SITE_CONFIG } from "@/config/site";
+import { SITE_CONFIG } from "@/config/site-config";
 import AppLayout from "@/components/shared/layouts/app-layout";
 
 export const metadata: Metadata = {
