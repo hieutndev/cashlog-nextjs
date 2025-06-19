@@ -4,12 +4,14 @@ import { getKeyValue, Table, TableBody, TableCell, TableColumn, TableHeader, Tab
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { Select, SelectItem } from "@heroui/select";
-import { Input } from "@heroui/input";
 import Image from "next/image";
 import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
+import { useDisclosure } from "@heroui/modal";
+
+import AddTransactionModal from "./_component/add-transaction-modal";
 
 import { IAPIResponse, IDataTable } from "@/types/global";
 import { ListTransactionType, TFullTransaction } from "@/types/transaction";
@@ -17,7 +19,6 @@ import { useFetch } from "@/hooks/useFetch";
 import SYS_ICONS from "@/config/icons";
 import { TCard } from "@/types/card";
 import { getBankLogo } from "@/config/bank";
-import AddTransaction from "@/app/transactions/_component/add-transaction";
 
 type FilterAndSortItem = {
 	key: string;
@@ -26,24 +27,20 @@ type FilterAndSortItem = {
 };
 
 export default function TransactionsPage() {
+	// HANDLE FETCH TRANSACTION
+
 	const {
 		data: fetchTransactionResults,
 		loading: loadingTransactions,
-		// error: errorFetchTransaction,
 		fetch: fetchTransactions,
 	} = useFetch<IAPIResponse<TFullTransaction[]>>("/transactions");
-
-	const {
-		data: fetchCardResults,
-		// loading: loadingCards,
-		// error: errorFetchCards,
-	} = useFetch<IAPIResponse<TCard[]>>("/cards");
 
 	const [dataTable, setDataTable] = useState<IDataTable<TFullTransaction>>({
 		columns: [
 			{ key: "card_name", label: "Card" },
 			{ key: "transaction_amount", label: "Amount" },
 			{ key: "description", label: "Description" },
+			{ key: "category_name", label: "Category" },
 			{ key: "transaction_date", label: "Transaction Date" },
 			{ key: "transaction_type", label: "Transaction Type" },
 			// { key: "direction", label: "Direction" },
@@ -78,40 +75,10 @@ export default function TransactionsPage() {
 		key: type,
 		label: type.replace("_", " "),
 	}));
-	const [listCards, setListCards] = useState<FilterAndSortItem[]>([]);
 
 	const [sortSelected, setSortSelected] = useState("date_desc");
 	const [cardSelected, setCardSelected] = useState("");
 	const [transactionTypeSelected, setTransactionTypeSelected] = useState("");
-
-	useEffect(() => {
-		setDataTable((prev) => ({
-			...prev,
-			rows:
-				fetchTransactionResults?.results?.map((transaction) => ({
-					...transaction,
-					transaction_date: new Date(transaction.transaction_date).toLocaleString(),
-				})) ?? [],
-		}));
-	}, [fetchTransactionResults]);
-
-	useEffect(() => {
-		setListCards(
-			fetchCardResults?.results?.map((card) => ({
-				key: card.card_id.toString(),
-				label: card.card_name,
-				startIcon: (
-					<Image
-						alt={`card ${card.card_id} bank logo`}
-						className={"w-4"}
-						height={1200}
-						src={getBankLogo(card.bank_code, 1)}
-						width={1200}
-					/>
-				),
-			})) ?? []
-		);
-	}, [fetchCardResults]);
 
 	const onSelectFilterAndSort = () => {
 		let filteredData = fetchTransactionResults?.results ?? [];
@@ -157,8 +124,45 @@ export default function TransactionsPage() {
 	};
 
 	useEffect(() => {
+		setDataTable((prev) => ({
+			...prev,
+			rows:
+				fetchTransactionResults?.results?.map((transaction) => ({
+					...transaction,
+					transaction_date: new Date(transaction.transaction_date).toLocaleString(),
+				})) ?? [],
+		}));
+	}, [fetchTransactionResults]);
+
+	useEffect(() => {
 		onSelectFilterAndSort();
 	}, [fetchTransactionResults, sortSelected, cardSelected, transactionTypeSelected]);
+
+	// HANDLE FETCH CARD
+
+	const [listCards, setListCards] = useState<FilterAndSortItem[]>([]);
+
+	const { data: fetchCardResults } = useFetch<IAPIResponse<TCard[]>>("/cards");
+
+	useEffect(() => {
+		setListCards(
+			fetchCardResults?.results?.map((card) => ({
+				key: card.card_id.toString(),
+				label: card.card_name,
+				startIcon: (
+					<Image
+						alt={`card ${card.card_id} bank logo`}
+						className={"w-4"}
+						height={1200}
+						src={getBankLogo(card.bank_code, 1)}
+						width={1200}
+					/>
+				),
+			})) ?? []
+		);
+	}, [fetchCardResults]);
+
+	// HANDLE DELETE TRANSACTION
 
 	const [selectedDeleteTransactionId, setSelectedDeleteTransactionId] = useState<string | null>(null);
 
@@ -204,215 +208,235 @@ export default function TransactionsPage() {
 		}
 	}, [selectedDeleteTransactionId]);
 
+	// HANDLE OPEN NEW TRANSACTION MODAL
+
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
 	return (
 		<section className={"w-full flex flex-col gap-4"}>
-			<div className={"grid grid-cols-6 gap-4"}>
-				<div className={"col-span-4 flex flex-col gap-4 border-r pr-4"}>
-					<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
-					<div className={"flex items-center justify-between gap-4"}>
-						<div className={"flex items-start gap-2"}>
-							<Select
-								className={"w-60"}
-								items={sortSelection}
-								label={"Sort"}
-								labelPlacement={"outside"}
-								placeholder={"No Sort"}
-								renderValue={(items) => (
-									<div className="flex items-center gap-2">
-										{items.map((item) => (
-											<div
-												key={item.key}
-												className="flex items-center gap-1"
-											>
-												{item.props?.startContent}
-												{item.rendered}
-											</div>
-										))}
-									</div>
-								)}
-								selectedKeys={[sortSelected]}
-								variant={"faded"}
-								// size={"lg"}
-								onChange={(e) => setSortSelected(e.target.value)}
-							>
-								{(item) => (
-									<SelectItem
+			<div className={"flex justify-between items-center"}>
+				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
+				<Button
+					color={"primary"}
+					startContent={SYS_ICONS.NEW.LG}
+					variant={"solid"}
+					onPress={() => {
+						onOpen();
+					}}
+				>
+					New Transaction
+				</Button>
+			</div>
+			<div className={"flex items-center justify-between gap-4"}>
+				<div className={"flex items-start flex-wrap gap-4"}>
+					<Select
+						className={"w-60"}
+						items={sortSelection}
+						label={"Sort"}
+						labelPlacement={"outside"}
+						placeholder={"No Sort"}
+						renderValue={(items) => (
+							<div className="flex items-center gap-2">
+								{items.map((item) => (
+									<div
 										key={item.key}
-										startContent={item.startIcon}
+										className="flex items-center gap-1"
 									>
-										{item.label}
-									</SelectItem>
-								)}
-							</Select>
-							<Select
-								className={"w-56"}
-								items={listCards}
-								label={"Filter by card"}
-								labelPlacement={"outside"}
-								placeholder={"All Cards"}
-								renderValue={(cards) => (
-									<div className="flex items-center gap-2">
-										{cards.map((card, index) => (
-											<div
-												key={index}
-												className="flex items-center gap-1"
-											>
-												{card.props?.startContent}
-												{card.rendered}
-											</div>
-										))}
+										{item.props?.startContent}
+										{item.rendered}
 									</div>
-								)}
-								selectedKeys={[cardSelected]}
-								// size={"lg"}
-								variant={"faded"}
-								onChange={(e) => setCardSelected(e.target.value)}
-							>
-								{(card) => (
-									<SelectItem
-										key={card.key}
-										startContent={card.startIcon}
-									>
-										{card.label}
-									</SelectItem>
-								)}
-							</Select>
-
-							<Select
-								className={"w-60"}
-								items={transactionTypeSelection}
-								label={"Transaction type"}
-								labelPlacement={"outside"}
-								placeholder={"All Type"}
-								renderValue={(items) => (
-									<div className="flex items-center gap-2">
-										{items.map((item) => (
-											<div key={item.key}>{item.rendered}</div>
-										))}
-									</div>
-								)}
-								selectedKeys={[transactionTypeSelected]}
-								variant={"faded"}
-								onChange={(e) => setTransactionTypeSelected(e.target.value)}
-							>
-								{(item) => (
-									<SelectItem key={item.key}>
-										<Chip
-											className={"px-1 capitalize"}
-											color={
-												["receive", "borrow", "repay_received"].includes(item.key)
-													? "success"
-													: "danger"
-											}
-											size={"sm"}
-											variant={"flat"}
-										>
-											{item.label}
-										</Chip>
-									</SelectItem>
-								)}
-							</Select>
-						</div>
-						<Input
-							className={"w-96"}
-							label={"Search"}
-							labelPlacement={"outside"}
-							placeholder={"Search..."}
-							startContent={SYS_ICONS.SEARCH.MD}
-							// size={"lg"}
-							variant={"faded"}
-						/>
-					</div>
-					<Table
-						aria-label={"Example table with dynamic content"}
-						className={"max-h-[70vh]"}
-						selectionMode={"single"}
+								))}
+							</div>
+						)}
+						selectedKeys={[sortSelected]}
+						variant={"faded"}
+						onChange={(e) => setSortSelected(e.target.value)}
 					>
-						<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
-							{(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
-						</TableHeader>
-						<TableBody
-							emptyContent={loadingTransactions ? <Spinner>Loading...</Spinner> : "No data"}
-							items={dataTable.rows}
-						>
-							{(item) => (
-								<TableRow
-									key={item.transaction_id}
-									className={clsx({
-										"text-success": item.direction === "in",
-										"text-danger": item.direction === "out",
-									})}
-								>
-									{(columnKey) => {
-										switch (columnKey) {
-											case "card_name":
-												return (
-													<TableCell className={"capitalize"}>
-														<div className={"flex items-center gap-2"}>
-															<Image
-																alt={`Logo bank`}
-																className={"w-4"}
-																height={1200}
-																src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
-																width={1200}
-															/>
-															<p>{getKeyValue(item, columnKey)}</p>
-														</div>
-													</TableCell>
-												);
-											case "transaction_type":
-												return (
-													<TableCell className={"capitalize"}>
-														{getKeyValue(item, columnKey).replace("_", " ")}
-													</TableCell>
-												);
+						{(item) => (
+							<SelectItem
+								key={item.key}
+								startContent={item.startIcon}
+							>
+								{item.label}
+							</SelectItem>
+						)}
+					</Select>
+					<Select
+						className={"w-56"}
+						items={listCards}
+						label={"Filter by card"}
+						labelPlacement={"outside"}
+						placeholder={"All Cards"}
+						renderValue={(cards) => (
+							<div className="flex items-center gap-2">
+								{cards.map((card, index) => (
+									<div
+										key={index}
+										className="flex items-center gap-1"
+									>
+										{card.props?.startContent}
+										{card.rendered}
+									</div>
+								))}
+							</div>
+						)}
+						selectedKeys={[cardSelected]}
+						variant={"faded"}
+						onChange={(e) => setCardSelected(e.target.value)}
+					>
+						{(card) => (
+							<SelectItem
+								key={card.key}
+								startContent={card.startIcon}
+							>
+								{card.label}
+							</SelectItem>
+						)}
+					</Select>
 
-											case "transaction_amount":
-												return (
-													<TableCell className={"capitalize"}>
-														{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
-													</TableCell>
-												);
-											case "action":
-												return (
-													<TableCell>
-														<Button
-															isIconOnly
-															color={"danger"}
-															variant={"light"}
-															onPress={() =>
-																setSelectedDeleteTransactionId(item.transaction_id)
-															}
-														>
-															{SYS_ICONS.TRASH.MD}
-														</Button>
-													</TableCell>
-												);
-											default:
-												return (
-													<TableCell
-														className={clsx({
-															capitalize: columnKey === "transaction_type",
-														})}
-													>
-														{getKeyValue(item, columnKey)}
-													</TableCell>
-												);
-										}
-									}}
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-				<div className="col-span-2 flex flex-col gap-4">
-					<h3 className={"text-2xl font-semibold"}>New Transaction</h3>
-					<AddTransaction
-						orientation={"vertical"}
-						onSuccess={fetchTransactions}
-					/>
+					<Select
+						className={"w-60"}
+						items={transactionTypeSelection}
+						label={"Transaction type"}
+						labelPlacement={"outside"}
+						placeholder={"All Type"}
+						renderValue={(items) => (
+							<div className="flex items-center gap-2">
+								{items.map((item) => (
+									<div key={item.key}>{item.rendered}</div>
+								))}
+							</div>
+						)}
+						selectedKeys={[transactionTypeSelected]}
+						variant={"faded"}
+						onChange={(e) => setTransactionTypeSelected(e.target.value)}
+					>
+						{(item) => (
+							<SelectItem key={item.key}>
+								<Chip
+									className={"px-1 capitalize"}
+									color={
+										["receive", "borrow", "repay_received"].includes(item.key)
+											? "success"
+											: "danger"
+									}
+									size={"sm"}
+									variant={"flat"}
+								>
+									{item.label}
+								</Chip>
+							</SelectItem>
+						)}
+					</Select>
 				</div>
 			</div>
+			<Table
+				aria-label={"Transactions table"}
+				className={"max-h-[70vh]"}
+				selectionMode={"single"}
+			>
+				<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
+					{(column) => (
+						<TableColumn
+							key={column.key}
+							align={["transaction_type", "category_name"].includes(column.key) ? "center" : "start"}
+						>
+							{column.label}
+						</TableColumn>
+					)}
+				</TableHeader>
+				<TableBody
+					emptyContent={loadingTransactions ? <Spinner>Loading...</Spinner> : "No data"}
+					items={dataTable.rows}
+				>
+					{(item) => (
+						<TableRow
+							key={item.transaction_id}
+							className={clsx({
+								"text-success": item.direction === "in",
+								"text-danger": item.direction === "out",
+							})}
+						>
+							{(columnKey) => {
+								switch (columnKey) {
+									case "card_name":
+										return (
+											<TableCell className={"capitalize"}>
+												<div className={"flex items-center gap-2"}>
+													<Image
+														alt={`Logo bank`}
+														className={"w-4"}
+														height={1200}
+														src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
+														width={1200}
+													/>
+													<p>{getKeyValue(item, columnKey)}</p>
+												</div>
+											</TableCell>
+										);
+									case "transaction_type":
+										return (
+											<TableCell className={"capitalize"}>
+												{getKeyValue(item, columnKey).replace("_", " ")}
+											</TableCell>
+										);
+
+									case "transaction_amount":
+										return (
+											<TableCell className={"capitalize"}>
+												{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
+											</TableCell>
+										);
+									case "category_name":
+										return (
+											<TableCell className={"capitalize"}>
+												{getKeyValue(item, columnKey) ? (
+													<Chip
+														classNames={{
+															base: `background-${getKeyValue(item, "category_color")} text-white`,
+														}}
+													>
+														{getKeyValue(item, columnKey)}
+													</Chip>
+												) : (
+													""
+												)}
+											</TableCell>
+										);
+									case "action":
+										return (
+											<TableCell>
+												<Button
+													isIconOnly
+													color={"danger"}
+													variant={"light"}
+													onPress={() => setSelectedDeleteTransactionId(item.transaction_id)}
+												>
+													{SYS_ICONS.TRASH.MD}
+												</Button>
+											</TableCell>
+										);
+									default:
+										return (
+											<TableCell
+												className={clsx({
+													capitalize: columnKey === "transaction_type",
+												})}
+											>
+												{getKeyValue(item, columnKey)}
+											</TableCell>
+										);
+								}
+							}}
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+			<AddTransactionModal
+				isOpen={isOpen}
+				onOpenChange={onOpenChange}
+				onSuccess={() => fetchTransactions()}
+			/>
 		</section>
 	);
 }

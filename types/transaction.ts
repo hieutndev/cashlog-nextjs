@@ -51,9 +51,7 @@ export type TTransactionDetail = {
 };
 
 export type TFullTransaction = TTransaction &
-  TTransactionDetail & {
-    transaction_category: TCategory;
-  } & TCard;
+  TTransactionDetail & TCategory & TCard;
 
 export type TNewTransaction = Omit<
   TTransaction & TTransactionDetail,

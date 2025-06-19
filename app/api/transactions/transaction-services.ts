@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
-import { TNewTransaction, TTransaction, TTransactionDetail } from "@/types/transaction";
+import { TFullTransaction, TNewTransaction, TTransaction, TTransactionDetail } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/config/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
@@ -31,6 +31,7 @@ export const createNewTransaction = async ({
   direction,
   transaction_date,
   transaction_category
+
 }: TTransaction, userId?: string | number) => {
 
   // Validate card ownership if userId is provided
@@ -92,7 +93,7 @@ export const updateCardBalance = async ({
   card_id,
   transaction_amount,
   direction
-}: TNewTransaction, userId?: string | number) => {
+}: Pick<TNewTransaction, "card_id" | "transaction_amount" | "direction">, userId?: string | number) => {
 
   // Validate card ownership if userId is provided
   if (userId) {
@@ -135,10 +136,10 @@ export const getAllTransactions = async (userId: string | number) => {
 
 export const getTransactionById = async (transactionId: string | number, userId: string | number) => {
 
-  let transactionInfo: TTransaction[] | null = null;
+  let transactionInfo: TFullTransaction[] | null = null;
 
   try {
-    transactionInfo = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_TRANSACTION_BY_ID, [transactionId]) as TTransaction[];
+    transactionInfo = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_TRANSACTION_BY_ID, [transactionId]) as TFullTransaction[];
   } catch (error: unknown) {
     throw new ApiError((error as Error).message || "Error in getTransactionById", 500);
   }
@@ -160,7 +161,17 @@ export const deleteTransaction = async (transactionId: string | number, userId: 
   let deleteStatus: ResultSetHeader | null = null;
 
   try {
-    if (await getTransactionById(transactionId, userId)) {
+
+    const transactionInfo = await getTransactionById(transactionId, userId);
+
+    if (transactionInfo) {
+
+      await updateCardBalance({
+        card_id: transactionInfo.card_id,
+        transaction_amount: transactionInfo.transaction_amount,
+        direction: transactionInfo.direction === "in" ? "out" : "in"
+      }, userId);
+
       deleteStatus = await dbQuery<ResultSetHeader>(QUERY_STRING.DELETE_TRANSACTION, [transactionId]);
     }
   } catch (error: unknown) {

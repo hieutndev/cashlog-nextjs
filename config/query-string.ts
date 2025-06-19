@@ -15,7 +15,7 @@ export const QUERY_STRING = {
     UPDATE_CARD_BALANCE: `UPDATE cards
                         SET card_balance = card_balance + ?
                         WHERE card_id = ?;`,
-    GET_TRANSACTION_BY_ID: `SELECT * FROM transactions WHERE transaction_id = ?`,
+    GET_TRANSACTION_BY_ID: `SELECT t.transaction_id, t.card_id, t.direction, t.transaction_category, t.transaction_date, td.transaction_type, td.transaction_amount, td.description FROM transactions t JOIN transaction_details td ON t.transaction_id = td.transaction_id WHERE t.transaction_id = ?`,
     DELETE_TRANSACTION: `DELETE
                         FROM transactions
                         WHERE transaction_id = ?;`,
