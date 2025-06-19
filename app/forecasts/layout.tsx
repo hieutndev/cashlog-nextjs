@@ -1,0 +1,45 @@
+import { Metadata } from "next";
+import { Divider } from "@heroui/divider";
+
+import Container from "@/components/shared/container/container";
+import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
+import SYS_ICONS from "@/config/icons";
+
+export const metadata: Metadata = {
+  title: "Forecasts"
+};
+
+export default function ForecastsLayout({ children }: { children: React.ReactNode }) {
+  const forecastBreadcrumbs: BreadcrumbsType[] = [
+    {
+      label: ["Forecasts"],
+      key: "^/forecasts",
+      customButton: [
+        {
+          children: "New Forecast",
+          color: "primary",
+          variant: "solid",
+          size: "lg",
+          startContent: SYS_ICONS.NEW.LG,
+          href: "settings/forecasts/new"
+        }
+      ]
+    }
+
+  ];
+
+  return (
+    <Container
+      shadow
+      className={"bg-white border border-gray-200 rounded-xl"}
+      orientation={"vertical"}
+    >
+      <ContentHeader
+        breadcrumbs={forecastBreadcrumbs}
+        title={"Forecasts"}
+      />
+      <Divider />
+      {children}
+    </Container>
+  );
+}

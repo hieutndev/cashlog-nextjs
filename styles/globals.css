@@ -1,0 +1,280 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #fff;
+}
+
+.bankcard-red {
+    @apply from-red-700/80 to-red-400/75;
+}
+
+.bankcard-orange {
+    @apply from-orange-700/80 to-orange-400/75;
+}
+
+.bankcard-amber {
+    @apply from-amber-700/80 to-amber-400/75;
+}
+
+.bankcard-yellow {
+    @apply from-yellow-700/80 to-yellow-400/75;
+}
+
+.bankcard-lime {
+    @apply from-lime-700/80 to-lime-400/75;
+}
+
+.bankcard-green {
+    @apply from-green-700/80 to-green-400/75;
+}
+
+.bankcard-emerald {
+    @apply from-emerald-700/80 to-emerald-400/75;
+}
+
+.bankcard-teal {
+    @apply from-teal-700/80 to-teal-400/75;
+}
+
+.bankcard-cyan {
+    @apply from-cyan-700/80 to-cyan-400/75;
+}
+
+.bankcard-sky {
+    @apply from-sky-700/80 to-sky-400/75;
+}
+
+.bankcard-blue {
+    @apply from-blue-700/80 to-blue-400/75;
+}
+
+.bankcard-indigo {
+    @apply from-indigo-700/80 to-indigo-400/75;
+}
+
+.bankcard-violet {
+    @apply from-violet-700/80 to-violet-400/75;
+}
+
+.bankcard-purple {
+    @apply from-purple-700/80 to-purple-400/75;
+}
+
+.bankcard-fuchsia {
+    @apply from-fuchsia-700/80 to-fuchsia-400/75;
+}
+
+.bankcard-pink {
+    @apply from-pink-700/80 to-pink-400/75;
+}
+
+.bankcard-rose {
+    @apply from-rose-700/80 to-rose-400/75;
+}
+
+.bankcard-slate {
+    @apply from-slate-700/80 to-slate-400/75;
+}
+
+.bankcard-gray {
+    @apply from-gray-700/80 to-gray-400/75;
+}
+
+.bankcard-zinc {
+    @apply from-zinc-700/80 to-zinc-400/75;
+}
+
+.bankcard-neutral {
+    @apply from-neutral-700/80 to-neutral-400/75;
+}
+
+.bankcard-stone {
+    @apply from-stone-700/80 to-stone-400/75;
+}
+
+.bankcard-shadow-red {
+    box-shadow: 4px 4px 24px 0 rgba(185, 28, 28, 0.45);
+}
+
+.bankcard-shadow-orange {
+    box-shadow: 4px 4px 24px 0 rgba(194, 65, 12, 0.45);
+}
+
+.bankcard-shadow-amber {
+    box-shadow: 4px 4px 24px 0 rgba(202, 138, 4, 0.45);
+}
+
+.bankcard-shadow-yellow {
+    box-shadow: 4px 4px 24px 0 rgba(202, 180, 5, 0.45);
+}
+
+.bankcard-shadow-lime {
+    box-shadow: 4px 4px 24px 0 rgba(77, 124, 15, 0.45);
+}
+
+.bankcard-shadow-green {
+    box-shadow: 4px 4px 24px 0 rgba(21, 128, 61, 0.45);
+}
+
+.bankcard-shadow-emerald {
+    box-shadow: 4px 4px 24px 0 rgba(5, 150, 105, 0.45);
+}
+
+.bankcard-shadow-teal {
+    box-shadow: 4px 4px 24px 0 rgba(13, 148, 136, 0.45);
+}
+
+.bankcard-shadow-cyan {
+    box-shadow: 4px 4px 24px 0 rgba(8, 145, 178, 0.45);
+}
+
+.bankcard-shadow-sky {
+    box-shadow: 4px 4px 24px 0 rgba(2, 132, 199, 0.45);
+}
+
+.bankcard-shadow-blue {
+    box-shadow: 4px 4px 24px 0 rgba(29, 78, 216, 0.45);
+}
+
+.bankcard-shadow-indigo {
+    box-shadow: 4px 4px 24px 0 rgba(67, 56, 202, 0.45);
+}
+
+.bankcard-shadow-violet {
+    box-shadow: 4px 4px 24px 0 rgba(109, 40, 217, 0.45);
+}
+
+.bankcard-shadow-purple {
+    box-shadow: 4px 4px 24px 0 rgba(126, 34, 206, 0.45);
+}
+
+.bankcard-shadow-fuchsia {
+    box-shadow: 4px 4px 24px 0 rgba(192, 38, 211, 0.45);
+}
+
+.bankcard-shadow-pink {
+    box-shadow: 4px 4px 24px 0 rgba(219, 39, 119, 0.45);
+}
+
+.bankcard-shadow-rose {
+    box-shadow: 4px 4px 24px 0 rgba(225, 29, 72, 0.45);
+}
+
+.bankcard-shadow-slate {
+    box-shadow: 4px 4px 24px 0 rgba(30, 41, 59, 0.45);
+}
+
+.bankcard-shadow-gray {
+    box-shadow: 4px 4px 24px 0 rgba(75, 85, 99, 0.45);
+}
+
+.bankcard-shadow-zinc {
+    box-shadow: 4px 4px 24px 0 rgba(82, 82, 91, 0.45);
+}
+
+.bankcard-shadow-neutral {
+    box-shadow: 4px 4px 24px 0 rgba(115, 115, 115, 0.45);
+}
+
+.bankcard-shadow-stone {
+    box-shadow: 4px 4px 24px 0 rgba(120, 113, 108, 0.45);
+}
+
+.background-red {
+    @apply bg-red-500;
+}
+
+.background-orange {
+    @apply bg-orange-500;
+}
+
+.background-amber {
+    @apply bg-amber-500;
+}
+
+.background-yellow {
+    @apply bg-yellow-500;
+}
+
+.background-lime {
+    @apply bg-lime-500;
+}
+
+.background-green {
+    @apply bg-green-500;
+}
+
+.background-emerald {
+    @apply bg-emerald-500;
+}
+
+.background-teal {
+    @apply bg-teal-500;
+}
+
+.background-cyan {
+    @apply bg-cyan-500;
+}
+
+.background-sky {
+    @apply bg-sky-500;
+}
+
+.background-blue {
+    @apply bg-blue-500;
+}
+
+.background-indigo {
+    @apply bg-indigo-500;
+}
+
+.background-violet {
+    @apply bg-violet-500;
+}
+
+.background-purple {
+    @apply bg-purple-500;
+}
+
+.background-fuchsia {
+    @apply bg-fuchsia-500;
+}
+
+.background-pink {
+    @apply bg-pink-500;
+}
+
+.background-rose {
+    @apply bg-rose-500;
+}
+
+.background-slate {
+    @apply bg-slate-500;
+}
+
+.background-gray {
+    @apply bg-gray-500;
+}
+
+.background-zinc {
+    @apply bg-zinc-500;
+}
+
+.background-neutral {
+    @apply bg-neutral-500;
+}
+
+.background-stone {
+    @apply bg-stone-500;
+}
