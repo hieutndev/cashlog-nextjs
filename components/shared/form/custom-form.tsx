@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import { Button, ButtonProps } from "@heroui/button";
 
 import SYS_ICONS from "@/config/icons";
@@ -32,6 +34,21 @@ export default function CustomForm({
 	resetButtonSize = "md",
 	children,
 }: CustomFormProps) {
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			onSubmit?.();
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [onSubmit]);
+
 	return (
 		<div
 			className={className}
