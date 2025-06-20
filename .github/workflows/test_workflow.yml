@@ -43,9 +43,20 @@ jobs:
                   password: ${{ secrets.VPS_PASSWORD }}
                   script: |
                       echo "Building new version..."
+
                       cd cashlog-nextjs
                       git checkout main
                       git pull origin main
+
+                      if ! command -v node >/dev/null 2>&1; then
+                        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                        sudo apt-get install -y nodejs
+                      fi
+
+                      if ! command -v yarn >/dev/null 2>&1; then
+                        npm install -g yarn
+                      fi
+
                       yarn install
                       yarn build
                       echo "Build completed successfully!"
