@@ -77,6 +77,7 @@ jobs:
                   username: ${{ secrets.VPS_USER }}
                   password: ${{ secrets.VPS_PASSWORD }}
                   script: |
+
                       echo "commit_message<<EOF" >> $GITHUB_OUTPUT
                       echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
                       echo "EOF" >> $GITHUB_OUTPUT
@@ -92,6 +93,7 @@ jobs:
                       fi
 
                       echo "Updating package.json version..."
+                      cd cashlog-nextjs
                       npm version $bump -m "Auto Bump version to %s"
                       git push origin main
                       echo "Version updated successfully!"
