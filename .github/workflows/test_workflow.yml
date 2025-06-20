@@ -71,25 +71,27 @@ jobs:
 
             - name: Determine version bump type
               id: get_bump
-              run: |
-                  echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-                  echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
-                  echo "EOF" >> $GITHUB_OUTPUT
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USER }}
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  script: |
+                      echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+                      echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+                      echo "EOF" >> $GITHUB_OUTPUT
 
-                  bump="patch"
-                  msg="${{ github.event.head_commit.message }}"
-                  msg="test minor"
-                  if echo "$msg" | grep -i "major"; then
-                  bump="major"
-                  elif echo "$msg" | grep -i "minor"; then
-                  bump="minor"
-                  else bump="patch"
-                  fi
-                  echo "bump_type=$bump" >> $GITHUB_OUTPUT
+                      bump="patch"
+                      msg="${{ github.event.head_commit.message }}"
+                      msg="test minor"
+                      if echo "$msg" | grep -i "major"; then
+                          bump="major"
+                      elif echo "$msg" | grep -i "minor"; then
+                          bump="minor"
+                      else bump="patch"
+                      fi
 
-            - name: Update package.json version
-              run: |
-                  echo "Updating package.json version..."
-                  npm version ${{ steps.get_bump.outputs.bump_type }} -m "Auto Bump version to %s"
-                  git push origin main
-                  echo "Version updated successfully!"
+                      echo "Updating package.json version..."
+                      npm version $bump -m "Auto Bump version to %s"
+                      git push origin main
+                      echo "Version updated successfully!"
