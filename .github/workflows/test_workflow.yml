@@ -17,9 +17,10 @@ jobs:
               uses: appleboy/ssh-action@v1
               with:
                   host: ${{ secrets.VPS_HOST }}
-                  username: root
+                  username: ${{ secrets.VPS_USER }}
                   passphrase: ${{ secrets.SSH_PASSPHRASE }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: whoami
 
             - name: Add SSH host to known hosts
               run: |
