@@ -1,11 +1,38 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { JSONSchemaType } from "ajv";
 
-import { TFullTransaction, TNewTransaction, TTransaction, TTransactionDetail } from "@/types/transaction";
+import { ListTransactionType, TFullTransaction, TNewTransaction, TTransaction, TTransactionDetail } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/config/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
 import { validateCardOwnership } from "@/app/api/cards/card-services";
+
+export const newTransactionSchema: JSONSchemaType<TNewTransaction> = {
+  type: "object",
+  properties: {
+    card_id: { type: ["string", "integer"], minimum: 1, minLength: 1 },
+    direction: { type: "string", enum: ["in", "out"] },
+    transaction_category: { type: "integer" },
+    transaction_date: {
+      anyOf: [
+        { type: "string", format: "date" },
+        { type: "string", format: "date-time" }
+      ]
+    },
+    transaction_type: { type: "string", enum: ListTransactionType },
+    transaction_amount: { type: "number", minimum: 1 },
+    description: { type: "string" }
+  },
+  required: [
+    "card_id",
+    "direction",
+    "transaction_type",
+    "transaction_amount"
+  ],
+  additionalProperties: false
+};
+
 
 export const getTotalTransaction = async () => {
 

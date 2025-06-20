@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  categorySchema,
   deleteCategory,
   getCategoryById,
   updateCategory,
@@ -9,7 +10,6 @@ import { handleError, handleValidateError } from "../../_helpers/handle-error";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 
 import { validateRequest } from "@/utils/ajv";
-import { categorySchema } from "@/app/api/categories/route";
 import { ApiError } from "@/types/api-error";
 
 

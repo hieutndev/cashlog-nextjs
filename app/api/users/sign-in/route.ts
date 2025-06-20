@@ -1,10 +1,8 @@
-import { JSONSchemaType } from "ajv";
 import { NextResponse } from "next/server";
 
-import { signIn } from "../user-services";
+import { signIn, signInSchema } from "../user-services";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
 
-import { TSignIn } from "@/types/user";
 import { validateRequest } from "@/utils/ajv";
 
 export const POST = async (request: Request) => {
@@ -12,17 +10,9 @@ export const POST = async (request: Request) => {
 
         const requestBody = await request.json();
 
-        const validateSchema: JSONSchemaType<TSignIn> = {
-            type: "object",
-            properties: {
-                email: { type: "string", format: "email", minLength: 1 },
-                password: { type: "string", minLength: 1 },
-            },
-            required: ["email", "password"],
-            additionalProperties: false,
-        };
 
-        const { isValid, errors } = validateRequest(validateSchema, requestBody);
+
+        const { isValid, errors } = validateRequest(signInSchema, requestBody);
 
         if (!isValid) {
             return handleValidateError(errors);

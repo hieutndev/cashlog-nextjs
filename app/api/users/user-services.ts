@@ -1,4 +1,5 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { JSONSchemaType } from 'ajv';
 
 import { TSignUp, TSignIn, TUser } from '../../../types/user';
 
@@ -8,7 +9,28 @@ import { randomUniqueString } from '@/utils/generate-unique-string';
 import { comparePassword, hashPassword } from '@/utils/hash-password';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '@/utils/jwt-utils';
 import { ApiError } from '@/types/api-error';
+import { REGEX } from '@/config/regex';
 
+export const signInSchema: JSONSchemaType<TSignIn> = {
+    type: "object",
+    properties: {
+        email: { type: "string", format: "email", minLength: 1 },
+        password: { type: "string", minLength: 1 },
+    },
+    required: ["email", "password"],
+    additionalProperties: false,
+};
+
+export const signUpSchema: JSONSchemaType<TSignUp> = {
+    type: "object",
+    properties: {
+        email: { type: "string", format: "email", minLength: 1 },
+        password: { type: "string", minLength: 1, pattern: REGEX.PASSWORD },
+        confirmPassword: { type: "string", minLength: 6 },
+    },
+    required: ["email", "password", "confirmPassword"],
+    additionalProperties: false,
+};
 
 export const getUserByEmail = async (email: string): Promise<TUser | null> => {
 
@@ -23,8 +45,6 @@ export const getUserByEmail = async (email: string): Promise<TUser | null> => {
     } catch (error: unknown) {
         throw new ApiError((error as Error).message || "Error in getUserByEmail", 500);
     }
-
-
 
 };
 

@@ -1,14 +1,53 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { JSONSchemaType } from "ajv";
 
 import { TCard, TEditCard, TNewCard } from "@/types/card";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/config/query-string";
 import { TNewTransaction } from "@/types/transaction";
 import { ApiError } from "@/types/api-error";
+import { ListColors } from "@/types/global";
 
-/**
- * Validate that a card belongs to the specified user
- */
+
+export const getCardInfoSchema: JSONSchemaType<{ cardId: string }> = {
+  type: "object",
+  properties: {
+    cardId: { type: "string", minLength: 1, pattern: "^[0-9]+$" }
+  },
+  required: ["cardId"],
+  additionalProperties: false
+};
+
+export const newCardSchema: JSONSchemaType<TNewCard> = {
+  type: "object",
+  properties: {
+    card_name: { type: "string", minLength: 3 },
+    card_balance_init: { type: "integer", minimum: 0 },
+    card_color: {
+      type: "string",
+      enum: ListColors
+    },
+    bank_code: { type: "string" }
+  },
+  required: ["card_name", "card_balance_init", "card_color", "bank_code"],
+  additionalProperties: false
+};
+
+export const editCardSchema: JSONSchemaType<TEditCard & { cardId: string }> = {
+  type: "object",
+  properties: {
+    cardId: { type: "string", minLength: 1, pattern: "^[0-9]+$" },
+    card_name: { type: "string", minLength: 3 },
+    card_color: {
+      type: "string",
+      enum: ListColors
+    },
+    bank_code: { type: "string" }
+  },
+  required: ["cardId", "card_name", "card_color", "bank_code"],
+  additionalProperties: false
+};
+
 export const validateCardOwnership = async (cardId: string | number, userId: string | number) => {
   try {
     const cardInfo = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_CARD_INFO, [cardId]);

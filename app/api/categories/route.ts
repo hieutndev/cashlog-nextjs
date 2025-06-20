@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
-import { JSONSchemaType } from "ajv";
 
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { createNewCategory, getAllCategories } from "./categories-services";
+import { categorySchema, createNewCategory, getAllCategories } from "./categories-services";
 
 import { validateRequest } from "@/utils/ajv";
 
-export const categorySchema: JSONSchemaType<{
-  category_name: string;
-  color: string;
-}> = {
-  type: "object",
-  properties: {
-    category_name: { type: "string", minLength: 3 },
-    color: { type: "string" },
-  },
-  required: ["category_name", "color"],
-  additionalProperties: false,
-};
+
 
 export async function GET(request: Request) {
   try {
