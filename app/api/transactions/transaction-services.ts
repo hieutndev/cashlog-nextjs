@@ -124,8 +124,7 @@ export const getAllTransactions = async (userId: string | number) => {
   let listTransaction: RowDataPacket[] | null = null;
 
   try {
-    listTransaction = await dbQuery<RowDataPacket[]>(userId ? QUERY_STRING.GET_ALL_TRANSACTIONS_OF_USER : QUERY_STRING.GET_ALL_TRANSACTION_DETAILS,
-      [userId]);
+    listTransaction = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_ALL_TRANSACTIONS_OF_USER, [userId]);
   } catch (error: unknown) {
     throw new ApiError((error as Error).message || "Error in getAllTransactions", 500);
   }

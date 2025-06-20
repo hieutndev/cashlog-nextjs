@@ -19,28 +19,6 @@ export const QUERY_STRING = {
     DELETE_TRANSACTION: `DELETE
                         FROM transactions
                         WHERE transaction_id = ?;`,
-    GET_ALL_TRANSACTION_DETAILS: `SELECT transactions.transaction_id,
-                                       transactions.direction,
-                                       transactions.transaction_category,
-                                       transactions.transaction_date,
-                                       transaction_details.transaction_amount,
-                                       transaction_details.transaction_type,
-                                       transaction_details.description,
-                                       transaction_details.created_at,
-                                       cards.card_id,
-                                       cards.card_name,
-                                       cards.card_balance,
-                                       cards.card_color,
-                                       cards.bank_code
-                                FROM transactions
-                                         LEFT JOIN
-                                     transaction_details
-                                     ON
-                                         transactions.transaction_id = transaction_details.transaction_id
-                                         INNER JOIN
-                                     cards
-                                     ON
-                                         transactions.card_id = cards.card_id;`,
     GET_ALL_TRANSACTIONS_OF_USER: `SELECT 
     t.transaction_id,
     t.transaction_date,
@@ -48,7 +26,7 @@ export const QUERY_STRING = {
 
     td.transaction_type,
     td.transaction_amount,
-    td.description AS detail_description,
+    td.description,
     td.created_at AS detail_created_at,
 
     tc.category_id,
