@@ -21,7 +21,7 @@ jobs:
                   password: ${{ secrets.VPS_PASSWORD }}
                   # passphrase: ${{ secrets.SSH_PASSPHRASE }}
                   # key: ${{ secrets.SSH_PRIVATE_KEY }}
-              run: |
+              script: |
                   echo "Running commands on the VPS..."
                   cd cashlog-nextjs
                   ls -la
