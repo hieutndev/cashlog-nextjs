@@ -84,7 +84,6 @@ jobs:
 
                       bump="patch"
                       msg="${{ github.event.head_commit.message }}"
-                      msg="test minor"
                       if echo "$msg" | grep -i "major"; then
                           bump="major"
                       elif echo "$msg" | grep -i "minor"; then
@@ -95,5 +94,8 @@ jobs:
                       echo "Updating package.json version..."
                       cd cashlog-nextjs
                       npm version $bump -m "Auto Bump version to %s"
+                      git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                      git config --global user.name "github-actions[bot]"
+                      git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
                       git push origin main
                       echo "Version updated successfully!"
