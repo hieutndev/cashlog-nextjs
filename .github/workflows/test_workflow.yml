@@ -23,59 +23,46 @@ jobs:
                       echo "Testing SSH connection..."
                       echo "Successfully connected to the VPS!"
 
-            - name: Stop Cashlog on PM2
+            - name: Build new version (Install Yarn + PM2)
               uses: appleboy/ssh-action@v1
               with:
                   host: ${{ secrets.VPS_HOST }}
                   username: ${{ secrets.VPS_USER }}
                   password: ${{ secrets.VPS_PASSWORD }}
                   script: |
-                      echo "Stopping Cashlog on PM2..."
-                      cd cashlog-nextjs
-                      pm2 stop cashlog || exit 1
-                      echo "Cashlog stopped successfully!"
+                      echo "Installing dependencies and building..."
 
-            - name: Build new version
-              uses: appleboy/ssh-action@v1
-              with:
-                  host: ${{ secrets.VPS_HOST }}
-                  username: ${{ secrets.VPS_USER }}
-                  password: ${{ secrets.VPS_PASSWORD }}
-                  script: |
-                      echo "Building new version..."
-
-                      cd cashlog-nextjs
-                      git checkout main
-                      git pull origin main
-
+                      # Ensure Node.js and npm are available
                       if ! command -v node >/dev/null 2>&1; then
                         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
                         sudo apt-get install -y nodejs
                       fi
 
+                      # Ensure Yarn is installed
                       if ! command -v yarn >/dev/null 2>&1; then
                         npm install -g yarn
                       fi
 
-                      yarn install
-                      yarn build
-                      echo "Build completed successfully!"
+                      # Ensure PM2 is installed
+                      if ! command -v pm2 >/dev/null 2>&1; then
+                        npm install -g pm2
+                      fi
 
-            - name: Restart Cashlog on PM2
-              uses: appleboy/ssh-action@v1
-              with:
-                  host: ${{ secrets.VPS_HOST }}
-                  username: ${{ secrets.VPS_USER }}
-                  password: ${{ secrets.VPS_PASSWORD }}
-                  script: |
-                      echo "Restarting Cashlog on PM2..."
-                      pm2 start cashlog
-                      echo "Cashlog restarted successfully!"
+                      # Build project
+                      pm2 stop cashlog || exit 1
+                      cd cashlog-nextjs
+                      git checkout main
+                      git pull origin main
+                      yarn install || exit 1
+                      yarn build || exit 1
+                      pm2 restart cashlog
+                      echo "Build completed successfully!"
+                      exit 0
 
             - name: Notify success
               if: ${{ success() }}
-              run: echo "Cashlog deployment completed successfully!"; exit 0
+              run: echo "✅ Cashlog deployment completed successfully!"
 
             - name: Notify failure
               if: ${{ failure() }}
-              run: echo "Cashlog deployment failed!"; exit 1
+              run: echo "❌ Cashlog deployment failed!"
