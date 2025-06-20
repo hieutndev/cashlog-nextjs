@@ -13,18 +13,58 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            - name: Setup SSH agent
+            - name: Test SSH
               uses: appleboy/ssh-action@v1
               with:
                   host: ${{ secrets.VPS_HOST }}
                   username: ${{ secrets.VPS_USER }}
                   password: ${{ secrets.VPS_PASSWORD }}
-                  # passphrase: ${{ secrets.SSH_PASSPHRASE }}
-                  # key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  # script:
+                  script: |
+                      echo "Testing SSH connection..."
+                      echo "Successfully connected to the VPS!"
 
-            - name: Run a command on the VPS
-              run: |
-                  echo "Running commands on the VPS..."
-                  cd cashlog-nextjs
-                  ls -la
+            - name: Stop Cashlog on PM2
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USER }}
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  script: |
+                      echo "Stopping Cashlog on PM2..."
+                      cd cashlog-nextjs
+                      pm2 stop cashlog
+                      echo "Cashlog stopped successfully!"
+
+            - name: Build new version
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USER }}
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  script: |
+                      echo "Building new version..."
+                      cd cashlog-nextjs
+                      git checkout main
+                      git pull origin main
+                      yarn install
+                      yarn build
+                      echo "Build completed successfully!"
+
+            - name: Restart Cashlog on PM2
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USER }}
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  script: |
+                      echo "Restarting Cashlog on PM2..."
+                      pm2 start cashlog
+                      echo "Cashlog restarted successfully!"
+
+            - name: Notify success
+              if: ${{ success() }}
+              run: echo "Cashlog deployment completed successfully!"; exit 0
+
+            - name: Notify failure
+              if: ${{ failure() }}
+              run: echo "Cashlog deployment failed!"; exit 1
