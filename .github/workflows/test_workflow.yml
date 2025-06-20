@@ -21,9 +21,6 @@ jobs:
                   passphrase: ${{ secrets.SSH_PASSPHRASE }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-            - name: Add VPS host to known hosts
-              run: ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
             - name: SSH to VPS
               run: |
                   ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
