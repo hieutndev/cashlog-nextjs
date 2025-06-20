@@ -1,9 +1,9 @@
-name: Test CI
+name: Auto deployment Cashlog Next.js
 
 on:
     push:
         branches:
-            - workflows
+            - main
     workflow_dispatch:
 
 jobs:
@@ -51,6 +51,14 @@ jobs:
                         npm install -g pm2
                       fi
 
+                      # Build project
+                      pm2 stop cashlog || exit 1
+                      cd cashlog-nextjs
+                      git checkout main
+                      git pull origin main
+                      yarn install || exit 1
+                      yarn build || exit 1
+                      pm2 restart cashlog
 
                       echo "Build completed successfully!"
                       exit 0
