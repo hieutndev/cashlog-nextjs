@@ -21,13 +21,10 @@ jobs:
                   password: ${{ secrets.VPS_PASSWORD }}
                   # passphrase: ${{ secrets.SSH_PASSPHRASE }}
                   # key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  script: whoami
+                  run: |
+                      echo "Running commands on the VPS..."
+                      cd cashlog-nextjs
+                      ls -la
 
-            - name: Add SSH host to known hosts
-              run: |
-                  mkdir -p ~/.ssh
-                  ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
-            - name: SSH to VPS
-              run: |
-                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo Connected to VPS!"
+            # - name: Run a command on the VPS
+            #   run:
