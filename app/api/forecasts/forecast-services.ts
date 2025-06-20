@@ -1,4 +1,5 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { JSONSchemaType } from "ajv";
 
 import { QUERY_STRING } from "@/config/query-string";
 import { dbQuery } from "@/libs/mysql";
@@ -6,10 +7,68 @@ import { TFullForecast, TNewForecast, TUpdateForecast } from "@/types/forecast";
 import { formatMYSQLDate, makeListDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
 import { validateCardOwnership } from "@/app/api/cards/card-services";
+import { ListTransactionType } from "@/types/transaction";
 
-/**
- * Validate that a forecast belongs to a card owned by the specified user
- */
+
+export const newForecastSchema: JSONSchemaType<TNewForecast> = {
+  type: "object",
+  properties: {
+    forecast_name: { type: "string", minLength: 1 },
+    amount: { type: "integer", minimum: 0 },
+    direction: { type: "string", enum: ["in", "out"] },
+    card_id: { type: "integer", minimum: 1 },
+    forecast_date: {
+      anyOf: [
+        { type: "string", format: "date" },
+        { type: "string", format: "date-time" }
+      ]
+    },
+    repeat_times: { type: "number", minimum: 1 },
+    repeat_type: { type: "string", enum: ["day", "hour", "month", "year"] },
+    transaction_type: { type: "string", enum: ListTransactionType }
+  },
+  required: [
+    "forecast_name",
+    "amount",
+    "direction",
+    "card_id",
+    "forecast_date",
+    "repeat_times",
+    "repeat_type"
+  ],
+  additionalProperties: false
+};
+
+
+export const updateForecastSchema: JSONSchemaType<TUpdateForecast> = {
+  type: "object",
+  properties: {
+    forecast_name: { type: "string", minLength: 1 },
+    amount: { type: "integer", minimum: 1000 },
+    direction: { type: "string", enum: ["in", "out"] },
+    card_id: { type: "integer", minimum: 1 },
+    forecast_date: {
+      anyOf: [
+        { type: "string", format: "date" },
+        { type: "string", format: "date-time" }
+      ]
+    },
+    repeat_times: { type: "number", minimum: 1 },
+    repeat_type: { type: "string", enum: ["day", "hour", "month", "year"] },
+    transaction_type: { type: "string", enum: ListTransactionType }
+  },
+  required: [
+    "forecast_name",
+    "amount",
+    "direction",
+    "card_id",
+    "forecast_date",
+    "repeat_times",
+    "repeat_type"
+  ],
+  additionalProperties: false
+};
+
 export const validateForecastOwnership = async (forecastId: string | number, userId: string | number) => {
   try {
     const forecastInfo = await getForecastById(forecastId);

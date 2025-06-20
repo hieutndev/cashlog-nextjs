@@ -1,11 +1,26 @@
 // write for me a GET endpoint to get all categories
 
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { JSONSchemaType } from "ajv";
 
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/config/query-string";
 import { TCategory, TNewCategory } from "@/types/category";
 import { ApiError } from "@/types/api-error";
+
+export const categorySchema: JSONSchemaType<{
+  category_name: string;
+  color: string;
+}> = {
+  type: "object",
+  properties: {
+    category_name: { type: "string", minLength: 3 },
+    color: { type: "string" },
+  },
+  required: ["category_name", "color"],
+  additionalProperties: false,
+};
+
 
 export const getAllCategories = async (userId?: string | number) => {
   try {

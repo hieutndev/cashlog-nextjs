@@ -1,12 +1,9 @@
-import { JSONSchemaType } from "ajv";
 
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { TNewCard } from "@/types/card";
-import { createNewCard, deleteCard, getAllCardsOfUser } from "@/app/api/cards/card-services";
+import { createNewCard, deleteCard, getAllCardsOfUser, newCardSchema } from "@/app/api/cards/card-services";
 import { validateRequest } from "@/utils/ajv";
-import { ListColors } from "@/types/global";
 import { ApiError } from "@/types/api-error";
 
 export const GET = async (request: Request) => {
@@ -36,22 +33,9 @@ export const POST = async (request: Request) => {
 
     const requestBody = await request.json();
 
-    const validateSchema: JSONSchemaType<TNewCard> = {
-      type: "object",
-      properties: {
-        card_name: { type: "string", minLength: 3 },
-        card_balance_init: { type: "integer", minimum: 0 },
-        card_color: {
-          type: "string",
-          enum: ListColors
-        },
-        bank_code: { type: "string" }
-      },
-      required: ["card_name", "card_balance_init", "card_color", "bank_code"],
-      additionalProperties: false
-    };
 
-    const { isValid, errors } = validateRequest(validateSchema, requestBody);
+
+    const { isValid, errors } = validateRequest(newCardSchema, requestBody);
 
     if (!isValid) {
       return handleValidateError(errors);
