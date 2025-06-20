@@ -1,29 +1,31 @@
 name: Test CI
 
 on:
-  push:
-    branches:
-      - workflows
-  workflow_dispatch:
+    push:
+        branches:
+            - workflows
+    workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
 
-      - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}  # ✅ correct key
+            - name: Setup SSH agent
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: root
+                  passphrase: ${{ secrets.SSH_PASSPHRASE }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add VPS host to known hosts
-        run: ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+            - name: Add VPS host to known hosts
+              run: ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: SSH to VPS
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            echo "Connected to VPS!"
-          EOF
+            - name: SSH to VPS
+              run: |
+                  ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+                    echo "Connected to VPS!"
+                  EOF
