@@ -7,6 +7,7 @@ import { useReactiveCookiesNext } from "cookies-next";
 import { useState, useEffect } from "react";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { useFetch } from "@/hooks/useFetch";
@@ -14,9 +15,13 @@ import { IAPIResponse } from "@/types/global";
 import { TSignIn, TSignInResponse } from "@/types/user";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 export default function SignInPage() {
 	const router = useRouter();
+
+	const { width } = useScreenSize();
 
 	const { setCookie } = useReactiveCookiesNext();
 
@@ -68,21 +73,52 @@ export default function SignInPage() {
 	}, [signInResponse, signInError]);
 
 	return (
-		<div className={"w-full h-full grid grid-cols-2 px-32"}>
-			<div className={"h-full col-span-1 flex items-center justify-center"}>
+		<div
+			className={clsx("w-full h-full", {
+				"grid grid-cols-2": width > BREAK_POINT.L,
+				"flex flex-col gap-4": width <= BREAK_POINT.L,
+				"px-32": width > BREAK_POINT.M,
+				"px-4": width <= BREAK_POINT.M,
+			})}
+		>
+			<div
+				className={clsx("flex items-center justify-center", {
+					"h-full col-span-1 ": width > BREAK_POINT.L,
+					"h-max": width <= BREAK_POINT.L,
+				})}
+			>
 				<Image
 					alt={"Cashlog Logo"}
-					className={"w-3/4"}
+					className={clsx({
+						"w-3/4": width > BREAK_POINT.L,
+						"max-w-64": width <= BREAK_POINT.L,
+					})}
 					height={1200}
 					src={"/cashlog_icontext_vertical.png"}
 					width={1200}
 				/>
 			</div>
-			<div className={"h-full col-span-1 flex flex-col items-center justify-center gap-8 px-4"}>
-				<h1 className="w-4/6 text-left text-6xl font-bold text-primary">Sign In.</h1>
+			<div
+				className={clsx("flex flex-col items-center justify-center gap-8 px-4", {
+					"h-full col-span-1": width > BREAK_POINT.L,
+					"h-max": width <= BREAK_POINT.L,
+				})}
+			>
+				<h1
+					className={clsx("w-4/6 text-6xl font-bold text-primary", {
+						"text-left": width > BREAK_POINT.L,
+						"text-center": width <= BREAK_POINT.L,
+					})}
+				>
+					Sign In.
+				</h1>
 				<div className={"w-full flex flex-col gap-8 items-center"}>
 					<CustomForm
-						className={"w-4/6 flex flex-col gap-4"}
+						className={clsx("flex flex-col gap-4", {
+							"w-4/6": width > BREAK_POINT.XL,
+							"w-5/6": width > BREAK_POINT.M && width <= BREAK_POINT.XL,
+							"w-full": width <= BREAK_POINT.M,
+						})}
 						formId={"loginForm"}
 						isLoading={signingIn}
 						submitButtonSize={"lg"}
