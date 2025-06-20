@@ -18,8 +18,9 @@ jobs:
               with:
                   host: ${{ secrets.VPS_HOST }}
                   username: ${{ secrets.VPS_USER }}
-                  passphrase: ${{ secrets.SSH_PASSPHRASE }}
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  # passphrase: ${{ secrets.SSH_PASSPHRASE }}
+                  # key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: whoami
 
             - name: Add SSH host to known hosts
