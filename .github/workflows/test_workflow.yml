@@ -32,7 +32,7 @@ jobs:
                   script: |
                       echo "Stopping Cashlog on PM2..."
                       cd cashlog-nextjs
-                      pm2 stop cashlog
+                      pm2 stop cashlog || exit 1
                       echo "Cashlog stopped successfully!"
 
             - name: Build new version
