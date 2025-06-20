@@ -24,7 +24,7 @@ jobs:
             - name: Add SSH host to known hosts
               run: |
                   mkdir -p ~/.ssh
-                  echo "${{ secrets.VPS_HOST_KEY }}" >> ~/.ssh/known_hosts
+                  echo "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
             - name: SSH to VPS
               run: |
