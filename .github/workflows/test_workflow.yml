@@ -52,7 +52,7 @@ jobs:
                       fi
 
                       # Build project
-                      pm2 stopxxxx cashlog || exit 1
+                      pm2 stop cashlog || exit 1
                       cd cashlog-nextjs
                       git checkout main
                       git pull origin main
