@@ -1,13 +1,11 @@
 "use client";
 
 import { Button } from "@heroui/button";
-import { useDisclosure } from "@heroui/modal";
 import { useReactiveCookiesNext } from "cookies-next/client";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 
-import AuthModal from "@/components/auth/auth-modal";
 import SYS_ICONS from "@/config/icons";
 import { SITE_CONFIG } from "@/config/site-config";
 import useScreenSize from "@/hooks/useScreenSize";
@@ -15,8 +13,6 @@ import { BREAK_POINT } from "@/config/break-point";
 
 export default function HorizontalNav() {
 	const { getCookie, hasCookie, deleteCookie } = useReactiveCookiesNext();
-
-	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const router = useRouter();
 
@@ -79,15 +75,11 @@ export default function HorizontalNav() {
 			) : (
 				<Button
 					color={"primary"}
-					onPress={onOpen}
+					onPress={() => router.push("/sign-in")}
 				>
 					Login
 				</Button>
 			)}
-			<AuthModal
-				isOpen={isOpen}
-				onClose={onClose}
-			/>
 		</section>
 	);
 }
