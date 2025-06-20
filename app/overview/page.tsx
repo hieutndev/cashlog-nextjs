@@ -7,6 +7,7 @@ import { Button } from "@heroui/button";
 import moment from "moment";
 import { Select, SelectItem } from "@heroui/select";
 import { Spinner } from "@heroui/spinner";
+import clsx from "clsx";
 
 import ContentHeader from "@/components/shared/partials/content-header";
 import Container from "@/components/shared/container/container";
@@ -20,9 +21,14 @@ import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { useAuth } from "@/components/providers/auth-provider";
 import { MAP_ICON } from "@/config/map-icons";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 export default function OverviewPage() {
 	const { isLoggedIn } = useAuth();
+
+	const { width } = useScreenSize();
+
 	const [currentCardPage, setCurrentCardPage] = useState(0);
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("month");
 
@@ -74,7 +80,6 @@ export default function OverviewPage() {
 		}
 	}, [isLoggedIn]);
 
-	// Time period options for the filter
 	const timePeriodOptions = [
 		{ key: "day", label: "Day" },
 		{ key: "week", label: "Week" },
@@ -82,11 +87,18 @@ export default function OverviewPage() {
 		{ key: "year", label: "Year" },
 	];
 
-	// Get balance fluctuation data for the selected time period
 	const balanceFluctuationData = analyticsResult?.results?.balanceFluctuation?.[selectedTimePeriod] || [];
 
-	// Pagination logic for cards
-	const cardsPerPage = 1;
+	const cardsPerPage: number = Number(
+		clsx({
+			1: width > BREAK_POINT.XL || width <= BREAK_POINT.M,
+			2: width <= BREAK_POINT.XL && width > BREAK_POINT.L,
+			3: width <= BREAK_POINT.L && width > BREAK_POINT.M,
+		})
+	);
+
+	console.log("🚀 ~ OverviewPage ~ cardsPerPage:", cardsPerPage);
+
 	const totalCards = fetchCardResult?.results?.length || 0;
 	const totalPages = Math.ceil(totalCards / cardsPerPage);
 	const startIndex = currentCardPage * cardsPerPage;
@@ -101,7 +113,6 @@ export default function OverviewPage() {
 		setCurrentCardPage((prev) => Math.min(totalPages - 1, prev + 1));
 	};
 
-	// Handle time period filter change
 	const handleTimePeriodChange = (value: string) => {
 		setSelectedTimePeriod(value);
 	};
@@ -110,12 +121,20 @@ export default function OverviewPage() {
 		isLoggedIn && (
 			<Container
 				shadow
-				className={"bg-white border border-gray-200 rounded-xl"}
+				className={clsx("bg-white border border-gray-200 rounded-xl", {
+					"px-4": width <= BREAK_POINT.L,
+				})}
 				orientation={"vertical"}
 			>
 				<ContentHeader title={"Overview"} />
 				<div className={"w-full grid grid-cols-12 gap-4"}>
-					<div className="col-span-8 flex flex-col gap-4">
+					<div
+						className={clsx("flex flex-col gap-4", {
+							"col-span-8": width > BREAK_POINT.L,
+							"col-span-7": width <= BREAK_POINT.L,
+							"col-span-12": width <= BREAK_POINT.M,
+						})}
+					>
 						<div className="flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
 							<header className="flex justify-between items-center">
 								<h3 className="text-lg font-semibold">Financial Analytics</h3>
@@ -138,7 +157,13 @@ export default function OverviewPage() {
 								</div>
 							</header>
 
-							<main className="grid grid-cols-3 gap-4">
+							<main
+								className={clsx("grid gap-4", {
+									"grid-cols-3": width > BREAK_POINT.XL,
+									"grid-cols-2": width < BREAK_POINT.XL,
+									"grid-cols-1": width < BREAK_POINT.L,
+								})}
+							>
 								{balanceFluctuationData.length > 0 ? (
 									balanceFluctuationData.map((item, index) => (
 										<AnalyticBlock
@@ -161,7 +186,16 @@ export default function OverviewPage() {
 							</main>
 						</div>
 					</div>
-					<div className="col-span-4 h-full flex flex-col gap-4 bg-white border border-gray-200 p-4 rounded-3xl shadow-sm">
+					<div
+						className={clsx(
+							"h-max flex flex-col gap-4 bg-white border border-gray-200 p-4 rounded-3xl shadow-sm",
+							{
+								"col-span-4": width > BREAK_POINT.L,
+								"col-span-5": width <= BREAK_POINT.L,
+								"col-span-12": width <= BREAK_POINT.M,
+							}
+						)}
+					>
 						<header className="flex justify-between items-center">
 							<h6 className="text-lg font-semibold">Bank Cards</h6>
 							<div className="flex items-center gap-2">
@@ -188,7 +222,7 @@ export default function OverviewPage() {
 								</Button>
 							</div>
 						</header>
-						<main>
+						<main className={"flex flex-col gap-4"}>
 							{loadingCards ? (
 								<div className={"min-h-56 flex justify-center items-center"}>
 									<Spinner>Retrieving card...</Spinner>

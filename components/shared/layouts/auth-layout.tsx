@@ -33,7 +33,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 				})}
 			>
 				<div
-					className={clsx({
+					className={clsx("relative h-100", {
 						"col-span-2": width > BREAK_POINT.XL,
 						"w-max": width <= BREAK_POINT.XL,
 						hidden: width <= BREAK_POINT.L,
@@ -42,13 +42,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					<Sidebar />
 				</div>
 				<div
-					className={clsx("flex flex-col gap-4", {
+					className={clsx("flex flex-col gap-4 max-h-screen overflow-auto", {
 						"col-span-10": width > BREAK_POINT.XL,
 						"w-full": width <= BREAK_POINT.XL,
 					})}
 				>
 					<HorizontalNav />
-					<div className={"px-8 pb-8"}>
+					<div
+						className={clsx({
+							"px-8 pb-8": width > BREAK_POINT.XL,
+							"px-4 pb-4": width <= BREAK_POINT.XL,
+						})}
+					>
 						{detecting ? (
 							<div className={"w-full h-full flex items-center justify-center"}>
 								<Spinner size={"lg"} />

@@ -37,7 +37,7 @@ export default function Chart({ columnLabels: labels, dataSets }: ChartProps) {
 
 	return (
 		<Bar
-			className={"max-h-96"}
+			className={"max-h-96 w-full"}
 			data={data}
 			options={options}
 		/>

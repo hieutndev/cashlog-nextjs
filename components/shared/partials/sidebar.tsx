@@ -34,7 +34,7 @@ export const Sidebar = () => {
 
 	return (
 		<div
-			className={clsx("h-full px-4 py-8 flex flex-col gap-8 items-center shadow-lg", {
+			className={clsx("top-0 left-0 h-full px-4 py-8 flex flex-col gap-8 items-center shadow-lg", {
 				"w-full": width > BREAK_POINT.XL,
 				"w-max": width <= BREAK_POINT.XL,
 			})}

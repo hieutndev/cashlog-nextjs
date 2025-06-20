@@ -5,10 +5,13 @@ import { useDisclosure } from "@heroui/modal";
 import { useReactiveCookiesNext } from "cookies-next/client";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 import AuthModal from "@/components/auth/auth-modal";
 import SYS_ICONS from "@/config/icons";
 import { SITE_CONFIG } from "@/config/site-config";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 export default function HorizontalNav() {
 	const { getCookie, hasCookie, deleteCookie } = useReactiveCookiesNext();
@@ -16,6 +19,8 @@ export default function HorizontalNav() {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const router = useRouter();
+
+	const { width } = useScreenSize();
 
 	const handleLogout = () => {
 		deleteCookie("access_token", { path: "/" });
@@ -25,7 +30,11 @@ export default function HorizontalNav() {
 
 	return (
 		<section className={"w-full flex justify-between items-center px-8 py-4 border-b"}>
-			<div className={"w-max"}>
+			<div
+				className={clsx("w-max", {
+					invisible: width > BREAK_POINT.L,
+				})}
+			>
 				<Dropdown size={"lg"}>
 					<DropdownTrigger>
 						<Button
