@@ -7,8 +7,27 @@ on:
     workflow_dispatch:
 
 jobs:
+    check_is_deploy_action:
+        runs-on: ubuntu-latest
+        outputs:
+            is_deploy: ${{ steps.check_deploy.outputs.is_deploy }}
+            commit_message: ${{ steps.check_deploy.outputs.commit_message }}
+        steps:
+            - name: Check if the commit message contains "deploy"
+              id: check_deploy
+              run: |
+                  echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+                  echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT                  if [[ "${{ github.event.head_commit.message }}" == *"deploy"* ]]; then
+                      echo "is_deploy=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "is_deploy=false" >> $GITHUB_OUTPUT
+                  fi
+
     test_ssh:
         runs-on: ubuntu-latest
+        needs: check_is_deploy_action
+        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
@@ -22,9 +41,11 @@ jobs:
                   script: |
                       echo "Testing SSH connection..."
                       echo "Successfully connected to the VPS!"
+
     build_and_deploy:
         runs-on: ubuntu-latest
-        needs: test_ssh
+        needs: [test_ssh, check_is_deploy_action]
+        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
         steps:
             - name: Build new version (Install Yarn + PM2)
               uses: appleboy/ssh-action@v1
@@ -61,11 +82,11 @@ jobs:
                       pm2 restart cashlog
 
                       echo "Build completed successfully!"
-                      exit 0
-    # update package.json version
+                      exit 0    # update package.json version
     update_version:
         runs-on: ubuntu-latest
-        needs: build_and_deploy
+        needs: [build_and_deploy, check_is_deploy_action]
+        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
@@ -83,6 +104,8 @@ jobs:
                       echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
                       echo "EOF" >> $GITHUB_OUTPUT
 
+
+                      # Determine the version bump type based on commit message
                       bump="patch"
                       msg="${{ github.event.head_commit.message }}"
                       if echo "$msg" | grep -i "major"; then
@@ -92,9 +115,20 @@ jobs:
                       else bump="patch"
                       fi
 
+                      # Ensure Node.js and npm are available
+                      if ! command -v node >/dev/null 2>&1; then
+                        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                        sudo apt-get install -y nodejs
+                      fi
+
+                      # Ensure Yarn is installed
+                      if ! command -v yarn >/dev/null 2>&1; then
+                        npm install -g yarn
+                      fi
+
                       echo "Updating package.json version..."
                       cd cashlog-nextjs
-                      npm version $bump -m "Auto Bump version to %s"
+                      yarn version --$bump -m "Auto Bump version to %s"
                       git config --global user.email "github-actions[bot]@users.noreply.github.com"
                       git config --global user.name "github-actions[bot]"
                       git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
