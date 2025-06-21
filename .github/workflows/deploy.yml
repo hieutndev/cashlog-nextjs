@@ -83,6 +83,8 @@ jobs:
                       echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
                       echo "EOF" >> $GITHUB_OUTPUT
 
+
+                      # Determine the version bump type based on commit message
                       bump="patch"
                       msg="${{ github.event.head_commit.message }}"
                       if echo "$msg" | grep -i "major"; then
@@ -92,9 +94,20 @@ jobs:
                       else bump="patch"
                       fi
 
+                      # Ensure Node.js and npm are available
+                      if ! command -v node >/dev/null 2>&1; then
+                        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                        sudo apt-get install -y nodejs
+                      fi
+
+                      # Ensure Yarn is installed
+                      if ! command -v yarn >/dev/null 2>&1; then
+                        npm install -g yarn
+                      fi
+
                       echo "Updating package.json version..."
                       cd cashlog-nextjs
-                      npm version $bump -m "Auto Bump version to %s"
+                      yarn version --$bump -m "Auto Bump version to %s"
                       git config --global user.email "github-actions[bot]@users.noreply.github.com"
                       git config --global user.name "github-actions[bot]"
                       git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
