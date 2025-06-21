@@ -1,4 +1,4 @@
-name: Auto deployment Cashlog Next.js
+name: Auto deployment for Cashlog Next.js
 
 on:
     push:
