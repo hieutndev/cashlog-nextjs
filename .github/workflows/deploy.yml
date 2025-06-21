@@ -18,7 +18,9 @@ jobs:
               run: |
                   echo "commit_message<<EOF" >> $GITHUB_OUTPUT
                   echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
-                  echo "EOF" >> $GITHUB_OUTPUT                  if [[ "${{ github.event.head_commit.message }}" == *"deploy"* ]]; then
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  if [[ "${{ github.event.head_commit.message }}" == *"deploy"* ]]; then
                       echo "is_deploy=true" >> $GITHUB_OUTPUT
                   else
                       echo "is_deploy=false" >> $GITHUB_OUTPUT
@@ -79,10 +81,10 @@ jobs:
                       git pull origin main
                       yarn install || exit 1
                       yarn build || exit 1
-                      pm2 restart cashlog
+                      pm2 restart cashlog                      echo "Build completed successfully!"
+                      exit 0
 
-                      echo "Build completed successfully!"
-                      exit 0    # update package.json version
+    # update package.json version
     update_version:
         runs-on: ubuntu-latest
         needs: [build_and_deploy, check_is_deploy_action]
