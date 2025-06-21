@@ -37,7 +37,8 @@ jobs:
               with:
                   host: ${{ secrets.VPS_HOST }}
                   username: ${{ secrets.VPS_USER }}
-                  password: ${{ secrets.VPS_PASSWORD }}                  script: |
+                  password: ${{ secrets.VPS_PASSWORD }}
+                  script: |
                       echo "Testing SSH connection..."
                       echo "Successfully connected to the VPS!"
 
