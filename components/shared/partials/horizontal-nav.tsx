@@ -58,12 +58,14 @@ export default function HorizontalNav() {
 			</div>
 			{hasCookie("refresh_token") ? (
 				<div className={"flex items-center gap-2"}>
-					<Button
-						color={"primary"}
-						variant={"light"}
-					>
-						{hasCookie("email") ? `Welcome, ${getCookie("username") ?? ""}` : "Welcome!"}
-					</Button>
+					{width >= BREAK_POINT.M && (
+						<Button
+							color={"primary"}
+							variant={"light"}
+						>
+							{hasCookie("email") ? `Welcome, ${getCookie("username") ?? ""}` : "Welcome!"}
+						</Button>
+					)}
 					<Button
 						isIconOnly
 						color={"danger"}

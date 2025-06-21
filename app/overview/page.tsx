@@ -131,12 +131,17 @@ export default function OverviewPage() {
 					<div
 						className={clsx("flex flex-col gap-4", {
 							"col-span-8": width > BREAK_POINT.L,
-							"col-span-7": width <= BREAK_POINT.L,
+							"col-span-7": width <= BREAK_POINT.L && width > BREAK_POINT.M,
 							"col-span-12": width <= BREAK_POINT.M,
 						})}
 					>
 						<div className="flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
-							<header className="flex justify-between items-center">
+							<header
+								className={clsx("flex justify-between items-center gap-4", {
+									"flex-col": width <= BREAK_POINT.L,
+									"flex-row": width > BREAK_POINT.L,
+								})}
+							>
 								<h3 className="text-lg font-semibold">Financial Analytics</h3>
 
 								<div className={""}>
@@ -160,8 +165,8 @@ export default function OverviewPage() {
 							<main
 								className={clsx("grid gap-4", {
 									"grid-cols-3": width > BREAK_POINT.XL,
-									"grid-cols-2": width < BREAK_POINT.XL,
-									"grid-cols-1": width < BREAK_POINT.L,
+									"grid-cols-2": width < BREAK_POINT.XL && width > BREAK_POINT.L,
+									"grid-cols-1": width <= BREAK_POINT.L,
 								})}
 							>
 								{balanceFluctuationData.length > 0 ? (
@@ -191,7 +196,7 @@ export default function OverviewPage() {
 							"h-max flex flex-col gap-4 bg-white border border-gray-200 p-4 rounded-3xl shadow-sm",
 							{
 								"col-span-4": width > BREAK_POINT.L,
-								"col-span-5": width <= BREAK_POINT.L,
+								"col-span-5": width <= BREAK_POINT.L && width > BREAK_POINT.M,
 								"col-span-12": width <= BREAK_POINT.M,
 							}
 						)}

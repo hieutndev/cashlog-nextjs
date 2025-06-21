@@ -19,6 +19,8 @@ import { useFetch } from "@/hooks/useFetch";
 import SYS_ICONS from "@/config/icons";
 import { TCard } from "@/types/card";
 import { getBankLogo } from "@/config/bank";
+import { BREAK_POINT } from "@/config/break-point";
+import useScreenSize from "@/hooks/useScreenSize";
 
 type FilterAndSortItem = {
 	key: string;
@@ -27,6 +29,8 @@ type FilterAndSortItem = {
 };
 
 export default function TransactionsPage() {
+	const { width } = useScreenSize();
+
 	// HANDLE FETCH TRANSACTION
 
 	const {
@@ -332,7 +336,10 @@ export default function TransactionsPage() {
 			</div>
 			<Table
 				aria-label={"Transactions table"}
-				className={"max-h-[70vh]"}
+				className={clsx({
+					"max-h-[70vh]": width > BREAK_POINT.XL,
+					"max-h-screen": width <= BREAK_POINT.XL,
+				})}
 				selectionMode={"single"}
 			>
 				<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
