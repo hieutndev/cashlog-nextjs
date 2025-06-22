@@ -9,10 +9,10 @@ import AppLayout from "@/components/shared/layouts/app-layout";
 
 export const metadata: Metadata = {
 	title: {
-		default: SITE_CONFIG.name,
+		default: SITE_CONFIG.NAME,
 		template: `%s`,
 	},
-	description: SITE_CONFIG.description,
+	description: SITE_CONFIG.DESCRIPTION,
 	icons: {
 		icon: "/favicon.ico",
 	},

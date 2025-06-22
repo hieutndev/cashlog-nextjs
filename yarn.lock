@@ -514,23 +514,23 @@
     "@react-aria/utils" "3.29.1"
     "@react-stately/overlays" "3.6.17"
 
-"@heroui/navbar@2.2.15":
-  version "2.2.15"
-  resolved "https://registry.yarnpkg.com/@heroui/navbar/-/navbar-2.2.15.tgz#a95b1f6023ce732db47a77432660e2546d4a6ca7"
-  integrity sha512-N6YxmLzbKQKH+94+DPtiQwp+Ec7fJz3RbvZGuwgBrzvGPtV9KqgFL+EQhvOCkicopOdXRI6PLx4TgT+qfPNk/Q==
+"@heroui/navbar@^2.2.20":
+  version "2.2.20"
+  resolved "https://registry.yarnpkg.com/@heroui/navbar/-/navbar-2.2.20.tgz#00712cb0c9bc125fdd4d13ee8185f30c43c987d3"
+  integrity sha512-TNiPg48jhLjVE+S68bAqj1dGGxF3WAz65HsE2ggPtOyZ7/Nz2YBNgZhIwYSwzOKzK/VM0xC7tgzc0epBaBdgNQ==
   dependencies:
-    "@heroui/dom-animation" "2.1.6"
-    "@heroui/framer-utils" "2.1.13"
-    "@heroui/react-utils" "2.1.8"
-    "@heroui/shared-utils" "2.1.7"
-    "@heroui/use-scroll-position" "2.1.6"
-    "@react-aria/button" "3.12.1"
-    "@react-aria/focus" "3.20.1"
-    "@react-aria/interactions" "3.24.1"
-    "@react-aria/overlays" "3.26.1"
-    "@react-aria/utils" "3.28.1"
-    "@react-stately/toggle" "3.8.2"
-    "@react-stately/utils" "3.10.5"
+    "@heroui/dom-animation" "2.1.9"
+    "@heroui/framer-utils" "2.1.18"
+    "@heroui/react-utils" "2.1.11"
+    "@heroui/shared-utils" "2.1.9"
+    "@heroui/use-scroll-position" "2.1.7"
+    "@react-aria/button" "3.13.3"
+    "@react-aria/focus" "3.20.5"
+    "@react-aria/interactions" "3.25.3"
+    "@react-aria/overlays" "3.27.3"
+    "@react-aria/utils" "3.29.1"
+    "@react-stately/toggle" "3.8.5"
+    "@react-stately/utils" "3.10.7"
 
 "@heroui/popover@2.3.22":
   version "2.3.22"
@@ -1005,10 +1005,10 @@
   resolved "https://registry.yarnpkg.com/@heroui/use-safe-layout-effect/-/use-safe-layout-effect-2.1.7.tgz#8481e6c8edf7dbf015d451328f7eaa98d327005d"
   integrity sha512-ZiMc+nVjcE5aArC4PEmnLHSJj0WgAXq3udr7FZaosP/jrRdn5VPcfF9z9cIGNJD6MkZp+YP0XGslrIFKZww0Hw==
 
-"@heroui/use-scroll-position@2.1.6":
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/@heroui/use-scroll-position/-/use-scroll-position-2.1.6.tgz#86651282f066ebccb872ef03f188adbe9cb09b4e"
-  integrity sha512-9ap2AIuPjJCGLt7ZZAQqSE7s9Md1lUqnmxXf6UhKH0CJowhVHIl76gtV2rMeQZ+vsjbG3d4tsX2Vw13h+HLpuA==
+"@heroui/use-scroll-position@2.1.7":
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/@heroui/use-scroll-position/-/use-scroll-position-2.1.7.tgz#93c115b22ed47d7d9789518a941b974b374ebfce"
+  integrity sha512-c91Elycrq51nhpWqFIEBy04P+KBJjnEz4u1+1c7txnjs/k0FOD5EBD8+Jf8GJbh4WYp5N936XFvCcE7gB1C9JQ==
 
 "@humanwhocodes/config-array@^0.13.0":
   version "0.13.0"
@@ -1359,6 +1359,19 @@
     "@react-stately/toggle" "^3.8.2"
     "@react-types/button" "^3.11.0"
     "@react-types/shared" "^3.28.0"
+    "@swc/helpers" "^0.5.0"
+
+"@react-aria/button@3.13.3":
+  version "3.13.3"
+  resolved "https://registry.yarnpkg.com/@react-aria/button/-/button-3.13.3.tgz#0f7f7e9caeceab515e80d7e53bd73e2ab9f4c8ce"
+  integrity sha512-Xn7eTssaefNPUydogI1qDf7qQWPmb+hGoS1QiCNBodPlRpVDXxlZSIhOqQFnLWHv5+z5UL+vu+joqlSPYHqOFw==
+  dependencies:
+    "@react-aria/interactions" "^3.25.3"
+    "@react-aria/toolbar" "3.0.0-beta.18"
+    "@react-aria/utils" "^3.29.1"
+    "@react-stately/toggle" "^3.8.5"
+    "@react-types/button" "^3.12.2"
+    "@react-types/shared" "^3.30.0"
     "@swc/helpers" "^0.5.0"
 
 "@react-aria/calendar@3.8.3":
@@ -1801,6 +1814,17 @@
     "@react-aria/i18n" "^3.12.7"
     "@react-aria/utils" "^3.28.1"
     "@react-types/shared" "^3.28.0"
+    "@swc/helpers" "^0.5.0"
+
+"@react-aria/toolbar@3.0.0-beta.18":
+  version "3.0.0-beta.18"
+  resolved "https://registry.yarnpkg.com/@react-aria/toolbar/-/toolbar-3.0.0-beta.18.tgz#62c79c0c8f695c2328c42ce1ea4b6d84cfb783fb"
+  integrity sha512-P1fXhmTRBK4YvPQDzCY3XoZl+HiBADgvQ89jszxJ2jD4Qzs/E096ttCc+otZnbvRcoU27IxC2vWFInqK/bP31g==
+  dependencies:
+    "@react-aria/focus" "^3.20.5"
+    "@react-aria/i18n" "^3.12.10"
+    "@react-aria/utils" "^3.29.1"
+    "@react-types/shared" "^3.30.0"
     "@swc/helpers" "^0.5.0"
 
 "@react-aria/tooltip@3.8.1":

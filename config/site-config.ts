@@ -1,9 +1,15 @@
 import SYS_ICONS from "@/config/icons";
 
 export const SITE_CONFIG = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
-  sidebarItems: [
+  NAME: "Next.js + HeroUI",
+  DESCRIPTION: "Make beautiful websites regardless of your design experience.",
+  LOGO: {
+    ONLY_ICON: "/cashlog_icon.png",
+    HORIZONTAL: "/cashlog_icontext_horizontal.png",
+    VERTICAL: "/cashlog_icontext_vertical.png",
+    ONLY_TEXT: "/cashlog_onlytext.png",
+  },
+  SIDEBAR_ITEMS: [
     {
       label: "Overview",
       href: "/overview",

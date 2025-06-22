@@ -1,3 +1,3 @@
 export default function SettingsPage() {
-  return <div>Setting page works</div>;
+	return <div className={"w-auto"}>Setting page works</div>;
 }

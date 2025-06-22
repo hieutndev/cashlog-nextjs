@@ -218,7 +218,12 @@ export default function TransactionsPage() {
 
 	return (
 		<section className={"w-full flex flex-col gap-4"}>
-			<div className={"flex justify-between items-center"}>
+			<div
+				className={clsx("flex gap-4", {
+					"justify-between items-center": width > BREAK_POINT.S,
+					"flex-col items-start": width <= BREAK_POINT.S,
+				})}
+			>
 				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
 				<Button
 					color={"primary"}
@@ -334,111 +339,119 @@ export default function TransactionsPage() {
 					</Select>
 				</div>
 			</div>
-			<Table
-				aria-label={"Transactions table"}
-				className={clsx({
-					"max-h-[70vh]": width > BREAK_POINT.XL,
-					"max-h-screen": width <= BREAK_POINT.XL,
-				})}
-				selectionMode={"single"}
-			>
-				<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
-					{(column) => (
-						<TableColumn
-							key={column.key}
-							align={["transaction_type", "category_name"].includes(column.key) ? "center" : "start"}
-						>
-							{column.label}
-						</TableColumn>
-					)}
-				</TableHeader>
-				<TableBody
-					emptyContent={loadingTransactions ? <Spinner>Loading...</Spinner> : "No data"}
-					items={dataTable.rows}
+			{loadingTransactions ? (
+				<div className={"flex items-center justify-center h-full"}>
+					<Spinner size={"lg"}>Loading...</Spinner>
+				</div>
+			) : (
+				<Table
+					aria-label={"Transactions table"}
+					className={clsx({
+						"max-h-[70vh]": width > BREAK_POINT.XL,
+						"max-h-screen": width <= BREAK_POINT.XL,
+					})}
+					selectionMode={"single"}
 				>
-					{(item) => (
-						<TableRow
-							key={item.transaction_id}
-							className={clsx({
-								"text-success": item.direction === "in",
-								"text-danger": item.direction === "out",
-							})}
-						>
-							{(columnKey) => {
-								switch (columnKey) {
-									case "card_name":
-										return (
-											<TableCell className={"capitalize"}>
-												<div className={"flex items-center gap-2"}>
-													<Image
-														alt={`Logo bank`}
-														className={"w-4"}
-														height={1200}
-														src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
-														width={1200}
-													/>
-													<p>{getKeyValue(item, columnKey)}</p>
-												</div>
-											</TableCell>
-										);
-									case "transaction_type":
-										return (
-											<TableCell className={"capitalize"}>
-												{getKeyValue(item, columnKey).replace("_", " ")}
-											</TableCell>
-										);
+					<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
+						{(column) => (
+							<TableColumn
+								key={column.key}
+								align={["transaction_type", "category_name"].includes(column.key) ? "center" : "start"}
+							>
+								{column.label}
+							</TableColumn>
+						)}
+					</TableHeader>
+					<TableBody
+						emptyContent={"No data"}
+						items={dataTable.rows}
+					>
+						{(item) => (
+							<TableRow
+								key={item.transaction_id}
+								className={clsx({
+									"text-success": item.direction === "in",
+									"text-danger": item.direction === "out",
+								})}
+							>
+								{(columnKey) => {
+									switch (columnKey) {
+										case "card_name":
+											return (
+												<TableCell className={"capitalize"}>
+													<div className={"flex items-center gap-2"}>
+														<Image
+															alt={`Logo bank`}
+															className={"w-4"}
+															height={1200}
+															src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
+															width={1200}
+														/>
+														<p>{getKeyValue(item, columnKey)}</p>
+													</div>
+												</TableCell>
+											);
+										case "transaction_type":
+											return (
+												<TableCell className={"capitalize"}>
+													{getKeyValue(item, columnKey).replace("_", " ")}
+												</TableCell>
+											);
 
-									case "transaction_amount":
-										return (
-											<TableCell className={"capitalize"}>
-												{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
-											</TableCell>
-										);
-									case "category_name":
-										return (
-											<TableCell className={"capitalize"}>
-												{getKeyValue(item, columnKey) ? (
-													<Chip
-														classNames={{
-															base: `background-${getKeyValue(item, "category_color")} text-white`,
-														}}
+										case "transaction_amount":
+											return (
+												<TableCell className={"capitalize"}>
+													{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
+												</TableCell>
+											);
+										case "category_name":
+											return (
+												<TableCell className={"capitalize"}>
+													{getKeyValue(item, columnKey) ? (
+														<Chip
+															classNames={{
+																base: `background-${getKeyValue(item, "category_color")} text-white`,
+															}}
+														>
+															{getKeyValue(item, columnKey)}
+														</Chip>
+													) : (
+														""
+													)}
+												</TableCell>
+											);
+										case "action":
+											return (
+												<TableCell>
+													<Button
+														isIconOnly
+														color={"danger"}
+														variant={"light"}
+														onPress={() =>
+															setSelectedDeleteTransactionId(item.transaction_id)
+														}
 													>
-														{getKeyValue(item, columnKey)}
-													</Chip>
-												) : (
-													""
-												)}
-											</TableCell>
-										);
-									case "action":
-										return (
-											<TableCell>
-												<Button
-													isIconOnly
-													color={"danger"}
-													variant={"light"}
-													onPress={() => setSelectedDeleteTransactionId(item.transaction_id)}
+														{SYS_ICONS.TRASH.MD}
+													</Button>
+												</TableCell>
+											);
+										default:
+											return (
+												<TableCell
+													className={clsx({
+														capitalize: columnKey === "transaction_type",
+													})}
 												>
-													{SYS_ICONS.TRASH.MD}
-												</Button>
-											</TableCell>
-										);
-									default:
-										return (
-											<TableCell
-												className={clsx({
-													capitalize: columnKey === "transaction_type",
-												})}
-											>
-												{getKeyValue(item, columnKey)}
-											</TableCell>
-										);
-								}
-							}}
-						</TableRow>
-					)}
-				</TableBody>
-			</Table>
+													{getKeyValue(item, columnKey)}
+												</TableCell>
+											);
+									}
+								}}
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+			)}
 			<AddTransactionModal
 				isOpen={isOpen}
 				onOpenChange={onOpenChange}

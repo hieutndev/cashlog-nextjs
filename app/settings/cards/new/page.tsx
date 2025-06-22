@@ -19,9 +19,12 @@ import { ListBankCode } from "@/config/bank";
 import { TBankCode } from "@/types/bank";
 import { useFetch } from "@/hooks/useFetch";
 import { getFieldError } from "@/utils/get-field-error";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 export default function NewCardPage() {
 	const router = useRouter();
+	const { width } = useScreenSize();
 
 	const [newCard, setNewCard] = useState<TNewCard>({
 		card_name: "",
@@ -46,10 +49,6 @@ export default function NewCardPage() {
 		},
 		skip: true,
 	});
-
-	const handleCreateNewCard = async () => {
-		await createCard();
-	};
 
 	const resetForm = () => {
 		setNewCard({
@@ -102,13 +101,26 @@ export default function NewCardPage() {
 	};
 
 	return (
-		<div className={"w-full flex items-start gap-8"}>
-			<div className={"w-full px-8 border-r border-gray-200"}>
+		<div
+			className={clsx("w-full flex items-start gap-4", {
+				"col-span-10": width > BREAK_POINT.L,
+				"col-span-12 flex-wrap-reverse": width <= BREAK_POINT.L,
+			})}
+		>
+			<div
+				className={clsx("border-gray-200", {
+					"w-1/2 px-4 border-r": width > BREAK_POINT.M,
+					"w-full py-4 border-t": width <= BREAK_POINT.M,
+				})}
+			>
 				<CustomForm
 					className={"flex flex-col gap-4"}
 					disableSubmitButton={validateErrors.length > 0}
 					formId={"addNewCardForm"}
-					onSubmit={handleCreateNewCard}
+					loadingText={"Creating..."}
+					submitButtonSize={"lg"}
+					submitButtonText={"Create card"}
+					onSubmit={createCard}
 				>
 					<Input
 						isRequired
@@ -138,6 +150,7 @@ export default function NewCardPage() {
 					/>
 					<Select
 						isRequired
+						disallowEmptySelection={true}
 						label={"Select Bank"}
 						labelPlacement={"outside"}
 						selectedKeys={[newCard.bank_code]}
@@ -186,7 +199,12 @@ export default function NewCardPage() {
 					</div>
 				</CustomForm>
 			</div>
-			<div className={"w-1/2"}>
+			<div
+				className={clsx({
+					"w-1/2": width > BREAK_POINT.M,
+					"w-full": width <= BREAK_POINT.M,
+				})}
+			>
 				<BankCard
 					bankCode={newCard.bank_code}
 					cardBalance={newCard.card_balance_init}

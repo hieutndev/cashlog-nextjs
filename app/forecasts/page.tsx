@@ -6,6 +6,7 @@ import { RadioGroup } from "@heroui/radio";
 import { getKeyValue, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import clsx from "clsx";
 import moment from "moment";
+import { Alert } from "@heroui/alert";
 
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
@@ -103,15 +104,22 @@ export default function ForecastsPage() {
 					value={selectedCard?.toString()}
 					onValueChange={(value) => setSelectedCard(Number(value))}
 				>
-					{listCards.map((card) => (
-						<BankCardRadio
-							key={card.card_id}
-							bank_code={card.bank_code}
-							card_balance={card.card_balance}
-							card_id={card.card_id}
-							card_name={card.card_name}
+					{listCards && listCards.length > 0 ? (
+						listCards.map((card) => (
+							<BankCardRadio
+								key={card.card_id}
+								bank_code={card.bank_code}
+								card_balance={card.card_balance}
+								card_id={card.card_id}
+								card_name={card.card_name}
+							/>
+						))
+					) : (
+						<Alert
+							color={"primary"}
+							title={"You don't have any cards yet."}
 						/>
-					))}
+					)}
 				</RadioGroup>
 			</div>
 			<Table>

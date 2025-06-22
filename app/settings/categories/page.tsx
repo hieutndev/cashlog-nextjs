@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { addToast } from "@heroui/toast";
 import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
+import clsx from "clsx";
+import { Spinner } from "@heroui/spinner";
 
 import CategoryForm from "./_component/category-form";
 
@@ -12,6 +14,8 @@ import { TCategory } from "@/types/category";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import SYS_ICONS from "@/config/icons";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },
@@ -19,6 +23,8 @@ const categoryColumns = [
 ];
 
 export default function CategoriesPage() {
+	const { width } = useScreenSize();
+
 	const [formAction, setFormAction] = useState<"add" | "edit">("add");
 	const [selectedCategory, setSelectedCategory] = useState<TCategory | undefined>(undefined);
 
@@ -28,7 +34,7 @@ export default function CategoriesPage() {
 
 	const {
 		data: fetchCategoriesResult,
-		// loading: fetchingCategories,
+		loading: loadingCategories,
 		error: fetchCategoriesError,
 		fetch: fetchCategories,
 	} = useFetch<IAPIResponse<TCategory[]>>(`/categories`);
@@ -102,89 +108,119 @@ export default function CategoriesPage() {
 	};
 
 	return (
-		<div className={"grid grid-cols-6 gap-4"}>
-			<div className="col-span-4 flex flex-col gap-4 border-r pr-4">
-				<h3 className={"text-2xl font-semibold"}>List Categories</h3>
-				<Table aria-label="Categories Table">
-					<TableHeader columns={categoryColumns}>
-						{(column) => (
-							<TableColumn
-								key={column.key}
-								align={column.key === "action" ? "center" : "start"}
-							>
-								{column.label}
-							</TableColumn>
-						)}
-					</TableHeader>
-					<TableBody items={categories}>
-						{(item) => (
-							<TableRow key={item.category_id}>
-								{(columnKey) => {
-									switch (columnKey) {
-										case "category_name":
-											return (
-												<TableCell>
-													<Chip
-														classNames={{
-															base: `background-${getKeyValue(item, "color")} text-white`,
-														}}
-													>
-														{getKeyValue(item, columnKey)}
-													</Chip>
-												</TableCell>
-											);
-										case "action":
-											return (
-												<TableCell className={"flex justify-center items-center gap-1"}>
-													<Button
-														isIconOnly
-														color={"warning"}
-														variant={"ghost"}
-														onPress={() => onEdit(item)}
-													>
-														{SYS_ICONS.EDIT.MD}
-													</Button>
-													<Button
-														isIconOnly
-														color={"danger"}
-														variant={"ghost"}
-														onPress={() => setSelectedDeleteCategory(item.category_id)}
-													>
-														{SYS_ICONS.TRASH.MD}
-													</Button>
-												</TableCell>
-											);
-										default:
-											return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
-									}
-								}}
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-			</div>
-			<div className={"col-span-2 flex flex-col gap-4"}>
-				<div className={"flex items-center justify-between"}>
-					<h3 className={"text-2xl font-semibold"}>{formAction === "add" ? "Add new" : "Edit"} Category</h3>
-					{formAction === "edit" && (
-						<Button
-							color={"danger"}
-							startContent={SYS_ICONS.XMARK.MD}
-							onPress={() => {
-								setFormAction("add");
-								setSelectedCategory(undefined);
-							}}
-						>
-							Cancel
-						</Button>
-					)}
+		<div
+			className={clsx("grid grid-cols-12 gap-4", {
+				"col-span-10": width > BREAK_POINT.L,
+				"col-span-12": width <= BREAK_POINT.L,
+			})}
+		>
+			{loadingCategories ? (
+				<div className={"w-full col-span-12 flex justify-center items-center h-full"}>
+					<Spinner size={"lg"}>Loading...</Spinner>
 				</div>
-				<CategoryForm
-					action={formAction}
-					categoryInfo={selectedCategory}
-					onSuccess={onSuccess}
-				/>
-			</div>
+			) : (
+				<>
+					<div
+						className={clsx("flex flex-col gap-4", {
+							"col-span-4 border-r pr-4": width >= BREAK_POINT.S,
+							"col-span-12 border-b border-gray-200  pb-4": width < BREAK_POINT.S,
+						})}
+					>
+						<h3 className={"text-2xl font-semibold"}>List Categories</h3>
+						<Table aria-label="Categories Table">
+							<TableHeader columns={categoryColumns}>
+								{(column) => (
+									<TableColumn
+										key={column.key}
+										align={column.key === "action" ? "center" : "start"}
+									>
+										{column.label}
+									</TableColumn>
+								)}
+							</TableHeader>
+							<TableBody
+								emptyContent={"No categories found"}
+								items={categories}
+							>
+								{(item) => (
+									<TableRow key={item.category_id}>
+										{(columnKey) => {
+											switch (columnKey) {
+												case "category_name":
+													return (
+														<TableCell>
+															<Chip
+																classNames={{
+																	base: `background-${getKeyValue(item, "color")} text-white`,
+																}}
+															>
+																{getKeyValue(item, columnKey)}
+															</Chip>
+														</TableCell>
+													);
+												case "action":
+													return (
+														<TableCell className={"flex justify-center items-center gap-1"}>
+															<Button
+																isIconOnly
+																color={"warning"}
+																variant={"ghost"}
+																onPress={() => onEdit(item)}
+															>
+																{SYS_ICONS.EDIT.MD}
+															</Button>
+															<Button
+																isIconOnly
+																color={"danger"}
+																variant={"ghost"}
+																onPress={() =>
+																	setSelectedDeleteCategory(item.category_id)
+																}
+															>
+																{SYS_ICONS.TRASH.MD}
+															</Button>
+														</TableCell>
+													);
+												default:
+													return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+											}
+										}}
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+					<div
+						className={clsx("flex flex-col gap-4", {
+							"col-span-2": width >= BREAK_POINT.S,
+							"col-span-12": width < BREAK_POINT.S,
+						})}
+					>
+						<div className={"flex items-center justify-between"}>
+							<h3 className={"text-2xl font-semibold"}>
+								{formAction === "add" ? "Add new" : "Edit"} Category
+							</h3>
+							{formAction === "edit" && (
+								<Button
+									color={"danger"}
+									startContent={SYS_ICONS.XMARK.MD}
+									onPress={() => {
+										setFormAction("add");
+										setSelectedCategory(undefined);
+									}}
+								>
+									Cancel
+								</Button>
+							)}
+						</div>
+						<CategoryForm
+							action={formAction}
+							categoryInfo={selectedCategory}
+							onSuccess={onSuccess}
+						/>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
