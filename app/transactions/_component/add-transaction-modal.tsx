@@ -15,6 +15,8 @@ import { Chip } from "@heroui/chip";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 import { Select, SelectItem } from "@heroui/select";
+import { useRouter } from "next/navigation";
+import { Button } from "@heroui/button";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { ListTransactionType, TNewTransaction } from "@/types/transaction";
@@ -27,6 +29,9 @@ import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
 import { TCategory } from "@/types/category";
+import SYS_ICONS from "@/config/icons";
+import { BREAK_POINT } from "@/config/break-point";
+import useScreenSize from "@/hooks/useScreenSize";
 
 interface AddTransactionModalProps {
 	isOpen: boolean;
@@ -35,6 +40,9 @@ interface AddTransactionModalProps {
 }
 
 export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }: AddTransactionModalProps) {
+	const router = useRouter();
+	const { width } = useScreenSize();
+
 	// HANDLE FETCH CARD
 	const [listCard, setListCard] = useState<AccountCardProps[]>([]);
 
@@ -285,7 +293,11 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														)
 													)}
 												</RadioGroup>
-												<div className={"flex items-center gap-4"}>
+												<div
+													className={clsx("flex items-center gap-4", {
+														"flex-wrap": width <= BREAK_POINT.S,
+													})}
+												>
 													<DatePicker
 														disableAnimation
 														hideTimeZone
@@ -308,6 +320,9 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														}
 													/>
 													<Select
+														classNames={{
+															mainWrapper: "w-64",
+														}}
 														items={listCategories}
 														label={"Select category"}
 														labelPlacement={"outside"}
@@ -408,10 +423,21 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 											</div>
 										</CustomForm>
 									) : (
-										<Alert
-											color={"danger"}
-											title={"Please add at least one card before create new transaction"}
-										/>
+										<div className={"flex flex-col items-center gap-4"}>
+											<Alert
+												color={"danger"}
+												title={"Please add at least one card before create new transaction"}
+											/>
+											<Button
+												color={"primary"}
+												startContent={SYS_ICONS.NEW.SM}
+												onPress={() => {
+													router.push("/settings/cards/new");
+												}}
+											>
+												Create new card
+											</Button>
+										</div>
 									)}
 								</div>
 							</section>

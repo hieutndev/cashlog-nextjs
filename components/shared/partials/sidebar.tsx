@@ -23,7 +23,9 @@ export const Sidebar = () => {
 	};
 
 	const getActiveButton = () => {
-		const activeItem = SITE_CONFIG.sidebarItems.find((item) => item.href !== "/" && pathname.startsWith(item.href));
+		const activeItem = SITE_CONFIG.SIDEBAR_ITEMS.find(
+			(item) => item.href !== "/" && pathname.startsWith(item.href)
+		);
 
 		return activeItem ? activeItem.label : null;
 	};
@@ -54,7 +56,7 @@ export const Sidebar = () => {
 					"items-center": width <= BREAK_POINT.XL,
 				})}
 			>
-				{SITE_CONFIG.sidebarItems.map((item) =>
+				{SITE_CONFIG.SIDEBAR_ITEMS.map((item) =>
 					width > BREAK_POINT.XL ? (
 						<Button
 							key={item.label}

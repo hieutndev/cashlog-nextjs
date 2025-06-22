@@ -4,6 +4,8 @@ import Image from "next/image";
 import { getBankLogo } from "@/config/bank";
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 interface BankCardProps {
 	cardName: string;
@@ -14,12 +16,18 @@ interface BankCardProps {
 }
 
 export default function BankCard({ cardName, cardBalance, color, bankCode = "VIETCOMBANK", className }: BankCardProps) {
+	const { width } = useScreenSize();
+
 	return (
 		<div
 			className={clsx(
-				"w-96 h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br",
+				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br",
 				`bankcard-${color}`,
-				className
+				className,
+				{
+					"w-full max-w-96": width < BREAK_POINT.S,
+					"w-96": width >= BREAK_POINT.S,
+				}
 			)}
 		>
 			<div className={"absolute top-8 right-8"}>

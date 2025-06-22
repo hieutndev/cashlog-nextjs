@@ -20,6 +20,8 @@ import { setForm } from "@/utils/set-form";
 import { ListBankCode } from "@/config/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 interface EditCardFormProps {
 	cardId: string;
@@ -27,6 +29,7 @@ interface EditCardFormProps {
 
 export default function EditCardForm({ cardId }: EditCardFormProps) {
 	const router = useRouter();
+	const { width } = useScreenSize();
 
 	const [cardInfo, setCardInfo] = useState<TEditCard>({
 		card_name: "",
@@ -122,99 +125,134 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 		}
 	}, [editCardResult, editCardError]);
 
-	return loadingCardInfo || !fetchCardInfoResult ? (
-		<section className={"w-full flex justify-center p-8"}>
-			<Spinner size={"lg"}>Fetching...</Spinner>
-		</section>
-	) : (
-		<section className={"flex items-start gap-4"}>
-			<CustomForm
-				className={"flex flex-col gap-4 w-full border-r border-gray-300 pr-4"}
-				formId={"editCardForm"}
-				onSubmit={editCard}
-			>
-				<Input
-					isRequired
-					errorMessage={getFieldError(validationErrors, "card_name")?.message}
-					isInvalid={!!getFieldError(validationErrors, "card_name")}
-					label={"Card Name"}
-					labelPlacement={"outside"}
-					placeholder={"Enter card name"}
-					size={"lg"}
-					value={cardInfo.card_name}
-					variant={"bordered"}
-					onValueChange={(e) =>
-						setForm<TEditCard>("card_name", e, validationErrors, setValidationErrors, setCardInfo)
-					}
-				/>
-				<Select
-					isRequired
-					errorMessage={getFieldError(validationErrors, "bank_code")?.message}
-					isInvalid={!!getFieldError(validationErrors, "bank_code")}
-					label={"Select Bank"}
-					labelPlacement={"outside"}
-					selectedKeys={[cardInfo.bank_code]}
-					size={"lg"}
-					value={cardInfo.bank_code}
-					variant={"bordered"}
-					onChange={(e) =>
-						setForm<TEditCard>(
-							"bank_code",
-							e.target.value as TBankCode,
-							validationErrors,
-							setValidationErrors,
-							setCardInfo
-						)
-					}
-				>
-					{ListBankCode.map((bank) => (
-						<SelectItem key={bank.key}>{bank.value}</SelectItem>
-					))}
-				</Select>
-				<RadioGroup
-					isRequired
-					classNames={{
-						label: "text-dark",
-					}}
-					errorMessage={getFieldError(validationErrors, "card_color")?.message}
-					isInvalid={!!getFieldError(validationErrors, "card_color")}
-					label={"Select Card Color"}
-					orientation="horizontal"
-					size={"lg"}
-					value={cardInfo.card_color}
-					onValueChange={(value) =>
-						setForm<TEditCard>(
-							"card_color",
-							value as TColor,
-							validationErrors,
-							setValidationErrors,
-							setCardInfo
-						)
-					}
-				>
-					{ListColors.map((color) => (
-						<Radio
-							key={color}
-							className={"capitalize"}
-							classNames={{
-								label: "flex items-center gap-1",
-							}}
-							value={color}
+	return (
+		<div
+			className={clsx({
+				"col-span-10": width > BREAK_POINT.L,
+				"col-span-12": width <= BREAK_POINT.L,
+			})}
+		>
+			{loadingCardInfo || !fetchCardInfoResult ? (
+				<div className={clsx("w-full flex justify-center p-8")}>
+					<Spinner size={"lg"}>Fetching...</Spinner>
+				</div>
+			) : (
+				<div className={"flex flex-wrap-reverse items-start gap-4"}>
+					<div
+						className={clsx("border-gray-200 ", {
+							"w-1/2 border-r pr-4": width > BREAK_POINT.L,
+							"w-full border-t pt-4": width <= BREAK_POINT.L,
+						})}
+					>
+						<CustomForm
+							className={"flex flex-col gap-4"}
+							formId={"editCardForm"}
+							loadingText={"Saving..."}
+							submitButtonSize={"lg"}
+							submitButtonText={"Save"}
+							onSubmit={editCard}
 						>
-							<div className={clsx("w-6 h-6 bg-gradient-to-br rounded-md", `bankcard-${color}`)} />
-							{color}
-						</Radio>
-					))}
-				</RadioGroup>
-			</CustomForm>
-			<div className={"min-w-max"}>
-				<BankCard
-					bankCode={cardInfo.bank_code}
-					cardBalance={fetchCardInfoResult?.results?.card_balance ?? 0}
-					cardName={cardInfo.card_name}
-					color={cardInfo.card_color}
-				/>
-			</div>
-		</section>
+							<Input
+								isRequired
+								errorMessage={getFieldError(validationErrors, "card_name")?.message}
+								isInvalid={!!getFieldError(validationErrors, "card_name")}
+								label={"Card Name"}
+								labelPlacement={"outside"}
+								placeholder={"Enter card name"}
+								size={"lg"}
+								value={cardInfo.card_name}
+								variant={"bordered"}
+								onValueChange={(e) =>
+									setForm<TEditCard>(
+										"card_name",
+										e,
+										validationErrors,
+										setValidationErrors,
+										setCardInfo
+									)
+								}
+							/>
+							<Select
+								isRequired
+								errorMessage={getFieldError(validationErrors, "bank_code")?.message}
+								isInvalid={!!getFieldError(validationErrors, "bank_code")}
+								label={"Select Bank"}
+								labelPlacement={"outside"}
+								selectedKeys={[cardInfo.bank_code]}
+								size={"lg"}
+								value={cardInfo.bank_code}
+								variant={"bordered"}
+								onChange={(e) =>
+									setForm<TEditCard>(
+										"bank_code",
+										e.target.value as TBankCode,
+										validationErrors,
+										setValidationErrors,
+										setCardInfo
+									)
+								}
+							>
+								{ListBankCode.map((bank) => (
+									<SelectItem key={bank.key}>{bank.value}</SelectItem>
+								))}
+							</Select>
+							<RadioGroup
+								isRequired
+								classNames={{
+									label: "text-dark",
+								}}
+								errorMessage={getFieldError(validationErrors, "card_color")?.message}
+								isInvalid={!!getFieldError(validationErrors, "card_color")}
+								label={"Select Card Color"}
+								orientation="horizontal"
+								size={"lg"}
+								value={cardInfo.card_color}
+								onValueChange={(value) =>
+									setForm<TEditCard>(
+										"card_color",
+										value as TColor,
+										validationErrors,
+										setValidationErrors,
+										setCardInfo
+									)
+								}
+							>
+								{ListColors.map((color) => (
+									<Radio
+										key={color}
+										className={"capitalize"}
+										classNames={{
+											label: "flex items-center gap-1",
+										}}
+										value={color}
+									>
+										<div
+											className={clsx(
+												"w-6 h-6 bg-gradient-to-br rounded-md",
+												`bankcard-${color}`
+											)}
+										/>
+										{color}
+									</Radio>
+								))}
+							</RadioGroup>
+						</CustomForm>
+					</div>
+					<div
+						className={clsx({
+							"w-full": width <= BREAK_POINT.L,
+							"w-1/2": width > BREAK_POINT.L,
+						})}
+					>
+						<BankCard
+							bankCode={cardInfo.bank_code}
+							cardBalance={fetchCardInfoResult?.results?.card_balance ?? 0}
+							cardName={cardInfo.card_name}
+							color={cardInfo.card_color}
+						/>
+					</div>
+				</div>
+			)}
+		</div>
 	);
 }

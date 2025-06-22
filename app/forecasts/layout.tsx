@@ -6,40 +6,39 @@ import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/con
 import SYS_ICONS from "@/config/icons";
 
 export const metadata: Metadata = {
-  title: "Forecasts"
+	title: "Forecasts",
 };
 
 export default function ForecastsLayout({ children }: { children: React.ReactNode }) {
-  const forecastBreadcrumbs: BreadcrumbsType[] = [
-    {
-      label: ["Forecasts"],
-      key: "^/forecasts",
-      customButton: [
-        {
-          children: "New Forecast",
-          color: "primary",
-          variant: "solid",
-          size: "lg",
-          startContent: SYS_ICONS.NEW.LG,
-          href: "settings/forecasts/new"
-        }
-      ]
-    }
+	const forecastBreadcrumbs: BreadcrumbsType[] = [
+		{
+			label: ["Forecasts"],
+			key: "^/forecasts",
+			customButton: [
+				{
+					children: "New Forecast",
+					color: "primary",
+					variant: "solid",
+					size: "lg",
+					startContent: SYS_ICONS.NEW.LG,
+					href: "settings/forecasts/new",
+				},
+			],
+		},
+	];
 
-  ];
-
-  return (
-    <Container
-      shadow
-      className={"bg-white border border-gray-200 rounded-xl"}
-      orientation={"vertical"}
-    >
-      <ContentHeader
-        breadcrumbs={forecastBreadcrumbs}
-        title={"Forecasts"}
-      />
-      <Divider />
-      {children}
-    </Container>
-  );
+	return (
+		<Container
+			shadow
+			className={"bg-white border border-gray-200 rounded-xl"}
+			orientation={"vertical"}
+		>
+			<ContentHeader
+				breadcrumbs={forecastBreadcrumbs}
+				title={"Forecasts"}
+			/>
+			<Divider />
+			{children}
+		</Container>
+	);
 }

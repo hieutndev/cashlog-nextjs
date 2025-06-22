@@ -14,6 +14,7 @@ interface CustomFormProps {
 	resetButtonText?: string;
 	resetButtonIcon?: boolean;
 	isLoading?: boolean;
+	loadingText?: string;
 	disableSubmitButton?: boolean;
 	submitButtonSize?: ButtonProps["size"];
 	resetButtonSize?: ButtonProps["size"];
@@ -29,6 +30,7 @@ export default function CustomForm({
 	resetButtonText = "Reset",
 	resetButtonIcon = false,
 	isLoading = false,
+	loadingText = "Submitting...",
 	disableSubmitButton = false,
 	submitButtonSize = "md",
 	resetButtonSize = "md",
@@ -65,7 +67,7 @@ export default function CustomForm({
 					type={"submit"}
 					onPress={onSubmit}
 				>
-					{isLoading ? "Submitting..." : submitButtonText}
+					{isLoading ? loadingText : submitButtonText}
 				</Button>
 				{onReset && (
 					<Button

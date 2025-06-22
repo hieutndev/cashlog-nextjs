@@ -107,6 +107,8 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 		<CustomForm
 			className={"flex flex-col gap-4"}
 			formId={"addNewCategory"}
+			submitButtonSize={"lg"}
+			submitButtonText={action === "add" ? "Add Category" : "Update Category"}
 			onSubmit={formAction}
 		>
 			<Input

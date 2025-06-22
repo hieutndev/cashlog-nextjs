@@ -120,7 +120,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 			<Divider />
 			<div className={"grid grid-cols-12 gap-4"}>
 				<SettingMenu />
-				<div className={"col-span-10"}>{children}</div>
+				{children}
 			</div>
 		</Container>
 	);

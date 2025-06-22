@@ -5,15 +5,21 @@ import { useEffect, useState } from "react";
 import { Button } from "@heroui/button";
 import clsx from "clsx";
 import { addToast } from "@heroui/toast";
+import { Alert } from "@heroui/alert";
+import { Spinner } from "@heroui/spinner";
 
 import { useFetch } from "@/hooks/useFetch";
 import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { IAPIResponse } from "@/types/global";
 import { TBankCode } from "@/types/bank";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/config/break-point";
 
 export default function SettingCardsPage() {
 	const router = useRouter();
+
+	const { width } = useScreenSize();
 
 	const [listCards, setListCards] = useState<TCard[]>([]);
 
@@ -21,7 +27,7 @@ export default function SettingCardsPage() {
 
 	const {
 		data: fetchCardResults,
-		// loading: loadingCard,
+		loading: loadingCard,
 		// error: errorFetchCard,
 		fetch: fetchCard,
 	} = useFetch<IAPIResponse<TCard[]>>("/cards");
@@ -73,48 +79,69 @@ export default function SettingCardsPage() {
 	}, [fetchCardResults]);
 
 	return (
-		<div className={"w-full flex flex-col gap-8"}>
-			<div className={"flex flex-wrap gap-4"}>
-				{listCards &&
-					listCards.map((card) => (
-						<div
-							key={card.card_id}
-							className={clsx(
-								"relative overflow-hidden group rounded-3xl",
-								`bankcard-shadow-${card.card_color}`
-							)}
-						>
-							<BankCard
-								key={card.card_id}
-								bankCode={card.bank_code as TBankCode}
-								cardBalance={card.card_balance}
-								cardName={card.card_name}
-								color={card.card_color}
-							/>
+		<div
+			className={clsx("w-full flex flex-col gap-8", {
+				"col-span-10": width > BREAK_POINT.L,
+				"col-span-12": width <= BREAK_POINT.L,
+			})}
+		>
+			{loadingCard ? (
+				<div className="flex items-center justify-center">
+					<Spinner size={"lg"}>Loading...</Spinner>
+				</div>
+			) : (
+				<div className={"flex flex-wrap gap-4 w-full"}>
+					{listCards && listCards.length > 0 ? (
+						listCards.map((card) => (
 							<div
+								key={card.card_id}
 								className={clsx(
-									"absolute rounded-xl flex items-center justify-center gap-4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/90",
-									"transition-all duration-300 ease-in-out -top-96 group-hover:top-1/2"
+									"relative overflow-hidden group rounded-3xl",
+									`bankcard-shadow-${card.card_color}`,
+									{
+										"w-full": width < BREAK_POINT.S,
+										"w-max": width >= BREAK_POINT.S,
+									}
 								)}
 							>
-								<Button
-									color={"primary"}
-									variant={"solid"}
-									onPress={() => router.push(`/settings/cards/${card.card_id}`)}
+								<BankCard
+									key={card.card_id}
+									bankCode={card.bank_code as TBankCode}
+									cardBalance={card.card_balance}
+									cardName={card.card_name}
+									color={card.card_color}
+								/>
+								<div
+									className={clsx(
+										"absolute rounded-xl flex items-center justify-center gap-4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/90",
+										"transition-all duration-300 ease-in-out -top-96 group-hover:top-1/2"
+									)}
 								>
-									View Details
-								</Button>
-								<Button
-									color={"danger"}
-									variant={"ghost"}
-									onPress={() => setSelectedCardId(card.card_id.toString())}
-								>
-									Delete
-								</Button>
+									<Button
+										color={"primary"}
+										variant={"solid"}
+										onPress={() => router.push(`/settings/cards/${card.card_id}`)}
+									>
+										View Details
+									</Button>
+									<Button
+										color={"danger"}
+										variant={"ghost"}
+										onPress={() => setSelectedCardId(card.card_id.toString())}
+									>
+										Delete
+									</Button>
+								</div>
 							</div>
-						</div>
-					))}
-			</div>
+						))
+					) : (
+						<Alert
+							color={"danger"}
+							title={"No cards found. Please add a card."}
+						/>
+					)}
+				</div>
+			)}
 		</div>
 	);
 }
