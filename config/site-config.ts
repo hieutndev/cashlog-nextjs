@@ -1,7 +1,7 @@
 import SYS_ICONS from "@/config/icons";
 
 export const SITE_CONFIG = {
-  NAME: "Next.js + HeroUI",
+  NAME: "Cashlog - Money Management Website by @hieutndev",
   DESCRIPTION: "Make beautiful websites regardless of your design experience.",
   LOGO: {
     ONLY_ICON: "/cashlog_icon.png",
@@ -9,6 +9,7 @@ export const SITE_CONFIG = {
     VERTICAL: "/cashlog_icontext_vertical.png",
     ONLY_TEXT: "/cashlog_onlytext.png",
   },
+  FAVICON: "/cashlog_fav.ico",
   SIDEBAR_ITEMS: [
     {
       label: "Overview",
