@@ -7,9 +7,9 @@ on:
     workflow_dispatch:
         inputs:
             version_type:
-                description: 'Version bump type'
+                description: "Version bump type"
                 required: false
-                default: 'auto'
+                default: "auto"
                 type: choice
                 options:
                     - auto
@@ -17,11 +17,11 @@ on:
                     - minor
                     - patch
             custom_version_type:
-                description: 'Custom version type (if not using dropdown)'
+                description: "Custom version type (if not using dropdown)"
                 required: false
                 type: string
 
-jobs:    
+jobs:
     check_is_deploy_action:
         runs-on: ubuntu-latest
         outputs:
@@ -133,7 +133,9 @@ jobs:
         if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v2            - name: Update package.json version
+              uses: actions/checkout@v2
+
+            - name: Update package.json version
               id: update_version
               uses: appleboy/ssh-action@v1
               with:
@@ -143,13 +145,13 @@ jobs:
                   script: |
                       # Use the version type determined in the check step
                       bump="${{ needs.check_is_deploy_action.outputs.version_type }}"
-                      
+
                       # Validate version type
                       if [[ "$bump" != "major" && "$bump" != "minor" && "$bump" != "patch" ]]; then
                           echo "Invalid version type: $bump. Defaulting to patch."
                           bump="patch"
                       fi
-                      
+
                       echo "Using version bump type: $bump"
 
                       # Ensure Node.js and npm are available
