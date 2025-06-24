@@ -2,7 +2,7 @@ import Ajv, { ErrorObject, JSONSchemaType } from "ajv";
 import addFormats from "ajv-formats";
 
 import { upperFirstLetter } from "@/utils/text-transform";
-import { REGEX } from "@/config/regex";
+import { REGEX } from "@/configs/regex";
 
 const ajv = new Ajv({ strict: false }); // reusable instance
 

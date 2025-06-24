@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import Image from "next/image";
 
-import { getBankLogo } from "@/config/bank";
+import { getBankLogo } from "@/configs/bank";
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 interface BankCardProps {
 	cardName: string;

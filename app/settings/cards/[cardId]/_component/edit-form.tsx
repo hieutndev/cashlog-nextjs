@@ -17,11 +17,11 @@ import BankCard from "@/components/shared/bank-card/bank-card";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import { setForm } from "@/utils/set-form";
-import { ListBankCode } from "@/config/bank";
+import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 interface EditCardFormProps {
 	cardId: string;

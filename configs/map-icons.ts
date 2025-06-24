@@ -1,6 +1,6 @@
 import React from "react";
 
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 
 export const MAP_ICON: Record<string, React.ReactNode> = {
 	income: SYS_ICONS.INCOME.MD,

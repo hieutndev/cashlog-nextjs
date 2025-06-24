@@ -5,7 +5,7 @@ import { Button, ButtonProps } from "@heroui/button";
 import { usePathname, useRouter } from "next/navigation";
 
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export type BreadcrumbsType = {
 	label: string[];

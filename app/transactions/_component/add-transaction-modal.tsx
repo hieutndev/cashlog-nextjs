@@ -29,8 +29,8 @@ import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
 import { TCategory } from "@/types/category";
-import SYS_ICONS from "@/config/icons";
-import { BREAK_POINT } from "@/config/break-point";
+import SYS_ICONS from "@/configs/icons";
+import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 interface AddTransactionModalProps {

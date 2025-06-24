@@ -1,7 +1,7 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { JSONSchemaType } from "ajv";
 
-import { QUERY_STRING } from "@/config/query-string";
+import { QUERY_STRING } from "@/configs/query-string";
 import { dbQuery } from "@/libs/mysql";
 import { TFullForecast, TNewForecast, TUpdateForecast } from "@/types/forecast";
 import { formatMYSQLDate, makeListDate } from "@/utils/text-transform";

@@ -1,7 +1,7 @@
 import moment from "moment";
 import { RowDataPacket } from "mysql2";
 
-import { QUERY_STRING } from "@/config/query-string";
+import { QUERY_STRING } from "@/configs/query-string";
 import { dbQuery } from "@/libs/mysql";
 import { TFullTransaction } from "@/types/transaction";
 import { TTimePeriodSummary } from "@/types/analytics";

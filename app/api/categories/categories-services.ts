@@ -4,7 +4,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { JSONSchemaType } from "ajv";
 
 import { dbQuery } from "@/libs/mysql";
-import { QUERY_STRING } from "@/config/query-string";
+import { QUERY_STRING } from "@/configs/query-string";
 import { TCategory, TNewCategory } from "@/types/category";
 import { ApiError } from "@/types/api-error";
 

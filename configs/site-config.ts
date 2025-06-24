@@ -1,4 +1,4 @@
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 
 export const SITE_CONFIG = {
   NAME: "Cashlog - Money Management Website by @hieutndev",

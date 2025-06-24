@@ -5,7 +5,7 @@ import moment from "moment";
 import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 import { TForecastWithCardInfo, TFullForecast } from "@/types/forecast";
 
 interface DetailBlockProps {

@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { Sidebar } from "@/components/shared/partials/sidebar";
 import HorizontalNav from "@/components/shared/partials/horizontal-nav";
 import { useAuth } from "@/components/providers/auth-provider";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {

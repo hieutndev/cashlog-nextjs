@@ -14,15 +14,15 @@ import Container from "@/components/shared/container/container";
 import AnalyticBlock from "@/components/overview/analytic-block/analytic-block";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 import { TAnalyticsResponse } from "@/types/analytics";
 import Chart from "@/components/overview/chartjs/chart";
 import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { useAuth } from "@/components/providers/auth-provider";
-import { MAP_ICON } from "@/config/map-icons";
+import { MAP_ICON } from "@/configs/map-icons";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function OverviewPage() {
 	const { isLoggedIn } = useAuth();

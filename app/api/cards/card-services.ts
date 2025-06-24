@@ -3,7 +3,7 @@ import { JSONSchemaType } from "ajv";
 
 import { TCard, TEditCard, TNewCard } from "@/types/card";
 import { dbQuery } from "@/libs/mysql";
-import { QUERY_STRING } from "@/config/query-string";
+import { QUERY_STRING } from "@/configs/query-string";
 import { TNewTransaction } from "@/types/transaction";
 import { ApiError } from "@/types/api-error";
 import { ListColors } from "@/types/global";

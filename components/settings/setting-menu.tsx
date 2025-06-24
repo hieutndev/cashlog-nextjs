@@ -5,9 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import clsx from "clsx";
 
-import { SETTING_MENU } from "@/config/site-config";
+import { SETTING_MENU } from "@/configs/site-config";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SettingMenu() {
 	const pathname = usePathname();

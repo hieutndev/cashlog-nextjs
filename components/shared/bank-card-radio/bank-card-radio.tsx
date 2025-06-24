@@ -3,11 +3,11 @@ import React from "react";
 import { Radio } from "@heroui/radio";
 import Image from "next/image";
 
-import { getBankLogo } from "@/config/bank";
+import { getBankLogo } from "@/configs/bank";
 import { cutString } from "@/utils/text-transform";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export interface AccountCardProps {
 	card_id: string | number;

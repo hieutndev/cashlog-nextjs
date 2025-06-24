@@ -5,8 +5,8 @@ import { Button } from "@heroui/button";
 import Image from "next/image";
 import { Skeleton } from "@heroui/skeleton";
 
-import { getBankLogo } from "@/config/bank";
-import SYS_ICONS from "@/config/icons";
+import { getBankLogo } from "@/configs/bank";
+import SYS_ICONS from "@/configs/icons";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TFetchForecastDetailsResult, TForecastWithCardInfo, TFullForecast } from "@/types/forecast";

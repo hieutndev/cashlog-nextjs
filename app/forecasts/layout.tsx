@@ -3,7 +3,7 @@ import { Divider } from "@heroui/divider";
 
 import Container from "@/components/shared/container/container";
 import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 
 export const metadata: Metadata = {
 	title: "Forecasts",

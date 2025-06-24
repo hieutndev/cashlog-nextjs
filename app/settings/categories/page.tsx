@@ -13,9 +13,9 @@ import CategoryForm from "./_component/category-form";
 import { TCategory } from "@/types/category";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },

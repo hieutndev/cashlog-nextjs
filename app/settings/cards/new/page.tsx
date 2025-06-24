@@ -15,12 +15,12 @@ import { TNewCard } from "@/types/card";
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { ListBankCode } from "@/config/bank";
+import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { useFetch } from "@/hooks/useFetch";
 import { getFieldError } from "@/utils/get-field-error";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function NewCardPage() {
 	const router = useRouter();

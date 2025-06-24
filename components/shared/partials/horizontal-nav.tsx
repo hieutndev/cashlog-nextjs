@@ -8,10 +8,10 @@ import { useState } from "react";
 import { Navbar, NavbarContent, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/navbar";
 import Image from "next/image";
 
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
-import { SITE_CONFIG } from "@/config/site-config";
+import { BREAK_POINT } from "@/configs/break-point";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 export default function HorizontalNav() {
 	const { getCookie, hasCookie, deleteCookie } = useReactiveCookiesNext();

@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { Button, ButtonProps } from "@heroui/button";
 
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 
 interface CustomFormProps {
 	formId: string;

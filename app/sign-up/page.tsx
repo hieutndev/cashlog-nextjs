@@ -16,7 +16,7 @@ import { setForm } from "@/utils/set-form";
 import { TSignUp } from "@/types/user";
 import { getFieldError } from "@/utils/get-field-error";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SignUpPage() {
 	const router = useRouter();

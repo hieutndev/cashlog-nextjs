@@ -4,7 +4,7 @@ import { Chip, ChipProps } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import clsx from "clsx";
 
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 export interface AnalyticBlockProps {
 	labelIcon: React.ReactNode;
 	label: string;

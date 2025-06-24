@@ -13,9 +13,9 @@ import { Spinner } from "@heroui/spinner";
 import { useFetch } from "@/hooks/useFetch";
 import { TForecastWithCardInfo } from "@/types/forecast";
 import { IAPIResponse } from "@/types/global";
-import { getBankLogo } from "@/config/bank";
-import SYS_ICONS from "@/config/icons";
-import { BREAK_POINT } from "@/config/break-point";
+import { getBankLogo } from "@/configs/bank";
+import SYS_ICONS from "@/configs/icons";
+import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 export default function SettingForecastPage() {

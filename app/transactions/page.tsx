@@ -16,10 +16,10 @@ import AddTransactionModal from "./_component/add-transaction-modal";
 import { IAPIResponse, IDataTable } from "@/types/global";
 import { ListTransactionType, TFullTransaction } from "@/types/transaction";
 import { useFetch } from "@/hooks/useFetch";
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 import { TCard } from "@/types/card";
-import { getBankLogo } from "@/config/bank";
-import { BREAK_POINT } from "@/config/break-point";
+import { getBankLogo } from "@/configs/bank";
+import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 type FilterAndSortItem = {

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
 import Container from "@/components/shared/container/container";
 import SettingMenu from "@/components/settings/setting-menu";
-import SYS_ICONS from "@/config/icons";
+import SYS_ICONS from "@/configs/icons";
 
 export const metadata: Metadata = {
 	title: "Settings",

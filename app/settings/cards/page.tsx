@@ -14,7 +14,7 @@ import BankCard from "@/components/shared/bank-card/bank-card";
 import { IAPIResponse } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SettingCardsPage() {
 	const router = useRouter();

@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 interface ContainerProps {

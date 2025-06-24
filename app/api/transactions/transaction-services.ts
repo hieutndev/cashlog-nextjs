@@ -3,7 +3,7 @@ import { JSONSchemaType } from "ajv";
 
 import { ListTransactionType, TFullTransaction, TNewTransaction, TTransaction, TTransactionDetail } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
-import { QUERY_STRING } from "@/config/query-string";
+import { QUERY_STRING } from "@/configs/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
 import { validateCardOwnership } from "@/app/api/cards/card-services";

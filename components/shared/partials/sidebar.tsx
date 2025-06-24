@@ -7,9 +7,9 @@ import { Tooltip } from "@heroui/tooltip";
 import { useEffect } from "react";
 import clsx from "clsx";
 
-import { SITE_CONFIG } from "@/config/site-config";
+import { SITE_CONFIG } from "@/configs/site-config";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/config/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export const Sidebar = () => {
 	const { width } = useScreenSize();
