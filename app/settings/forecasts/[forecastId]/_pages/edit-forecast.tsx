@@ -9,6 +9,7 @@ import { Radio, RadioGroup } from "@heroui/radio";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { addToast } from "@heroui/toast";
 import moment from "moment";
+import clsx from "clsx";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { setForm } from "@/utils/set-form";
@@ -27,6 +28,7 @@ interface EditForecastProps {
 }
 
 export default function EditForecast({ forecastId, forecastDetails, onEditSuccess }: EditForecastProps) {
+
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
 	const [forecastInfo, setForecastInfo] = useState<TUpdateForecast>({
@@ -95,7 +97,7 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 
 	return (
 		<CustomForm
-			className={"flex flex-col gap-4"}
+			className={clsx("flex flex-col gap-4")}
 			formId={"newForecastForm"}
 			onSubmit={handleUpdateForecast}
 		>

@@ -45,7 +45,7 @@ export const getTotalTransaction = async () => {
     return totalTransaction[0].total;
 
   } catch (error: unknown) {
-
+    console.log('error', error);
     throw new Error((error as Error).message || "Error in getTotalTransaction");
 
   }

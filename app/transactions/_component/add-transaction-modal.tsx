@@ -202,7 +202,7 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 				{() => (
 					<>
 						<ModalHeader className="flex items-center justify-between">
-							<h2 className="text-xl font-semibold">Add New Transaction</h2>
+							<h6 className="text-xl font-semibold">Add New Transaction</h6>
 						</ModalHeader>
 						<ModalBody>
 							<section className={"flex flex-col gap-4"}>
