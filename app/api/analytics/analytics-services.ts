@@ -3,12 +3,13 @@ import { RowDataPacket } from "mysql2";
 
 import { QUERY_STRING } from "@/configs/query-string";
 import { dbQuery } from "@/libs/mysql";
-import { TFullTransaction } from "@/types/transaction";
 import { TTimePeriodSummary } from "@/types/analytics";
+import { TTransactionWithCardAndCategory } from "@/types/transaction";
+import { TUser } from "@/types/user";
 
-export const getTotalBalance = async (userId?: string | number) => {
-    const query = userId ? QUERY_STRING.GET_TOTAL_BALANCE_OF_USER : QUERY_STRING.GET_TOTAL_BALANCE;
-    const params = userId ? [userId] : [];
+export const getTotalBalance = async (userId: TUser["user_id"]) => {
+    const query = QUERY_STRING.GET_TOTAL_BALANCE_OF_USER;
+    const params = [userId];
 
     const totalBalance = await dbQuery<RowDataPacket[]>(query, params);
 
@@ -16,18 +17,18 @@ export const getTotalBalance = async (userId?: string | number) => {
 }
 
 
-export const calculateFluctuationOnTime = (listTransactions: TFullTransaction[], timeValue: number, timeRange: moment.unitOfTime.All) => {
+export const calculateFluctuationOnTime = (listTransactions: TTransactionWithCardAndCategory[], timeValue: number, timeRange: moment.unitOfTime.All) => {
 
     const results = listTransactions.filter(t => {
-        return moment(t.transaction_date).get(timeRange) + 1 === timeValue
+        return moment(t.date).get(timeRange) + 1 === timeValue
     })
 
     return results.reduce((acc, transaction) => {
-        return acc + transaction.transaction_amount;
+        return acc + transaction.amount;
     }, 0);
 }
 
-export const calculateDailyIncomeExpense = (transactions: TFullTransaction[], month: number, year: number) => {
+export const calculateDailyIncomeExpense = (transactions: TTransactionWithCardAndCategory[], month: number, year: number) => {
 
     const daysInMonth = moment({ year, month: month - 1 }).daysInMonth();
 
@@ -38,18 +39,18 @@ export const calculateDailyIncomeExpense = (transactions: TFullTransaction[], mo
     }));
 
     transactions.forEach(t => {
-        const date = moment(t.transaction_date);
+        const date = moment(t.date);
 
         if (date.month() + 1 === month && date.year() === year) {
             const day = date.date();
 
             // console.log('t.direction', t.direction);
-            // console.log('t.transaction_amount', t.transaction_amount);
+            // console.log('t.amount', t.amount);
 
             if (t.direction === "in") {
-                dailyStats[day - 1].income += t.transaction_amount;
+                dailyStats[day - 1].income += t.amount;
             } else if (t.direction === "out") {
-                dailyStats[day - 1].expense += t.transaction_amount;
+                dailyStats[day - 1].expense += t.amount;
             }
         }
     });
@@ -100,16 +101,16 @@ export const makeBalanceFluctuationResponse = (totalCurrent: number, totalLast: 
 /**
  * Calculate total income and expense for all transactions
  */
-export const calculateTotalSummary = (transactions: TFullTransaction[]): TTimePeriodSummary => {
+export const calculateTotalSummary = (transactions: TTransactionWithCardAndCategory[]): TTimePeriodSummary => {
     const incomeTransactions = transactions.filter(t => t.direction === "in");
     const expenseTransactions = transactions.filter(t => t.direction === "out");
 
     const totalIncome = incomeTransactions.reduce((acc, transaction) => {
-        return acc + transaction.transaction_amount;
+        return acc + transaction.amount;
     }, 0);
 
     const totalExpense = expenseTransactions.reduce((acc, transaction) => {
-        return acc + transaction.transaction_amount;
+        return acc + transaction.amount;
     }, 0);
 
     return {
@@ -122,9 +123,9 @@ export const calculateTotalSummary = (transactions: TFullTransaction[]): TTimePe
 /**
  * Calculate total income and expense for transactions within a specific year
  */
-export const calculateYearSummary = (transactions: TFullTransaction[], year: number): TTimePeriodSummary => {
+export const calculateYearSummary = (transactions: TTransactionWithCardAndCategory[], year: number): TTimePeriodSummary => {
     const yearTransactions = transactions.filter(t => {
-        return moment(t.transaction_date).year() === year;
+        return moment(t.date).year() === year;
     });
 
     return calculateTotalSummary(yearTransactions);
@@ -133,9 +134,9 @@ export const calculateYearSummary = (transactions: TFullTransaction[], year: num
 /**
  * Calculate total income and expense for transactions within a specific month and year
  */
-export const calculateMonthSummary = (transactions: TFullTransaction[], month: number, year: number): TTimePeriodSummary => {
+export const calculateMonthSummary = (transactions: TTransactionWithCardAndCategory[], month: number, year: number): TTimePeriodSummary => {
     const monthTransactions = transactions.filter(t => {
-        const transactionDate = moment(t.transaction_date);
+        const transactionDate = moment(t.date);
 
         return transactionDate.month() + 1 === month && transactionDate.year() === year;
     });
@@ -146,9 +147,9 @@ export const calculateMonthSummary = (transactions: TFullTransaction[], month: n
 /**
  * Calculate total income and expense for transactions within a specific day
  */
-export const calculateDaySummary = (transactions: TFullTransaction[], date: moment.Moment): TTimePeriodSummary => {
+export const calculateDaySummary = (transactions: TTransactionWithCardAndCategory[], date: moment.Moment): TTimePeriodSummary => {
     const dayTransactions = transactions.filter(t => {
-        const transactionDate = moment(t.transaction_date);
+        const transactionDate = moment(t.date);
 
         return transactionDate.isSame(date, 'day');
     });
@@ -160,18 +161,18 @@ export const calculateDaySummary = (transactions: TFullTransaction[], date: mome
  * Calculate income, expense, and savings totals for a specific time period
  */
 export const calculateIncomeExpenseByPeriod = (
-    transactions: TFullTransaction[],
-    filterFn: (transaction: TFullTransaction) => boolean
+    transactions: TTransactionWithCardAndCategory[],
+    filterFn: (transaction: TTransactionWithCardAndCategory) => boolean
 ): { income: number; expense: number; savings: number } => {
     const filteredTransactions = transactions.filter(filterFn);
 
     const income = filteredTransactions
         .filter(t => t.direction === "in")
-        .reduce((acc, t) => acc + t.transaction_amount, 0);
+        .reduce((acc, t) => acc + t.amount, 0);
 
     const expense = filteredTransactions
         .filter(t => t.direction === "out")
-        .reduce((acc, t) => acc + t.transaction_amount, 0);
+        .reduce((acc, t) => acc + t.amount, 0);
 
     const savings = income - expense;
 
@@ -180,13 +181,13 @@ export const calculateIncomeExpenseByPeriod = (
 
 export const calculateAnalytics = async (userId: string | number) => {
 
-    let allTransactions: TFullTransaction[] = [];
+    let allTransactions: TTransactionWithCardAndCategory[] = [];
 
     try {
         allTransactions = (await dbQuery<RowDataPacket[]>(
-            QUERY_STRING.GET_ALL_TRANSACTIONS_OF_USER,
+            QUERY_STRING.GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID,
             [userId]
-        )) as TFullTransaction[];
+        )) as TTransactionWithCardAndCategory[];
     } catch (error: unknown) {
         throw new Error(error instanceof Error ? error.message : "Error in calculateAnalytics");
     }
@@ -212,33 +213,33 @@ export const calculateAnalytics = async (userId: string | number) => {
     // Calculate current and previous period totals for balance fluctuation
     // Month comparisons
     const currentMonthTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        const date = moment(t.transaction_date);
+        const date = moment(t.date);
 
         return date.month() + 1 === CURRENT_MONTH && date.year() === CURRENT_YEAR;
     });
 
     const lastMonthTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        const date = moment(t.transaction_date);
+        const date = moment(t.date);
 
         return date.month() + 1 === LAST_MONTH && date.year() === LAST_MONTH_YEAR;
     });
 
     // Year comparisons
     const currentYearTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        return moment(t.transaction_date).year() === CURRENT_YEAR;
+        return moment(t.date).year() === CURRENT_YEAR;
     });
 
     const lastYearTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        return moment(t.transaction_date).year() === LAST_YEAR;
+        return moment(t.date).year() === LAST_YEAR;
     });
 
     // Day comparisons
     const todayTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        return moment(t.transaction_date).isSame(CURRENT_DAY, 'day');
+        return moment(t.date).isSame(CURRENT_DAY, 'day');
     });
 
     const yesterdayTotals = calculateIncomeExpenseByPeriod(allTransactions, t => {
-        return moment(t.transaction_date).isSame(YESTERDAY, 'day');
+        return moment(t.date).isSame(YESTERDAY, 'day');
     });
 
     // Keep existing week calculations for backward compatibility

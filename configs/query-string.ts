@@ -6,64 +6,7 @@ export const QUERY_STRING = {
                   WHERE card_id = ?;`,
     CREATE_NEW_CARD: `INSERT INTO cards(card_name, card_balance, card_color, bank_code, user_id)
                     VALUES (?, ?, ?, ?, ?);`,
-    INIT_TRANSACTION: `INSERT INTO transactions(card_id, direction, transaction_date)
-                     VALUES (?, ?, ?);`,
-    NEW_TRANSACTION: `INSERT INTO transactions(card_id, direction, transaction_category, transaction_date)
-                    VALUES (?, ?, ?, ?);`,
-    NEW_TRANSACTION_DETAIL: `INSERT INTO transaction_details(transaction_id, transaction_type, transaction_amount, description)
-                           VALUES (?, ?, ?, ?);`,
-    UPDATE_CARD_BALANCE: `UPDATE cards
-                        SET card_balance = card_balance + ?
-                        WHERE card_id = ?;`,
-    GET_TRANSACTION_BY_ID: `SELECT t.transaction_id, t.card_id, t.direction, t.transaction_category, t.transaction_date, td.transaction_type, td.transaction_amount, td.description FROM transactions t JOIN transaction_details td ON t.transaction_id = td.transaction_id WHERE t.transaction_id = ?`,
-    DELETE_TRANSACTION: `DELETE
-                        FROM transactions
-                        WHERE transaction_id = ?;`,
-    GET_ALL_TRANSACTIONS_OF_USER: `SELECT 
-    t.transaction_id,
-    t.transaction_date,
-    t.direction,
-
-    td.transaction_type,
-    td.transaction_amount,
-    td.description,
-    td.created_at AS detail_created_at,
-
-    tc.category_id,
-    tc.category_name,
-    tc.color AS category_color,
-
-    c.card_id,
-    c.card_name,
-    c.card_balance,
-    c.card_color,
-    c.bank_code,
-    c.created_at AS card_created_at,
-    c.updated_at AS card_updated_at
-
-FROM 
-    transactions t
-JOIN 
-    transaction_details td ON t.transaction_id = td.transaction_id
-LEFT JOIN 
-    transaction_categories tc ON t.transaction_category = tc.category_id
-JOIN 
-    cards c ON t.card_id = c.card_id
-WHERE 
-    c.user_id = ?
-ORDER BY 
-    t.transaction_date DESC;
-
-`,
-    GET_COUNT_TRANSACTION: `SELECT COUNT(*) AS total
-                          FROM transactions;`,
     DELETE_CARD: `
-      DELETE
-      FROM transaction_details
-      WHERE transaction_id IN (SELECT transaction_id FROM transactions WHERE card_id = ?);
-      DELETE
-      FROM transactions
-      WHERE card_id = ?;
       DELETE
       FROM cards
       WHERE card_id = ?;`,
@@ -74,8 +17,8 @@ ORDER BY
                      WHERE card_id = ?;`,
 
     CREATE_NEW_FORECAST: `INSERT INTO forecasts(forecast_name, amount, direction, card_id, forecast_date, repeat_times,
-                                              repeat_type, transaction_type)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+                                              repeat_type)
+                        VALUES (?, ?, ?, ?, ?, ?, ?);`,
     CREATE_NEW_FORECAST_DETAIL: `INSERT INTO forecast_details(transaction_amount, description,
                                                             forecast_id, transaction_date)
                                VALUES (?, ?, ?, ?);`,
@@ -92,7 +35,6 @@ ORDER BY
     f.repeat_times,
     f.repeat_type,
     f.created_at,
-    f.transaction_type,
     
     c.card_id,
     c.card_name,
@@ -116,7 +58,6 @@ WHERE
                                      forecasts.amount,
                                      forecasts.direction,
                                      forecasts.forecast_date,
-                                     forecasts.transaction_type,
                                      forecast_details.transaction_id,
                                      forecast_details.transaction_amount,
                                      forecast_details.description,
@@ -181,10 +122,7 @@ WHERE
                         forecast_date    = ?,
                         repeat_times     = ?,
                         repeat_type      = ?,
-                        transaction_type = ?
                     WHERE forecast_id = ?;`,
-    GET_TOTAL_BALANCE: `select sum(card_balance) as total_balance
-                      from cards;`,
     GET_TOTAL_BALANCE_OF_USER: `select sum(card_balance) as total_balance
                                from cards
                                where user_id = ?;`,
@@ -228,4 +166,42 @@ WHERE
     UPDATE_REFRESH_TOKEN: `UPDATE users
                     SET refresh_token = ?
                     WHERE user_id = ?;`,
+    ADD_TRANSACTION: `INSERT INTO transactions_new(amount, date, description, direction, card_id, category_id) VALUES (?, ?, ?, ? ,?, ?);`,
+    GET_ALL_TRANSACTIONS_OF_CARD: `SELECT * FROM transactions_new WHERE card_id = ?;`,
+    GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID: `SELECT 
+    tn.transaction_id, 
+    tn.amount, 
+    tn.date, 
+    tn.description, 
+    tn.direction, 
+    tn.created_at, 
+    c.card_id, 
+    c.card_name, 
+    c.card_balance, 
+    c.card_color, 
+    c.bank_code, 
+    tc.category_id, 
+    tc.category_name, 
+    tc.color AS category_color, 
+    u.user_id
+FROM 
+    transactions_new tn
+JOIN 
+    cards c ON tn.card_id = c.card_id
+JOIN 
+    users u ON c.user_id = u.user_id
+LEFT JOIN 
+    transaction_categories tc ON tn.category_id = tc.category_id
+WHERE 
+    u.user_id = ?
+ORDER BY 
+    tn.date DESC;`,
+    GET_TRANSACTION_BY_ID: `SELECT * FROM transactions_new WHERE transaction_id = ?;`,
+    UPDATE_CARD_BALANCE: `UPDATE cards SET card_balance = ? WHERE card_id = ?;`,
+    INIT_TRANSACTION: `INSERT INTO transactions_new(amount, description, direction, card_id)
+                     VALUES (?, ?, ?, ?);`,
+    DELETE_TRANSACTION: `DELETE
+                        FROM transactions_new
+                        WHERE transaction_id = ?;`,
+
 };

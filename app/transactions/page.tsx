@@ -14,13 +14,13 @@ import { useDisclosure } from "@heroui/modal";
 import AddTransactionModal from "./_component/add-transaction-modal";
 
 import { IAPIResponse, IDataTable } from "@/types/global";
-import { ListTransactionType, TFullTransaction } from "@/types/transaction";
 import { useFetch } from "@/hooks/useFetch";
 import SYS_ICONS from "@/configs/icons";
 import { TCard } from "@/types/card";
 import { getBankLogo } from "@/configs/bank";
 import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
+import { TTransactionWithCardAndCategory } from "@/types/transaction";
 
 type FilterAndSortItem = {
 	key: string;
@@ -37,16 +37,16 @@ export default function TransactionsPage() {
 		data: fetchTransactionResults,
 		loading: loadingTransactions,
 		fetch: fetchTransactions,
-	} = useFetch<IAPIResponse<TFullTransaction[]>>("/transactions");
+	} = useFetch<IAPIResponse<TTransactionWithCardAndCategory[]>>("/transactions");
 
-	const [dataTable, setDataTable] = useState<IDataTable<TFullTransaction>>({
+	const [dataTable, setDataTable] = useState<IDataTable<TTransactionWithCardAndCategory>>({
 		columns: [
 			{ key: "card_name", label: "Card" },
-			{ key: "transaction_amount", label: "Amount" },
+			{ key: "amount", label: "Amount" },
 			{ key: "description", label: "Description" },
 			{ key: "category_name", label: "Category" },
-			{ key: "transaction_date", label: "Transaction Date" },
-			{ key: "transaction_type", label: "Transaction Type" },
+			{ key: "date", label: "Transaction Date" },
+			{ key: "direction", label: "Transaction Type" },
 			// { key: "direction", label: "Direction" },
 		],
 		rows: [],
@@ -75,14 +75,9 @@ export default function TransactionsPage() {
 		},
 	];
 
-	const transactionTypeSelection: FilterAndSortItem[] = ListTransactionType.map((type) => ({
-		key: type,
-		label: type.replace("_", " "),
-	}));
-
 	const [sortSelected, setSortSelected] = useState("date_desc");
 	const [cardSelected, setCardSelected] = useState("");
-	const [transactionTypeSelected, setTransactionTypeSelected] = useState("");
+	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
 
 	const onSelectFilterAndSort = () => {
 		let filteredData = fetchTransactionResults?.results ?? [];
@@ -92,28 +87,22 @@ export default function TransactionsPage() {
 		}
 
 		if (transactionTypeSelected) {
-			filteredData = filteredData.filter(
-				(transaction) => transaction.transaction_type === transactionTypeSelected
-			);
+			filteredData = filteredData.filter((transaction) => transaction.direction === transactionTypeSelected);
 		}
 
 		if (sortSelected) {
 			switch (sortSelected) {
 				case "date_desc":
-					filteredData.sort(
-						(a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
-					);
+					filteredData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 					break;
 				case "date_asc":
-					filteredData.sort(
-						(a, b) => new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime()
-					);
+					filteredData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 					break;
 				case "amount_desc":
-					filteredData.sort((a, b) => b.transaction_amount - a.transaction_amount);
+					filteredData.sort((a, b) => b.amount - a.amount);
 					break;
 				case "amount_asc":
-					filteredData.sort((a, b) => a.transaction_amount - b.transaction_amount);
+					filteredData.sort((a, b) => a.amount - b.amount);
 					break;
 			}
 		}
@@ -122,20 +111,20 @@ export default function TransactionsPage() {
 			...prev,
 			rows: filteredData.map((transaction) => ({
 				...transaction,
-				transaction_date: new Date(transaction.transaction_date).toLocaleString(),
+				date: new Date(transaction.date).toLocaleString(),
 			})),
 		}));
 	};
 
 	useEffect(() => {
-		setDataTable((prev) => ({
-			...prev,
-			rows:
-				fetchTransactionResults?.results?.map((transaction) => ({
-					...transaction,
-					transaction_date: new Date(transaction.transaction_date).toLocaleString(),
-				})) ?? [],
-		}));
+		// setDataTable((prev) => ({
+		//     ...prev,
+		//     rows:
+		//         fetchTransactionResults?.results?.map((transaction) => ({
+		//             ...transaction,
+		//             date: new Date(transaction.date).toLocaleString(),
+		//         })) ?? [],
+		// }));
 	}, [fetchTransactionResults]);
 
 	useEffect(() => {
@@ -175,7 +164,7 @@ export default function TransactionsPage() {
 		// loading: deletingTransaction,
 		error: errorDeleteTransaction,
 		fetch: deleteTransaction,
-	} = useFetch<IAPIResponse<TFullTransaction>>(
+	} = useFetch<IAPIResponse>(
 		"/transactions",
 		{
 			transactionId: selectedDeleteTransactionId,
@@ -305,34 +294,32 @@ export default function TransactionsPage() {
 
 					<Select
 						className={"w-60"}
-						items={transactionTypeSelection}
+						items={[
+							{
+								key: "in",
+								value: "In",
+							},
+							{
+								key: "out",
+								value: "Out",
+							},
+						]}
 						label={"Transaction type"}
 						labelPlacement={"outside"}
 						placeholder={"All Type"}
-						renderValue={(items) => (
-							<div className="flex items-center gap-2">
-								{items.map((item) => (
-									<div key={item.key}>{item.rendered}</div>
-								))}
-							</div>
-						)}
 						selectedKeys={[transactionTypeSelected]}
 						variant={"faded"}
-						onChange={(e) => setTransactionTypeSelected(e.target.value)}
+						onChange={(e) => setTransactionTypeSelected(e.target.value as "out" | "in" | "")}
 					>
 						{(item) => (
 							<SelectItem key={item.key}>
 								<Chip
 									className={"px-1 capitalize"}
-									color={
-										["receive", "borrow", "repay_received"].includes(item.key)
-											? "success"
-											: "danger"
-									}
+									color={item.key === "in" ? "success" : "danger"}
 									size={"sm"}
 									variant={"flat"}
 								>
-									{item.label}
+									{item.value}
 								</Chip>
 							</SelectItem>
 						)}
@@ -398,7 +385,7 @@ export default function TransactionsPage() {
 												</TableCell>
 											);
 
-										case "transaction_amount":
+										case "amount":
 											return (
 												<TableCell className={"capitalize"}>
 													{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
@@ -439,7 +426,7 @@ export default function TransactionsPage() {
 											return (
 												<TableCell
 													className={clsx({
-														capitalize: columnKey === "transaction_type",
+														capitalize: columnKey === "direction",
 													})}
 												>
 													{getKeyValue(item, columnKey)}

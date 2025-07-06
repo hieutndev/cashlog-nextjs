@@ -1,7 +1,7 @@
 import { TColor } from "./global";
 
 export type TCategory = {
-    category_id: string;
+    category_id: number;
     category_name: string;
     color: TColor;
     user_id: number;

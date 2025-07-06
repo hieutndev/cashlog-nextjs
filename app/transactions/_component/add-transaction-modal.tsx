@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
 import { Input, Textarea } from "@heroui/input";
 import { RadioGroup } from "@heroui/radio";
 import { Skeleton } from "@heroui/skeleton";
@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 
 import CustomForm from "@/components/shared/form/custom-form";
-import { ListTransactionType, TNewTransaction } from "@/types/transaction";
+import { TNewTransaction } from "@/types/transaction";
 import TransactionType from "@/components/transactions/transaction-type";
 import BankCardRadio, { AccountCardProps } from "@/components/shared/bank-card-radio/bank-card-radio";
 import { IAPIResponse } from "@/types/global";
@@ -61,21 +61,18 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 			setNewTransaction({
 				...newTransaction,
 				card_id:
-					fetchCardsResult?.results && fetchCardsResult?.results[0]
-						? fetchCardsResult.results[0].card_id
-						: "",
+					fetchCardsResult?.results && fetchCardsResult?.results[0] ? fetchCardsResult.results[0].card_id : 0,
 			});
 		}
 	}, [fetchCardsResult, fetchCardsError]);
 
 	// HANDLE CREATE NEW TRANSACTION
 	const [newTransaction, setNewTransaction] = useState<TNewTransaction>({
-		card_id: "",
+		card_id: 0,
 		direction: "in",
-		transaction_category: -1,
-		transaction_date: new Date().toISOString(),
-		transaction_type: "receive",
-		transaction_amount: 0,
+		category_id: null,
+		date: new Date().toISOString(),
+		amount: 0,
 		description: "",
 	});
 
@@ -94,12 +91,11 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 
 	const resetTransactionForm = () => {
 		return setNewTransaction({
-			card_id: listCard ? listCard[0]?.card_id : "",
+			card_id: listCard ? listCard[0]?.card_id : 0,
 			direction: "in",
-			transaction_category: -1,
-			transaction_date: new Date().toISOString(),
-			transaction_type: "receive",
-			transaction_amount: 0,
+			category_id: -1,
+			date: new Date().toISOString(),
+			amount: 0,
 			description: "",
 		});
 	};
@@ -113,8 +109,8 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 							...card,
 							card_balance:
 								newTransaction.direction === "in"
-									? card.card_balance + newTransaction.transaction_amount
-									: card.card_balance - newTransaction.transaction_amount,
+									? card.card_balance + newTransaction.amount
+									: card.card_balance - newTransaction.amount,
 						};
 					}
 
@@ -189,6 +185,17 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 		}
 	}, [isOpen]);
 
+	/* HANDLE CREATE TRANSACTION */
+
+	const handleCreateTransaction = () => {
+		return createTransaction({
+			body: {
+				...newTransaction,
+				category_id: newTransaction.category_id === -1 ? null : newTransaction.category_id,
+			},
+		});
+	};
+
 	return (
 		<Modal
 			isDismissable={false}
@@ -217,7 +224,7 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 											isLoading={creatingTransaction}
 											submitButtonText={"Create Transaction"}
 											onReset={resetTransactionForm}
-											onSubmit={createTransaction}
+											onSubmit={handleCreateTransaction}
 										>
 											<div className={"w-max flex flex-col gap-4"}>
 												<RadioGroup
@@ -264,34 +271,25 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														wrapper: "flex flex-row items-center gap-2",
 													}}
 													label={"Transaction Type"}
-													value={newTransaction.transaction_type}
+													value={newTransaction.direction}
 													onValueChange={(e) => {
 														setForm<TNewTransaction>(
-															"transaction_type",
-															e,
-															validateErrors,
-															setValidateErrors,
-															setNewTransaction
-														);
-														setForm<TNewTransaction>(
 															"direction",
-															["receive", "repay_received", "borrow"].includes(e)
-																? "in"
-																: "out",
+															e,
 															validateErrors,
 															setValidateErrors,
 															setNewTransaction
 														);
 													}}
 												>
-													{ListTransactionType.filter((value) => value !== "init").map(
-														(type) => (
-															<TransactionType
-																key={type}
-																type={type}
-															/>
-														)
-													)}
+													<TransactionType
+														key={"in"}
+														type={"in"}
+													/>
+													<TransactionType
+														key={"out"}
+														type={"out"}
+													/>
 												</RadioGroup>
 												<div
 													className={clsx("flex items-center gap-4", {
@@ -307,11 +305,11 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														className={"w-max"}
 														label={"Transaction Date"}
 														labelPlacement={"outside"}
-														value={parseAbsoluteToLocal(newTransaction.transaction_date)}
+														value={parseAbsoluteToLocal(newTransaction.date)}
 														variant={"bordered"}
 														onChange={(e) =>
 															setForm(
-																"transaction_date",
+																"date",
 																e?.toDate()?.toISOString() ?? new Date().toISOString(),
 																validateErrors,
 																setValidateErrors,
@@ -327,11 +325,11 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														label={"Select category"}
 														labelPlacement={"outside"}
 														placeholder={"Select category"}
-														selectedKeys={[newTransaction.transaction_category.toString()]}
+														selectedKeys={[newTransaction.category_id?.toString() ?? 0]}
 														variant={"bordered"}
 														onChange={(e) =>
 															setForm(
-																"transaction_category",
+																"category_id",
 																+e.target.value,
 																validateErrors,
 																setValidateErrors,
@@ -353,21 +351,17 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 													<Input
 														isRequired
 														endContent={"VND"}
-														errorMessage={
-															getFieldError(validateErrors, "transaction_amount")?.message
-														}
-														isInvalid={
-															!!getFieldError(validateErrors, "transaction_amount")
-														}
+														errorMessage={getFieldError(validateErrors, "amount")?.message}
+														isInvalid={!!getFieldError(validateErrors, "amount")}
 														label={"Amount"}
 														labelPlacement={"outside"}
 														placeholder={"Enter amount"}
 														type={"number"}
-														value={newTransaction.transaction_amount.toString()}
+														value={newTransaction.amount.toString()}
 														variant={"bordered"}
 														onValueChange={(e) =>
 															setForm<TNewTransaction>(
-																"transaction_amount",
+																"amount",
 																+e,
 																validateErrors,
 																setValidateErrors,
@@ -376,31 +370,29 @@ export default function AddTransactionModal({ isOpen, onOpenChange, onSuccess }:
 														}
 													/>
 													<div className={"flex items-center gap-1"}>
-														{makeSuggestAmount(newTransaction.transaction_amount).map(
-															(val, index) => (
-																<Chip
-																	key={index}
-																	classNames={{
-																		content: index === 0 && "font-semibold",
-																	}}
-																	color={index === 0 ? "primary" : "default"}
-																	size={"sm"}
-																	variant={"flat"}
-																	onClick={() =>
-																		setForm(
-																			"transaction_amount",
-																			val,
-																			validateErrors,
-																			setValidateErrors,
-																			setNewTransaction
-																		)
-																	}
-																>
-																	{index === 0 && "Current: "}
-																	{val.toLocaleString()}
-																</Chip>
-															)
-														)}
+														{makeSuggestAmount(newTransaction.amount).map((val, index) => (
+															<Chip
+																key={index}
+																classNames={{
+																	content: index === 0 && "font-semibold",
+																}}
+																color={index === 0 ? "primary" : "default"}
+																size={"sm"}
+																variant={"flat"}
+																onClick={() =>
+																	setForm(
+																		"amount",
+																		val,
+																		validateErrors,
+																		setValidateErrors,
+																		setNewTransaction
+																	)
+																}
+															>
+																{index === 0 && "Current: "}
+																{val.toLocaleString()}
+															</Chip>
+														))}
 													</div>
 												</div>
 												<Textarea

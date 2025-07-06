@@ -1,30 +1,27 @@
 import { TCard } from "./card";
-import { TTransactionType } from "./transaction";
 
 export type TForecast = {
   forecast_id: string | number;
   forecast_name: string;
   amount: number;
   direction: "in" | "out";
-  card_id: string | number;
+  card_id: TCard["card_id"]
   forecast_date: string;
   repeat_times: number;
   repeat_type: "hour" | "day" | "month" | "year";
   created_at: string;
-  transaction_type: TTransactionType;
 };
 
 export type TForecastDetail = {
   transaction_id: string | number;
   transaction_amount: number;
   description: string;
-  forecast_id: string | number;
+  forecast_id: TForecast["forecast_id"]
   transaction_date: string;
 };
 
-export type TFullForecast = TForecast & TForecastDetail & Omit<TCard, "created_at" | "updated_at">;
 
-export type TCardForecast = {
+export type TForecastRowData = {
   date: string;
   old_balance: number;
   new_balance: number;
@@ -33,13 +30,16 @@ export type TCardForecast = {
   transaction_id: string | number;
 }
 
-export type TForecastWithCardInfo = TForecast & TCard;
+export type TForecastWithDetailAndCard = TForecast & TForecastDetail & Omit<TCard, "created_at" | "updated_at">;
+
+
+export type TForecastWithCard = TForecast & TCard;
 
 export type TFetchForecastResult = {
-  listForecast: TFullForecast[];
+  listForecast: TForecastWithDetailAndCard[];
   groupedResults: {
     forecast_id: string | number;
-    details: TFullForecast[];
+    details: TForecastWithDetailAndCard[];
   }
 }
 export type TNewForecast = Omit<TForecast, "forecast_id" | "created_at">
@@ -47,6 +47,6 @@ export type TNewForecast = Omit<TForecast, "forecast_id" | "created_at">
 export type TUpdateForecast = TNewForecast;
 
 export type TFetchForecastDetailsResult = {
-  details: TForecastWithCardInfo;
-  transactions: TFullForecast[];
+  details: TForecastWithDetailAndCard;
+  transactions: TForecastWithDetailAndCard[];
 }
