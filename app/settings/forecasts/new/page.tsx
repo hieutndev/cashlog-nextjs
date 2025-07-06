@@ -14,6 +14,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Chip } from "@heroui/chip";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { DatePicker } from "@heroui/date-picker";
+import clsx from "clsx";
 
 import { TNewForecast } from "../../../../types/forecast";
 
@@ -28,9 +29,12 @@ import { ListTransactionType } from "@/types/transaction";
 import TransactionType from "@/components/transactions/transaction-type";
 import { makeListDate, upperFirstLetter } from "@/utils/text-transform";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
+import useScreenSize from "@/hooks/useScreenSize";
+import {BREAK_POINT} from "@/configs/break-point";
 
 export default function NewForecastPage() {
 	const router = useRouter();
+	const {width} = useScreenSize();
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
@@ -108,7 +112,10 @@ export default function NewForecastPage() {
 
 	return (
 		<CustomForm
-			className={"flex flex-col gap-4"}
+			className={clsx("flex flex-col gap-4", {
+				"col-span-10": width >= BREAK_POINT.L,
+				"col-span-12": width < BREAK_POINT.L,
+			})}
 			formId={"newForecastForm"}
 			onSubmit={handleCreateForecast}
 		>
