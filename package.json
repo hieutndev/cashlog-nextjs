@@ -1,6 +1,6 @@
 {
 	"name": "cashlog-nextjs",
-	"version": "0.1.127",
+	"version": "0.2.0",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
