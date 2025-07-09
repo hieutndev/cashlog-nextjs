@@ -78,7 +78,7 @@ const getAllTransactionOfCard = async (card_id: number): Promise<TTransaction[]>
         return listTransaction as TTransaction[];
 
     } catch (error: unknown) {
-        console.log("erorr in getAllTransactionOfCard", error);
+        console.log("error in getAllTransactionOfCard", error);
         throw new ApiError("Error while fetching transactions", 500);
     }
 
