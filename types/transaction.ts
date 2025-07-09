@@ -1,24 +1,24 @@
-import {TCategory} from "./category";
+import { TCategory } from "./category";
 
-import {TCard} from "@/types/card";
+import { TCard } from "@/types/card";
 
 export type TTransaction = {
     transaction_id: string;
     direction: "in" | "out";
     amount: number;
-    date: string | Date;
+    date: string;
     description: string;
     card_id: TCard["card_id"];
     category_id: TCategory["category_id"] | null;
-    created_at: string | Date;
+    created_at: string;
 };
 
 export type TTransactionWithCard = TTransaction & TCard;
 
 export type TTransactionWithCardAndCategory = TTransaction & TCard & TCategory;
 
-export type TNewTransaction = Omit<TTransaction, "transaction_id" | "created_at" | "date">
+export type TCrudTransaction = Omit<TTransaction, "transaction_id" | "created_at" | "date">
     & Pick<TCard, "card_id">
     & {
-    date: string;
-};
+        date: string;
+    };

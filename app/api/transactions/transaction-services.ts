@@ -1,24 +1,24 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { JSONSchemaType } from "ajv";
+import {ResultSetHeader, RowDataPacket} from "mysql2";
+import {JSONSchemaType} from "ajv";
 
-import { TNewTransaction, TTransaction } from "@/types/transaction";
-import { dbQuery } from "@/libs/mysql";
-import { QUERY_STRING } from "@/configs/query-string";
-import { formatMYSQLDate } from "@/utils/text-transform";
-import { ApiError } from "@/types/api-error";
-import { validateCardOwnership } from "@/app/api/cards/card-services";
-import { TUser } from "@/types/user";
+import {TCrudTransaction, TTransaction} from "@/types/transaction";
+import {dbQuery} from "@/libs/mysql";
+import {QUERY_STRING} from "@/configs/query-string";
+import {formatMYSQLDate} from "@/utils/text-transform";
+import {ApiError} from "@/types/api-error";
+import {validateCardOwnership} from "@/app/api/cards/card-services";
+import {TUser} from "@/types/user";
 
 // @ts-ignore
-export const newTransactionSchema: JSONSchemaType<TNewTransaction> = {
+export const newTransactionSchema: JSONSchemaType<TCrudTransaction> = {
     type: "object",
     properties: {
-        amount: { type: "number", minimum: 1 },
-        date: { type: "string", format: "date-time" }, // or just "date" if that's what you expect
-        description: { type: "string" },
-        direction: { type: "string", enum: ["in", "out"] },
-        card_id: { type: "number", minimum: 1 },
-        category_id: { type: "number", nullable: true },
+        amount: {type: "number", minimum: 1},
+        date: {type: "string", format: "date-time"}, // or just "date" if that's what you expect
+        description: {type: "string"},
+        direction: {type: "string", enum: ["in", "out"]},
+        card_id: {type: "number", minimum: 1},
+        category_id: {type: "number", nullable: true},
     },
     required: [
         "amount",
@@ -30,13 +30,13 @@ export const newTransactionSchema: JSONSchemaType<TNewTransaction> = {
 };
 
 export const createNewTransaction = async ({
-    card_id,
-    direction,
-    amount,
-    date,
-    description,
-    category_id,
-}: TNewTransaction, user_id: TUser["user_id"]) => {
+                                               card_id,
+                                               direction,
+                                               amount,
+                                               date,
+                                               description,
+                                               category_id,
+                                           }: TCrudTransaction, user_id: TUser["user_id"]) => {
 
     // Validate card ownership if userId is provided
     if (user_id) {
@@ -181,5 +181,39 @@ export const deleteTransaction = async (transactionId: TTransaction["transaction
     }, {
         status: 202,
     })
-
 }
+
+export const updateTransaction = async (transaction_id: TTransaction["transaction_id"], {
+    date,
+    description,
+    category_id,
+    card_id,
+    direction,
+    amount
+}: TCrudTransaction, user_id: TUser["user_id"]) => {
+
+    let updateTransactionStatus: ResultSetHeader | null = null;
+
+    try {
+        updateTransactionStatus = await dbQuery<ResultSetHeader>(QUERY_STRING.UPDATE_TRANSACTION, [amount, formatMYSQLDate(date), description, direction, card_id, category_id, transaction_id])
+    } catch (error: unknown) {
+        console.log("🚀 ~ updateTransaction ~ error: ", error);
+
+        throw new ApiError("Error while update transaction", 500);
+    }
+
+    if (!updateTransactionStatus || updateTransactionStatus.affectedRows === 0) {
+        console.log("🚀 ~ updateTransaction ~ updateTransactionStatus: ", updateTransactionStatus);
+        throw new ApiError("Failed to update transaction", 500);
+    }
+
+    try {
+        await updateCardBalance(card_id, user_id);
+    } catch (error: unknown) {
+        throw error;
+    }
+
+    return true;
+}
+
+

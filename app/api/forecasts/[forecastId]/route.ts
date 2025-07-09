@@ -20,7 +20,7 @@ interface ForecastDetailRouteProps { params: Promise<{ forecastId: string }> }
 
 export const GET = async (request: Request, { params }: ForecastDetailRouteProps) => {
   try {
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<number>(request, "x-user-id", -1);
     const { forecastId } = await params;
 
     if (isNaN(Number(forecastId))) {
@@ -50,7 +50,7 @@ export const GET = async (request: Request, { params }: ForecastDetailRouteProps
 
 export const PUT = async (request: Request, { params }: ForecastDetailRouteProps) => {
   try {
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<number>(request, "x-user-id", -1);
     const { forecastId } = await params;
 
     if (isNaN(Number(forecastId))) {
@@ -89,7 +89,7 @@ export const PUT = async (request: Request, { params }: ForecastDetailRouteProps
 
 export const DELETE = async (request: Request, { params }: ForecastDetailRouteProps) => {
   try {
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<number>(request, "x-user-id", -1);
     const { forecastId } = await params;
 
     if (isNaN(Number(forecastId))) {

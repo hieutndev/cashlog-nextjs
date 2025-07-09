@@ -4,7 +4,7 @@ import { JSONSchemaType } from "ajv";
 import { TCard, TEditCard, TNewCard } from "@/types/card";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
-import { TNewTransaction } from "@/types/transaction";
+import { TCrudTransaction } from "@/types/transaction";
 import { ApiError } from "@/types/api-error";
 import { ListColors } from "@/types/global";
 import { TUser } from "@/types/user";
@@ -129,7 +129,7 @@ export const createNewCard = async ({
 export const makeInitTransaction = async ({
     card_id,
     amount
-}: Pick<TNewTransaction, "card_id" | "amount">) => {
+}: Pick<TCrudTransaction, "card_id" | "amount">) => {
     try {
         return await dbQuery<ResultSetHeader>(QUERY_STRING.INIT_TRANSACTION, [amount, "Init balance", "in", card_id]);
     } catch (error) {
