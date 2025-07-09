@@ -8,9 +8,10 @@ import { cutString } from "@/utils/text-transform";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
+import {TCard} from "@/types/card";
 
 export interface AccountCardProps {
-	card_id: string | number;
+	card_id: TCard["card_id"];
 	card_name: string;
 	card_balance: number;
 	bank_code: TBankCode;

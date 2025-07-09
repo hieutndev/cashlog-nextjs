@@ -6,7 +6,7 @@ import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 
 import SYS_ICONS from "@/configs/icons";
-import { TForecastWithCardInfo, TFullForecast } from "@/types/forecast";
+import { TForecastWithCard, TForecastWithDetailAndCard } from "@/types/forecast";
 
 interface DetailBlockProps {
 	icon: React.ReactNode;
@@ -42,8 +42,8 @@ function DetailBlock({ icon, label, value, color }: DetailBlockProps) {
 }
 
 interface ForecastDetailsProps {
-	forecastDetails: TForecastWithCardInfo | null;
-	transactions: TFullForecast[];
+	forecastDetails: TForecastWithCard | null;
+	transactions: TForecastWithDetailAndCard[];
 	loadingForecast: boolean;
 }
 

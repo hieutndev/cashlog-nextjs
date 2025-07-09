@@ -5,93 +5,81 @@ import { getFromHeaders } from "../_helpers/get-from-headers";
 
 import { validateRequest } from "@/utils/ajv";
 import {
-  createNewTransaction,
-  createNewTransactionDetail,
-  deleteTransaction,
-  getAllTransactions,
-  newTransactionSchema,
-  updateCardBalance
+    createNewTransaction,
+    deleteTransaction,
+    getAllTransactions,
+    newTransactionSchema
 } from "@/app/api/transactions/transaction-services";
 import { ApiError } from "@/types/api-error";
 
 export const GET = async (request: NextRequest) => {
-  try {
+    try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
+        const userId = getFromHeaders(request, "x-user-id", '');
 
-    console.log('userId', userId);
+        console.log('userId', userId);
 
 
-    const allTransactions = await getAllTransactions(userId);
+        const allTransactions = await getAllTransactions(userId);
 
-    return Response.json(
-      {
-        status: "success",
-        message: "Get all transactions successfully",
-        results: allTransactions,
-      },
-      {
-        status: 200
-      }
-    );
-  } catch (error: unknown) {
-    return handleError(error);
-  }
+        return Response.json(
+            {
+                status: "success",
+                message: "Get all transactions successfully",
+                results: allTransactions,
+            },
+            {
+                status: 200
+            }
+        );
+    } catch (error: unknown) {
+        return handleError(error);
+    }
 };
 
 export const POST = async (request: Request) => {
-  try {
-    const userId = getFromHeaders(request, "x-user-id", '');
-    const requestBody = await request.json();
+    try {
+        const userId = Number(getFromHeaders(request, "x-user-id", -1));
+        const requestBody = await request.json();
 
 
+        const { isValid, errors } = validateRequest(newTransactionSchema, requestBody);
 
-    const { isValid, errors } = validateRequest(newTransactionSchema, requestBody);
+        if (!isValid) {
+            return handleValidateError(errors);
+        }
 
-    if (!isValid) {
-      return handleValidateError(errors);
+        await createNewTransaction(requestBody, userId);
+
+        return Response.json({
+            status: "success",
+            message: "Created new transaction successfully"
+        });
+
+    } catch (error: unknown) {
+        return handleError(error);
     }
-
-    const newTransactionId = await createNewTransaction(requestBody, userId);
-
-    await Promise.all([
-      createNewTransactionDetail({
-        transaction_id: newTransactionId,
-        ...requestBody
-      }),
-      updateCardBalance(requestBody, userId)
-    ]);
-
-    return Response.json({
-      status: "success",
-      message: "Created new transaction successfully"
-    });
-
-  } catch (error: unknown) {
-    return handleError(error);
-  }
 };
 
 export const DELETE = async (request: Request) => {
-  try {
+    try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
-    const searchParams = new URL(request.url).searchParams;
-    const transactionId = searchParams.get("transactionId");
+        const userId = Number(getFromHeaders(request, "x-user-id", 0));
+        const searchParams = new URL(request.url).searchParams;
+        const transactionId = searchParams.get("transactionId");
 
-    if (!transactionId) {
-      return handleError(new ApiError("Transaction ID is required", 404));
+        if (!transactionId) {
+            return handleError(new ApiError("Transaction ID is required", 404));
+        }
+
+
+        if (await deleteTransaction(transactionId, userId)) {
+            return Response.json({
+                status: "success",
+                message: "Delete transaction successfully"
+            });
+        }
+    } catch (error: unknown) {
+        return handleError(error);
     }
-
-
-    if (await deleteTransaction(transactionId, userId)) {
-      return Response.json({
-        status: "success",
-        message: "Delete transaction successfully"
-      });
-    }
-  }
-  catch (error: unknown) {
-    return handleError(error);
-  }
 }

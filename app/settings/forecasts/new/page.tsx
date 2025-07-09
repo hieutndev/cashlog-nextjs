@@ -25,16 +25,14 @@ import BankCardRadio, { AccountCardProps } from "@/components/shared/bank-card-r
 import { useFetch } from "@/hooks/useFetch";
 import { TCard } from "@/types/card";
 import { IAPIResponse } from "@/types/global";
-import { ListTransactionType } from "@/types/transaction";
-import TransactionType from "@/components/transactions/transaction-type";
 import { makeListDate, upperFirstLetter } from "@/utils/text-transform";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
 import useScreenSize from "@/hooks/useScreenSize";
-import {BREAK_POINT} from "@/configs/break-point";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function NewForecastPage() {
 	const router = useRouter();
-	const {width} = useScreenSize();
+	const { width } = useScreenSize();
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
@@ -42,11 +40,10 @@ export default function NewForecastPage() {
 		forecast_name: "",
 		amount: 0,
 		direction: "in",
-		card_id: "",
+		card_id: 0,
 		forecast_date: moment().toISOString(),
 		repeat_times: 1,
 		repeat_type: "month",
-		transaction_type: "receive", // Updated to a valid TTransactionType
 	});
 
 	const [listCard, setListCard] = useState<AccountCardProps[]>([]);
@@ -103,9 +100,7 @@ export default function NewForecastPage() {
 			setNewForecast((prev) => ({
 				...prev,
 				card_id:
-					fetchCardsResult?.results && fetchCardsResult?.results[0]
-						? fetchCardsResult.results[0].card_id
-						: "",
+					fetchCardsResult?.results && fetchCardsResult?.results[0] ? fetchCardsResult.results[0].card_id : 0,
 			}));
 		}
 	}, [fetchCardsResult, errorCards]);
@@ -167,38 +162,6 @@ export default function NewForecastPage() {
 								))
 							)}
 						</ScrollShadow>
-					</RadioGroup>
-					<RadioGroup
-						isRequired
-						classNames={{
-							wrapper: "flex flex-row items-center gap-2",
-							label: "text-sm",
-						}}
-						label={"Transaction Type"}
-						value={newForecast.transaction_type}
-						onValueChange={(e) => {
-							setForm<TNewForecast>(
-								"transaction_type",
-								e,
-								validateErrors,
-								setValidateErrors,
-								setNewForecast
-							);
-							setForm<TNewForecast>(
-								"direction",
-								["receive", "repay_received", "borrow"].includes(e) ? "in" : "out",
-								validateErrors,
-								setValidateErrors,
-								setNewForecast
-							);
-						}}
-					>
-						{ListTransactionType.filter((value) => value !== "init").map((type) => (
-							<TransactionType
-								key={type}
-								type={type}
-							/>
-						))}
 					</RadioGroup>
 					<div className={"grid grid-cols-3 items-center gap-2"}>
 						<DatePicker

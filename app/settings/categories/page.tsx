@@ -122,7 +122,7 @@ export default function CategoriesPage() {
 				<>
 					<div
 						className={clsx("flex flex-col gap-4", {
-							"col-span-4 border-r pr-4": width >= BREAK_POINT.S,
+							"col-span-6 border-r pr-4": width >= BREAK_POINT.S,
 							"col-span-12 border-b border-gray-200  pb-4": width < BREAK_POINT.S,
 						})}
 					>
@@ -192,7 +192,7 @@ export default function CategoriesPage() {
 					</div>
 					<div
 						className={clsx("flex flex-col gap-4", {
-							"col-span-2": width >= BREAK_POINT.S,
+							"col-span-6": width >= BREAK_POINT.S,
 							"col-span-12": width < BREAK_POINT.S,
 						})}
 					>

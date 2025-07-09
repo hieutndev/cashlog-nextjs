@@ -3,11 +3,11 @@ import { JSONSchemaType } from "ajv";
 
 import { QUERY_STRING } from "@/configs/query-string";
 import { dbQuery } from "@/libs/mysql";
-import { TFullForecast, TNewForecast, TUpdateForecast } from "@/types/forecast";
+import { TForecast, TForecastWithDetailAndCard, TNewForecast, TUpdateForecast } from "@/types/forecast";
 import { formatMYSQLDate, makeListDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
 import { validateCardOwnership } from "@/app/api/cards/card-services";
-import { ListTransactionType } from "@/types/transaction";
+import { TUser } from "@/types/user";
 
 
 export const newForecastSchema: JSONSchemaType<TNewForecast> = {
@@ -25,7 +25,6 @@ export const newForecastSchema: JSONSchemaType<TNewForecast> = {
     },
     repeat_times: { type: "number", minimum: 1 },
     repeat_type: { type: "string", enum: ["day", "hour", "month", "year"] },
-    transaction_type: { type: "string", enum: ListTransactionType }
   },
   required: [
     "forecast_name",
@@ -55,7 +54,6 @@ export const updateForecastSchema: JSONSchemaType<TUpdateForecast> = {
     },
     repeat_times: { type: "number", minimum: 1 },
     repeat_type: { type: "string", enum: ["day", "hour", "month", "year"] },
-    transaction_type: { type: "string", enum: ListTransactionType }
   },
   required: [
     "forecast_name",
@@ -69,7 +67,7 @@ export const updateForecastSchema: JSONSchemaType<TUpdateForecast> = {
   additionalProperties: false
 };
 
-export const validateForecastOwnership = async (forecastId: string | number, userId: string | number) => {
+export const validateForecastOwnership = async (forecastId: TForecast["forecast_id"], userId: TUser["user_id"]) => {
   try {
     const forecastInfo = await getForecastById(forecastId);
 
@@ -89,14 +87,14 @@ export const validateForecastOwnership = async (forecastId: string | number, use
   }
 };
 
-export const getAllForecasts = async (userId: string) => {
+export const getAllForecasts = async (userId: TUser["user_id"]) => {
   try {
     return await dbQuery<RowDataPacket[]>(
       userId ? QUERY_STRING.GET_ALL_FORECASTS_OF_USER : QUERY_STRING.GET_ALL_FORECASTS,
       [userId]
     );
   } catch (error: unknown) {
-    console.log("🚀 ~ getAllForecasts ~ error:", error)
+    console.log("error in getAllForecasts", error)
 
     throw new ApiError((error as Error).message || "Error in getAllForecasts", 500);
   }
@@ -128,7 +126,7 @@ export const getForecastById = async (forecastId: string | number) => {
       return false;
     }
 
-    return forecastInfo[0] as TFullForecast;
+    return forecastInfo[0] as TForecastWithDetailAndCard;
   } catch (error: any) {
     throw new ApiError((error as Error).message || "Error in getForecastById", 500);
   }
@@ -141,9 +139,8 @@ export const createNewForecast = async ({
   card_id,
   forecast_date,
   repeat_times,
-  repeat_type,
-  transaction_type
-}: TNewForecast, userId?: string | number) => {
+  repeat_type
+}: TNewForecast, userId: TUser["user_id"]) => {
 
   // Validate card ownership if userId is provided
   if (userId) {
@@ -160,8 +157,7 @@ export const createNewForecast = async ({
       card_id,
       formatMYSQLDate(forecast_date),
       repeat_times,
-      repeat_type,
-      transaction_type
+      repeat_type
     ]);
   }
   catch (error: unknown) {
@@ -221,7 +217,7 @@ export const createNewForecastDetail = async (
 
 export const calculateForecast = async (cardId: string) => {
   try {
-    const listForecastOfCard = (await getForecastTransactionsByCardId(cardId)) as TFullForecast[];
+    const listForecastOfCard = (await getForecastTransactionsByCardId(cardId)) as TForecastWithDetailAndCard[];
 
     let currentCardBalance = listForecastOfCard[0] ? Number(listForecastOfCard[0].card_balance) : 0;
 
@@ -304,8 +300,7 @@ export const updateForecast = async (
     card_id,
     forecast_date,
     repeat_times,
-    repeat_type,
-    transaction_type
+    repeat_type
   }: TUpdateForecast
 ) => {
 
@@ -327,7 +322,6 @@ export const updateForecast = async (
       formatMYSQLDate(forecast_date),
       repeat_times,
       repeat_type,
-      transaction_type,
       forecastId
     ]);
   } catch (error: unknown) {
