@@ -1,6 +1,3 @@
-
-import { TTransactionType } from "./transaction";
-
 export interface TBalanceFluctuation {
     [key: string]: {
         label: string;
@@ -28,12 +25,6 @@ export type TAnalyticsSummary = {
     byTotal: TTimePeriodSummary;
     byYear: TTimePeriodSummary;
     byMonth: TTimePeriodSummary;
-    byTransactionType: {
-        [K in TTransactionType]: {
-            totalIncome: number;
-            totalExpense: number;
-        }
-    }
 }
 
 

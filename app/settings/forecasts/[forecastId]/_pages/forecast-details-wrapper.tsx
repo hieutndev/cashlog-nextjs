@@ -10,7 +10,7 @@ import { getBankLogo } from "@/configs/bank";
 import SYS_ICONS from "@/configs/icons";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
-import { TFetchForecastDetailsResult, TForecastWithCard, TForecastWithDetailAndCard } from "@/types/forecast";
+import { TFetchForecastDetailsResult, TForecastWithDetailAndCard } from "@/types/forecast";
 import ForecastDetails from "@/app/settings/forecasts/[forecastId]/_pages/forecast-details";
 import EditForecast from "@/app/settings/forecasts/[forecastId]/_pages/edit-forecast";
 import { BREAK_POINT } from "@/configs/break-point";
@@ -24,7 +24,7 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 	const { width } = useScreenSize();
 
 	const [editMode, setEditMode] = useState<boolean>(false);
-	const [forecastDetails, setForecastDetails] = useState<TForecastWithCard | null>(null);
+	const [forecastDetails, setForecastDetails] = useState<TForecastWithDetailAndCard | null>(null);
 	const [transactions, setTransactions] = useState<TForecastWithDetailAndCard[]>([]);
 
 	const {

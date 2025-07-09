@@ -30,16 +30,6 @@ key: transaction_date (ISO 8601 format YYYY-MM-DDTHH:MM:SS, default to 07:00:00 
 
 key: transaction_amount (as a absolute number, e.g., 500000)
 
-key: transaction_type (categorized as: [
-  "receive",
-  "borrow",
-  "repay_received",
-  "spend",
-  "lend",
-  "repay_sent",
-  "init",
-])
-
 key: description (as a string)
 
 Return a strict JSON response with these keys.

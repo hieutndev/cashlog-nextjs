@@ -355,7 +355,7 @@ export default function TransactionsPage() {
                         {(column) => (
                             <TableColumn
                                 key={column.key}
-                                align={["transaction_type", "category_name"].includes(column.key) ? "center" : "start"}
+                                align={["category_name"].includes(column.key) ? "center" : "start"}
                             >
                                 {column.label}
                             </TableColumn>
@@ -388,12 +388,6 @@ export default function TransactionsPage() {
                                                         />
                                                         <p>{getKeyValue(item, columnKey)}</p>
                                                     </div>
-                                                </TableCell>
-                                            );
-                                        case "transaction_type":
-                                            return (
-                                                <TableCell className={"capitalize"}>
-                                                    {getKeyValue(item, columnKey).replace("_", " ")}
                                                 </TableCell>
                                             );
 

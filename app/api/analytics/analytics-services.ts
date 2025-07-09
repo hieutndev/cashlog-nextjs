@@ -1,11 +1,11 @@
 import moment from "moment";
-import { RowDataPacket } from "mysql2";
+import {RowDataPacket} from "mysql2";
 
-import { QUERY_STRING } from "@/configs/query-string";
-import { dbQuery } from "@/libs/mysql";
-import { TTimePeriodSummary } from "@/types/analytics";
-import { TTransactionWithCardAndCategory } from "@/types/transaction";
-import { TUser } from "@/types/user";
+import {QUERY_STRING} from "@/configs/query-string";
+import {dbQuery} from "@/libs/mysql";
+import {TTimePeriodSummary} from "@/types/analytics";
+import {TTransactionWithCardAndCategory} from "@/types/transaction";
+import {TUser} from "@/types/user";
 
 export const getTotalBalance = async (userId: TUser["user_id"]) => {
     const query = QUERY_STRING.GET_TOTAL_BALANCE_OF_USER;
@@ -30,9 +30,9 @@ export const calculateFluctuationOnTime = (listTransactions: TTransactionWithCar
 
 export const calculateDailyIncomeExpense = (transactions: TTransactionWithCardAndCategory[], month: number, year: number) => {
 
-    const daysInMonth = moment({ year, month: month - 1 }).daysInMonth();
+    const daysInMonth = moment({year, month: month - 1}).daysInMonth();
 
-    const dailyStats = Array.from({ length: daysInMonth }, (_, i) => ({
+    const dailyStats = Array.from({length: daysInMonth}, (_, i) => ({
         day: i + 1,
         income: 0,
         expense: 0,
@@ -176,7 +176,7 @@ export const calculateIncomeExpenseByPeriod = (
 
     const savings = income - expense;
 
-    return { income, expense, savings };
+    return {income, expense, savings};
 }
 
 export const calculateAnalytics = async (userId: string | number) => {
@@ -345,10 +345,7 @@ export const calculateAnalytics = async (userId: string | number) => {
         summary: {
             byTotal: totalSummary,
             byYear: yearSummary,
-            byMonth: monthSummary,
-            byTransactionType: {
-                // Keep empty for backward compatibility - can be implemented later if needed
-            }
+            byMonth: monthSummary
         },
     }
 }
