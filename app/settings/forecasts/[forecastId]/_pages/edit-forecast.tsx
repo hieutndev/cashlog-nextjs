@@ -17,11 +17,11 @@ import { getFieldError } from "@/utils/get-field-error";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { makeListDate } from "@/utils/text-transform";
-import { TForecastWithCard, TNewForecast, TUpdateForecast } from "@/types/forecast";
+import {TForecastWithDetailAndCard, TNewForecast, TUpdateForecast} from "@/types/forecast";
 
 interface EditForecastProps {
 	forecastId: string | number;
-	forecastDetails?: TForecastWithCard | null;
+	forecastDetails?: TForecastWithDetailAndCard | null;
 	onEditSuccess: () => void;
 }
 
@@ -32,11 +32,10 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 		forecast_name: "",
 		amount: 0,
 		direction: "in",
-		card_id: "",
+		card_id: 0,
 		forecast_date: moment().toISOString(),
 		repeat_times: 1,
 		repeat_type: "month",
-		transaction_type: "receive",
 	});
 
 	const {
@@ -62,8 +61,7 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 				card_id: forecastDetails.card_id,
 				forecast_date: forecastDetails.forecast_date,
 				repeat_times: forecastDetails.repeat_times,
-				repeat_type: forecastDetails.repeat_type,
-				transaction_type: forecastDetails.transaction_type,
+				repeat_type: forecastDetails.repeat_type
 			});
 		}
 	}, [forecastDetails]);

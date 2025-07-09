@@ -1,54 +1,52 @@
+import {handleError, handleValidateError} from "../_helpers/handle-error";
+import {getFromHeaders} from "../_helpers/get-from-headers";
 
-import { handleError, handleValidateError } from "../_helpers/handle-error";
-import { getFromHeaders } from "../_helpers/get-from-headers";
+import {createNewForecast, createNewForecastDetail, getAllForecasts, newForecastSchema} from "./forecast-services";
 
-import { createNewForecast, createNewForecastDetail, getAllForecasts, newForecastSchema } from "./forecast-services";
-
-import { validateRequest } from "@/utils/ajv";
+import {validateRequest} from "@/utils/ajv";
 
 export const GET = async (request: Request) => {
-  try {
+    try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
+        const userId = getFromHeaders<number>(request, "x-user-id", -1);
 
-    return Response.json({
-      status: "success",
-      message: "Get all forecasts successfully",
-      results: await getAllForecasts(userId)
-    });
+        return Response.json({
+            status: "success",
+            message: "Get all forecasts successfully",
+            results: await getAllForecasts(userId)
+        });
 
-  } catch (error: unknown) {
-    return handleError(error);
-  }
+    } catch (error: unknown) {
+        return handleError(error);
+    }
 };
 
 export const POST = async (request: Request) => {
-  try {
-    const userId = getFromHeaders(request, "x-user-id", '');
-    const requestBody = await request.json();
+    try {
+        const userId = getFromHeaders<number>(request, "x-user-id", -1);
+        const requestBody = await request.json();
 
 
+        const {isValid, errors} = validateRequest(newForecastSchema, requestBody);
 
-    const { isValid, errors } = validateRequest(newForecastSchema, requestBody);
+        if (!isValid) {
+            return handleValidateError(errors);
+        }
+        const newForecastId = await createNewForecast(requestBody, userId);
 
-    if (!isValid) {
-      return handleValidateError(errors);
+        await createNewForecastDetail(
+            newForecastId,
+            requestBody
+        );
+
+        return Response.json({
+            status: "success",
+            message: "Create forecast successfully",
+            newForecastId: newForecastId
+        });
+
+    } catch (error: unknown) {
+        return handleError(error);
     }
-    const newForecastId = await createNewForecast(requestBody, userId);
-
-    await createNewForecastDetail(
-      newForecastId,
-      requestBody
-    );
-
-    return Response.json({
-      status: "success",
-      message: "Create forecast successfully",
-      newForecastId: newForecastId
-    });
-
-  } catch (error: unknown) {
-    return handleError(error);
-  }
 };
 
