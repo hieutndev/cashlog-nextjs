@@ -16,19 +16,16 @@ import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
-import { ListTransactionType } from "@/types/transaction";
-import TransactionType from "@/components/transactions/transaction-type";
 import { makeListDate } from "@/utils/text-transform";
-import { TForecastWithCardInfo, TNewForecast, TUpdateForecast } from "@/types/forecast";
+import { TForecastWithCard, TNewForecast, TUpdateForecast } from "@/types/forecast";
 
 interface EditForecastProps {
 	forecastId: string | number;
-	forecastDetails?: TForecastWithCardInfo | null;
+	forecastDetails?: TForecastWithCard | null;
 	onEditSuccess: () => void;
 }
 
 export default function EditForecast({ forecastId, forecastDetails, onEditSuccess }: EditForecastProps) {
-
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
 	const [forecastInfo, setForecastInfo] = useState<TUpdateForecast>({
@@ -124,38 +121,6 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 							)
 						}
 					/>
-					<RadioGroup
-						isRequired
-						classNames={{
-							wrapper: "flex flex-row items-center gap-2",
-						}}
-						label={"Transaction Type"}
-						size={"lg"}
-						value={forecastInfo.transaction_type}
-						onValueChange={(e) => {
-							setForm<TNewForecast>(
-								"transaction_type",
-								e,
-								validateErrors,
-								setValidateErrors,
-								setForecastInfo
-							);
-							setForm<TNewForecast>(
-								"direction",
-								["receive", "repay_received", "borrow"].includes(e) ? "in" : "out",
-								validateErrors,
-								setValidateErrors,
-								setForecastInfo
-							);
-						}}
-					>
-						{ListTransactionType.filter((value) => value !== "init").map((type) => (
-							<TransactionType
-								key={type}
-								type={type}
-							/>
-						))}
-					</RadioGroup>
 					<RadioGroup
 						isRequired
 						classNames={{

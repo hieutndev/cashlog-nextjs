@@ -2,7 +2,7 @@ import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 
 export type TCard = {
-  card_id: number | string;
+  card_id: number;
   card_name: string;
   card_balance: number;
   bank_code: TBankCode;

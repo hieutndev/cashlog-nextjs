@@ -12,7 +12,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
 import BankCardRadio from "@/components/shared/bank-card-radio/bank-card-radio";
-import { TCardForecast } from "@/types/forecast";
+import { TForecastRowData } from "@/types/forecast";
 
 export default function ForecastsPage() {
 	const {
@@ -23,7 +23,7 @@ export default function ForecastsPage() {
 
 	const [listCards, setListCards] = useState<TCard[]>([]);
 	const [selectedCard, setSelectedCard] = useState<number | null>(null);
-	const [listForecasts, setListForecasts] = useState<TCardForecast[]>([]);
+	const [listForecasts, setListForecasts] = useState<TForecastRowData[]>([]);
 
 	useEffect(() => {
 		if (fetchCardResults) {
@@ -47,7 +47,7 @@ export default function ForecastsPage() {
 		error: fetchForecastError,
 		// loading: fetchForecastLoading,
 		fetch: fetchForecast,
-	} = useFetch<IAPIResponse<TCardForecast[]>>(`/cards/${selectedCard}/forecasts`, {
+	} = useFetch<IAPIResponse<TForecastRowData[]>>(`/cards/${selectedCard}/forecasts`, {
 		skip: true,
 	});
 

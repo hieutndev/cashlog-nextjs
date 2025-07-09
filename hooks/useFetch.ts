@@ -1,15 +1,18 @@
+import { useEffect, useState } from "react";
+import { getCookie, hasCookie, setCookie } from "cookies-next";
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
-import { useEffect, useState } from "react";
-import { setCookie, getCookie, hasCookie } from "cookies-next";
-
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface FetchOptions<TBody> {
   method?: HttpMethod;
   body?: TBody;
   headers?: HeadersInit;
-  skip?: boolean; // skip fetch on mount
+  skip?: boolean; // skip fetch on mount,
+  options?: {
+    removeContentType?: boolean;
+  }
 }
 
 type SearchParams = Record<string, string | number | boolean | null | undefined>;
@@ -76,7 +79,7 @@ async function refreshToken() {
   headers.append("Content-Type", "application/json");
   headers.append("x-rftk", getCookie("refresh_token") as string || "");
 
-  const response = await fetch(`${BASE_URL}/users/x-rftk`, {
+  const response = await fetch(`${BASE_URL}/accounts/rftk`, {
     method: "GET",
     headers
   });
@@ -94,13 +97,13 @@ async function refreshToken() {
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
   options?: FetchOptions<TBody>
-): FetchState<TResponse> & { fetch: () => Promise<void> };
+): FetchState<TResponse> & { fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void> };
 
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
   searchParams?: SearchParams,
   options?: FetchOptions<TBody>
-): FetchState<TResponse> & { fetch: () => Promise<void> };
+): FetchState<TResponse> & { fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void> };
 
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
@@ -113,7 +116,8 @@ export function useFetch<TResponse = any, TBody = any>(
     !('method' in searchParamsOrOptions) &&
     !('body' in searchParamsOrOptions) &&
     !('headers' in searchParamsOrOptions) &&
-    !('skip' in searchParamsOrOptions);
+    !('skip' in searchParamsOrOptions) &&
+    !('options' in searchParamsOrOptions);
 
   const searchParams = isSearchParams ? searchParamsOrOptions as SearchParams : undefined;
   const finalOptions = isSearchParams ? options : searchParamsOrOptions as FetchOptions<TBody>;
@@ -124,37 +128,64 @@ export function useFetch<TResponse = any, TBody = any>(
     statusCode: null,
   });
 
-  const fetchData = async () => {
+  const parseFetchBody = (fetchBody: any) => {
+    if (fetchBody instanceof FormData) {
+      return fetchBody;
+    }
+
+    return JSON.stringify(fetchBody);
+  }
+
+  const fetchData = async (overrideOptions?: FetchOptions<TBody>) => {
+
     setState((prevState) => ({ ...prevState, loading: true, error: null, statusCode: null }));
 
+    const mergedOptions = {
+      ...finalOptions,
+      ...overrideOptions,
+      headers: {
+        ...finalOptions?.headers,
+        ...overrideOptions?.headers,
+      },
+      body: overrideOptions?.body ?? finalOptions?.body,
+    };
+
+
     try {
+
+
       const response = await fetch(parseURL(url, searchParams), {
-        method: finalOptions?.method ?? "GET",
+        method: mergedOptions.method ?? "GET",
         headers: {
-          "Content-Type": "application/json",
+          ...(mergedOptions.options?.removeContentType ? {} : { "Content-Type": "application/json" }),
           "Authorization": `Bearer ${getCookie("access_token") || ""}`,
-          ...(finalOptions?.headers || {}),
+          ...(mergedOptions.headers || {}),
         },
-        body: finalOptions?.body ? JSON.stringify(finalOptions.body) : undefined,
+        body: mergedOptions.body ? parseFetchBody(mergedOptions.body) : undefined,
       });
 
       if (response.status === 401 && hasCookie("refresh_token")) {
         await refreshToken();
 
         const retryResponse = await fetch(parseURL(url, searchParams), {
-          method: finalOptions?.method ?? "GET",
+          method: mergedOptions.method ?? "GET",
           headers: {
-            "Content-Type": "application/json",
+            ...(mergedOptions.options?.removeContentType ? {} : { "Content-Type": "application/json" }),
             "Authorization": `Bearer ${getCookie("access_token") || ""}`,
-            ...(finalOptions?.headers || {}),
+            ...(mergedOptions.headers || {}),
           },
-          body: finalOptions?.body ? JSON.stringify(finalOptions.body) : undefined,
+          body: mergedOptions.body ? parseFetchBody(mergedOptions.body) : undefined,
         });
 
         if (!retryResponse.ok) {
           const errorText = await retryResponse.text();
 
-          setState({ data: null, loading: false, error: errorText || retryResponse.statusText, statusCode: retryResponse.status });
+          setState({
+            data: null,
+            loading: false,
+            error: errorText || retryResponse.statusText,
+            statusCode: retryResponse.status
+          });
 
           return;
         }
@@ -169,7 +200,12 @@ export function useFetch<TResponse = any, TBody = any>(
       if (!response.ok) {
         const errorText = await response.text();
 
-        setState({ data: null, loading: false, error: errorText || response.statusText, statusCode: response.status });
+        setState({
+          data: null,
+          loading: false,
+          error: errorText || response.statusText,
+          statusCode: response.status
+        });
 
         return;
       }

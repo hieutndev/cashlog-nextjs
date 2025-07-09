@@ -11,7 +11,7 @@ import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 
 import { useFetch } from "@/hooks/useFetch";
-import { TForecastWithCardInfo } from "@/types/forecast";
+import { TForecastWithCard } from "@/types/forecast";
 import { IAPIResponse } from "@/types/global";
 import { getBankLogo } from "@/configs/bank";
 import SYS_ICONS from "@/configs/icons";
@@ -22,13 +22,13 @@ export default function SettingForecastPage() {
 	const router = useRouter();
 	const { width } = useScreenSize();
 
-	const [listForecasts, setListForecasts] = useState<TForecastWithCardInfo[]>([]);
+	const [listForecasts, setListForecasts] = useState<TForecastWithCard[]>([]);
 
 	const {
 		data: fetchForecastResult,
 		loading: loadingForecast,
 		error: errorForecast,
-	} = useFetch<IAPIResponse<TForecastWithCardInfo[]>>("/forecasts");
+	} = useFetch<IAPIResponse<TForecastWithCard[]>>("/forecasts");
 
 	useEffect(() => {
 		if (fetchForecastResult) {

@@ -2,60 +2,23 @@ import { TCategory } from "./category";
 
 import { TCard } from "@/types/card";
 
-export type Transaction = {
-  transactionId: string;
-  cardId: string;
-  transactionReason: string;
-  transactionType: "income" | "outcome";
-  transactionAmount: number;
-  transactionDescription: string;
-  transactionDate: string;
-  transactionCategory: string | null;
-};
-
-export type NewTransaction = Omit<Transaction, "transactionId">;
-
-export const ListTransactionType: TTransactionType[] = [
-  "receive",
-  "borrow",
-  "repay_received",
-  "spend",
-  "lend",
-  "repay_sent",
-  "init"
-];
-
-export type TTransactionType =
-  | "receive"
-  | "spend"
-  | "lend"
-  | "repay_received"
-  | "borrow"
-  | "repay_sent"
-  | "init";
-
 export type TTransaction = {
-  transaction_id: string;
-  card_id: string | number;
-  direction: "in" | "out";
-  transaction_category: number;
-  transaction_date: string;
+    transaction_id: string;
+    direction: "in" | "out";
+    amount: number;
+    date: string;
+    description: string;
+    card_id: TCard["card_id"];
+    category_id: TCategory["category_id"] | null;
+    created_at: string;
 };
 
-export type TTransactionDetail = {
-  transaction_id: string | number;
-  transaction_type: TTransactionType;
-  transaction_amount: number;
-  description: string;
-  created_at: string;
-};
+export type TTransactionWithCard = TTransaction & TCard;
 
-export type TFullTransaction = TTransaction &
-  TTransactionDetail & TCategory & TCard;
+export type TTransactionWithCardAndCategory = TTransaction & TCard & TCategory;
 
-export type TNewTransaction = Omit<
-  TTransaction & TTransactionDetail,
-  "transaction_id" | "created_at" | "transaction_category"
-> & {
-  transaction_category: number;
-};
+export type TCrudTransaction = Omit<TTransaction, "transaction_id" | "created_at" | "date">
+    & Pick<TCard, "card_id">
+    & {
+        date: string;
+    };
