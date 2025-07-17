@@ -1,10 +1,10 @@
 import React from "react";
 
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 
 export const MAP_ICON: Record<string, React.ReactNode> = {
-	income: SYS_ICONS.INCOME.MD,
-	up: SYS_ICONS.INCOME.MD,
-	expense: SYS_ICONS.EXPENSE.MD,
-	down: SYS_ICONS.EXPENSE.MD,
+	income: ICONS.INCOME.MD,
+	up: ICONS.INCOME.MD,
+	expense: ICONS.EXPENSE.MD,
+	down: ICONS.EXPENSE.MD,
 };

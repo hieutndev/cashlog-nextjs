@@ -3,7 +3,7 @@ import { RiArrowLeftRightFill } from "react-icons/ri";
 import { PiTarget } from "react-icons/pi";
 import { FiSearch, FiSettings } from "react-icons/fi";
 import { GrFormNextLink, GrFormPreviousLink } from "react-icons/gr";
-import { LuCalendarArrowDown, LuCalendarArrowUp } from "react-icons/lu";
+import { LuCalendarArrowDown, LuCalendarArrowUp, LuCircleAlert, LuCircleCheck, LuFileUp, LuPlay } from "react-icons/lu";
 import { IoAnalyticsSharp, IoLogOutOutline } from "react-icons/io5";
 import {
 	FaArrowDownWideShort,
@@ -24,6 +24,7 @@ import {
 	FaXmark,
 } from "react-icons/fa6";
 import { FaDollarSign } from "react-icons/fa";
+import { LuGitPullRequestArrow } from "react-icons/lu";
 const SIZE_ICON = {
 	sm: 14,
 	md: 16,
@@ -31,7 +32,7 @@ const SIZE_ICON = {
 	xl: 24,
 };
 
-const SYS_ICONS = {
+const ICONS = {
 	OVERVIEW: {
 		SM: <RxDashboard size={SIZE_ICON.sm} />,
 		MD: <RxDashboard size={SIZE_ICON.md} />,
@@ -201,6 +202,36 @@ const SYS_ICONS = {
 		LG: <FaBars size={SIZE_ICON.lg} />,
 		XL: <FaBars size={SIZE_ICON.xl} />,
 	},
+	IMPORT: {
+		SM: <LuFileUp size={SIZE_ICON.sm} />,
+		MD: <LuFileUp size={SIZE_ICON.md} />,
+		LG: <LuFileUp size={SIZE_ICON.lg} />,
+		XL: <LuFileUp size={SIZE_ICON.xl} />,
+	},
+	ALERT_CIRCLE: {
+		SM: <LuCircleAlert size={SIZE_ICON.sm} />,
+		MD: <LuCircleAlert size={SIZE_ICON.md} />,
+		LG: <LuCircleAlert size={SIZE_ICON.lg} />,
+		XL: <LuCircleAlert size={SIZE_ICON.xl} />,
+	},
+	CHECK_CIRCLE: {
+		SM: <LuCircleCheck size={SIZE_ICON.sm} />,
+		MD: <LuCircleCheck size={SIZE_ICON.md} />,
+		LG: <LuCircleCheck size={SIZE_ICON.lg} />,
+		XL: <LuCircleCheck size={SIZE_ICON.xl} />,
+	},
+	PLAY: {
+		SM: <LuPlay size={SIZE_ICON.sm} />,
+		MD: <LuPlay size={SIZE_ICON.md} />,
+		LG: <LuPlay size={SIZE_ICON.lg} />,
+		XL: <LuPlay size={SIZE_ICON.xl} />,
+	},
+	GIT_PULL_REQUEST: {
+		SM: <LuGitPullRequestArrow size={SIZE_ICON.sm} />,
+		MD: <LuGitPullRequestArrow size={SIZE_ICON.md} />,
+		LG: <LuGitPullRequestArrow size={SIZE_ICON.lg} />,
+		XL: <LuGitPullRequestArrow size={SIZE_ICON.xl} />,
+	}
 };
 
-export default SYS_ICONS;
+export default ICONS;

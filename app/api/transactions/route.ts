@@ -14,19 +14,29 @@ import { ApiError } from "@/types/api-error";
 
 export const GET = async (request: NextRequest) => {
     try {
-
         const userId = getFromHeaders(request, "x-user-id", '');
+        const { searchParams } = new URL(request.url);
+        
+        // Parse pagination parameters with defaults
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+        const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '10', 10))); // Cap at 100
 
-        console.log('userId', userId);
+        console.log('userId', userId, 'page', page, 'limit', limit);
 
-
-        const allTransactions = await getAllTransactions(userId);
+        const { transactions, total } = await getAllTransactions(userId, page, limit);
+        const totalPages = Math.ceil(total / limit);
 
         return Response.json(
             {
                 status: "success",
                 message: "Get all transactions successfully",
-                results: allTransactions,
+                results: transactions,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages
+                }
             },
             {
                 status: 200

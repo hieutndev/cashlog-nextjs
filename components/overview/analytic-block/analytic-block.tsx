@@ -4,7 +4,7 @@ import { Chip, ChipProps } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import clsx from "clsx";
 
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 export interface AnalyticBlockProps {
 	labelIcon: React.ReactNode;
 	label: string;
@@ -74,7 +74,7 @@ export default function AnalyticBlock({ labelIcon, label, value, color, timeRang
 						color={"default"}
 						variant={"light"}
 					>
-						View Details {SYS_ICONS.NEXT.MD}
+						View Details {ICONS.NEXT.MD}
 					</Button>
 				</div>
 			</CardBody>

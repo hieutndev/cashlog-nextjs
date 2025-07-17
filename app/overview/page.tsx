@@ -14,7 +14,7 @@ import Container from "@/components/shared/container/container";
 import AnalyticBlock from "@/components/overview/analytic-block/analytic-block";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 import { TAnalyticsResponse } from "@/types/analytics";
 import Chart from "@/components/overview/chartjs/chart";
 import { TCard } from "@/types/card";
@@ -211,7 +211,7 @@ export default function OverviewPage() {
 									variant="light"
 									onPress={handlePreviousPage}
 								>
-									{SYS_ICONS.BACK.MD}
+									{ICONS.BACK.MD}
 								</Button>
 								<span className="text-sm text-gray-500">
 									{totalPages > 0 ? `${currentCardPage + 1}/${totalPages}` : "0/0"}
@@ -223,7 +223,7 @@ export default function OverviewPage() {
 									variant="light"
 									onPress={handleNextPage}
 								>
-									{SYS_ICONS.NEXT.MD}
+									{ICONS.NEXT.MD}
 								</Button>
 							</div>
 						</header>

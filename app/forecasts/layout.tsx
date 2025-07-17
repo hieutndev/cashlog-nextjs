@@ -3,7 +3,7 @@ import { Divider } from "@heroui/divider";
 
 import Container from "@/components/shared/container/container";
 import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 
 export const metadata: Metadata = {
 	title: "Forecasts",
@@ -20,7 +20,7 @@ export default function ForecastsLayout({ children }: { children: React.ReactNod
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.NEW.LG,
+					startContent: ICONS.NEW.LG,
 					href: "settings/forecasts/new",
 				},
 			],

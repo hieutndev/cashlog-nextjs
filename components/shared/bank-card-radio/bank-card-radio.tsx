@@ -41,7 +41,7 @@ export default function BankCardRadio({ card_id, card_name, card_balance, bank_c
 			<div className={"w-96 flex justify-between gap-2 items-center"}>
 				<div className={"flex items-center gap-2"}>
 					<p className={"text-sm min-w-max"}>{cutString(card_name, 12)}</p>
-					<p className={"text-sm min-w-max"}>-</p>
+					<p className={"text-sm min-w-max"}>|</p>
 					<p className={"text-sm"}>{card_balance.toLocaleString()} VND</p>
 				</div>
 				<Image

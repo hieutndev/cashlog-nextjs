@@ -14,7 +14,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { TForecastWithCard } from "@/types/forecast";
 import { IAPIResponse } from "@/types/global";
 import { getBankLogo } from "@/configs/bank";
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
@@ -193,7 +193,7 @@ export default function SettingForecastPage() {
 																	)
 																}
 															>
-																{SYS_ICONS.DETAILS.MD}
+																{ICONS.DETAILS.MD}
 															</Button>
 															<Button
 																isIconOnly
@@ -201,7 +201,7 @@ export default function SettingForecastPage() {
 																variant={"ghost"}
 																onPress={() => handleDelete(+item.forecast_id)}
 															>
-																{SYS_ICONS.TRASH.MD}
+																{ICONS.TRASH.MD}
 															</Button>
 														</div>
 													</TableCell>
