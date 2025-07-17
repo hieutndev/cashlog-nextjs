@@ -5,7 +5,7 @@ import { TSignUp, TSignIn, TUser } from '../../../types/user';
 
 import { dbQuery } from '@/libs/mysql';
 import { QUERY_STRING } from '@/configs/query-string';
-import { randomUniqueString } from '@/utils/generate-unique-string';
+import { randomUniqueString } from '@/utils/string';
 import { comparePassword, hashPassword } from '@/utils/hash-password';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '@/utils/jwt-utils';
 import { ApiError } from '@/types/api-error';

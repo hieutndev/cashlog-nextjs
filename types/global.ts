@@ -72,6 +72,14 @@ export interface IAPIResponse<TResponse = any, TError = any> {
   results?: TResponse;
   errors?: TError;
   validateErrors?: ErrorObject[];
+  pagination?: IPagination;
+}
+
+export interface IPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface IDataTable<T> {

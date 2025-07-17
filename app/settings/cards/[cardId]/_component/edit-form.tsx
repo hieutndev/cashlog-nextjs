@@ -10,7 +10,7 @@ import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
 
-import { TCard, TEditCard } from "../../../../../types/card";
+import { TCard, TUpdateCard } from "../../../../../types/card";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import BankCard from "@/components/shared/bank-card/bank-card";
@@ -31,7 +31,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 	const router = useRouter();
 	const { width } = useScreenSize();
 
-	const [cardInfo, setCardInfo] = useState<TEditCard>({
+	const [cardInfo, setCardInfo] = useState<TUpdateCard>({
 		card_name: "",
 		bank_code: "VIETCOMBANK",
 		card_color: "red",
@@ -163,7 +163,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 								value={cardInfo.card_name}
 								variant={"bordered"}
 								onValueChange={(e) =>
-									setForm<TEditCard>(
+									setForm<TUpdateCard>(
 										"card_name",
 										e,
 										validationErrors,
@@ -183,7 +183,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 								value={cardInfo.bank_code}
 								variant={"bordered"}
 								onChange={(e) =>
-									setForm<TEditCard>(
+									setForm<TUpdateCard>(
 										"bank_code",
 										e.target.value as TBankCode,
 										validationErrors,
@@ -208,7 +208,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 								size={"lg"}
 								value={cardInfo.card_color}
 								onValueChange={(value) =>
-									setForm<TEditCard>(
+									setForm<TUpdateCard>(
 										"card_color",
 										value as TColor,
 										validationErrors,

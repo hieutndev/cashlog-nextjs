@@ -7,7 +7,7 @@ import { Skeleton } from "@heroui/skeleton";
 import clsx from "clsx";
 
 import { getBankLogo } from "@/configs/bank";
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TFetchForecastDetailsResult, TForecastWithDetailAndCard } from "@/types/forecast";
@@ -94,7 +94,7 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 						isIconOnly
 						color={"danger"}
 						size={"lg"}
-						startContent={SYS_ICONS.XMARK.LG}
+						startContent={ICONS.XMARK.LG}
 						onPress={() => setEditMode(false)}
 					/>
 				) : (
@@ -102,7 +102,7 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 						isIconOnly
 						color={"warning"}
 						size={"lg"}
-						startContent={SYS_ICONS.EDIT.MD}
+						startContent={ICONS.EDIT.MD}
 						variant={"ghost"}
 						onPress={() => setEditMode(true)}
 					/>

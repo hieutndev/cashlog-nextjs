@@ -1,0 +1,1 @@
+export const ILLUSTRATION_PATH = '/illustrations';

@@ -532,6 +532,22 @@
     "@react-stately/toggle" "3.8.5"
     "@react-stately/utils" "3.10.7"
 
+"@heroui/pagination@^2.2.21":
+  version "2.2.21"
+  resolved "https://registry.yarnpkg.com/@heroui/pagination/-/pagination-2.2.21.tgz#ac1c350ea36084076105f3cd03e6fa4ff98d7d26"
+  integrity sha512-zhxIUkyR0AY2mMlHnJphQ68NfvDT19XeHihTxW1Fxpp5MKcz9rOdk85v2batnXWqXah+s5h+O03n11IyZJbVBw==
+  dependencies:
+    "@heroui/react-utils" "2.1.12"
+    "@heroui/shared-icons" "2.1.10"
+    "@heroui/shared-utils" "2.1.10"
+    "@heroui/use-intersection-observer" "2.2.14"
+    "@heroui/use-pagination" "2.2.15"
+    "@react-aria/focus" "3.20.5"
+    "@react-aria/i18n" "3.12.10"
+    "@react-aria/interactions" "3.25.3"
+    "@react-aria/utils" "3.29.1"
+    scroll-into-view-if-needed "3.0.10"
+
 "@heroui/popover@2.3.22":
   version "2.3.22"
   resolved "https://registry.yarnpkg.com/@heroui/popover/-/popover-2.3.22.tgz#7e6cd1cd80a86c0d9d88b8f17b64ba4d48684541"
@@ -579,6 +595,11 @@
   resolved "https://registry.yarnpkg.com/@heroui/react-rsc-utils/-/react-rsc-utils-2.1.8.tgz#27ebfa533196dd53913269f42afc4c7a6dd9bbca"
   integrity sha512-qFJ0EYg2hVrsotAurd09ga8jZv1jTS6VSz919oC9u4E9xfN5/gFtdtF3HMiTUYRyN2yCP9GEZwyE8T2Y16DDiA==
 
+"@heroui/react-rsc-utils@2.1.9":
+  version "2.1.9"
+  resolved "https://registry.yarnpkg.com/@heroui/react-rsc-utils/-/react-rsc-utils-2.1.9.tgz#fe0f71761560093db2557f93db8600f3dbf50c26"
+  integrity sha512-e77OEjNCmQxE9/pnLDDb93qWkX58/CcgIqdNAczT/zUP+a48NxGq2A2WRimvc1uviwaNL2StriE2DmyZPyYW7Q==
+
 "@heroui/react-utils@2.1.11":
   version "2.1.11"
   resolved "https://registry.yarnpkg.com/@heroui/react-utils/-/react-utils-2.1.11.tgz#660b326bb8463ac957ba543df1585946f4fed87c"
@@ -586,6 +607,14 @@
   dependencies:
     "@heroui/react-rsc-utils" "2.1.8"
     "@heroui/shared-utils" "2.1.9"
+
+"@heroui/react-utils@2.1.12":
+  version "2.1.12"
+  resolved "https://registry.yarnpkg.com/@heroui/react-utils/-/react-utils-2.1.12.tgz#256d3b7583c8465a872caed47be77d126157099b"
+  integrity sha512-D+EYFMtBuWGrtsw+CklgAHtQfT17wZcjmKIvUMGOjAFFSLHG9NJd7yOrsZGk90OuJVQ3O1Gj3MfchEmUXidxyw==
+  dependencies:
+    "@heroui/react-rsc-utils" "2.1.9"
+    "@heroui/shared-utils" "2.1.10"
 
 "@heroui/react-utils@2.1.8":
   version "2.1.8"
@@ -646,6 +675,11 @@
     "@react-aria/visually-hidden" "3.8.25"
     "@react-types/shared" "3.30.0"
 
+"@heroui/shared-icons@2.1.10":
+  version "2.1.10"
+  resolved "https://registry.yarnpkg.com/@heroui/shared-icons/-/shared-icons-2.1.10.tgz#df53c7726d790320618530827627f71f8b8c759e"
+  integrity sha512-ePo60GjEpM0SEyZBGOeySsLueNDCqLsVL79Fq+5BphzlrBAcaKY7kUp74964ImtkXvknTxAWzuuTr3kCRqj6jg==
+
 "@heroui/shared-icons@2.1.6":
   version "2.1.6"
   resolved "https://registry.yarnpkg.com/@heroui/shared-icons/-/shared-icons-2.1.6.tgz#7339462c5233c8127286bedf898c8250bf05da2a"
@@ -655,6 +689,11 @@
   version "2.1.9"
   resolved "https://registry.yarnpkg.com/@heroui/shared-icons/-/shared-icons-2.1.9.tgz#ea237924219219e5a96c7219f9f5ea0850a05d25"
   integrity sha512-CuKB8bKtRrZzxhU0dpaM9ecJWbs3ZfgWIQG0neYcbEQse0rS83VsKLokh+nmL8fNl69gq1ykT+HYsURnDGyrMw==
+
+"@heroui/shared-utils@2.1.10":
+  version "2.1.10"
+  resolved "https://registry.yarnpkg.com/@heroui/shared-utils/-/shared-utils-2.1.10.tgz#15c12c49b92610a2cd545a74343b96bb4371e785"
+  integrity sha512-w6pSRZZBNDG5/aFueSDUWqOIzqUjKojukg7FxTnVeUX+vIlnYV2Wfv+W+C4l+OV7o0t8emeoe5tXZh8QcLEZEQ==
 
 "@heroui/shared-utils@2.1.7":
   version "2.1.7"
@@ -971,6 +1010,11 @@
   dependencies:
     "@react-aria/interactions" "3.25.3"
 
+"@heroui/use-intersection-observer@2.2.14":
+  version "2.2.14"
+  resolved "https://registry.yarnpkg.com/@heroui/use-intersection-observer/-/use-intersection-observer-2.2.14.tgz#ec025cc6408f8fdce5819c1b73e69d5a300046f1"
+  integrity sha512-qYJeMk4cTsF+xIckRctazCgWQ4BVOpJu+bhhkB1NrN+MItx19Lcb7ksOqMdN5AiSf85HzDcAEPIQ9w9RBlt5sg==
+
 "@heroui/use-is-mobile@2.2.10":
   version "2.2.10"
   resolved "https://registry.yarnpkg.com/@heroui/use-is-mobile/-/use-is-mobile-2.2.10.tgz#68938d631569e6db41b7b9f7a6541f8dc38ffe86"
@@ -994,6 +1038,14 @@
   version "2.1.7"
   resolved "https://registry.yarnpkg.com/@heroui/use-measure/-/use-measure-2.1.7.tgz#f60b16efc74ba4d636e20df519a639babc905953"
   integrity sha512-H586tr/bOH08MAufeiT35E1QmF8SPQy5Ghmat1Bb+vh/6KZ5S0K0o95BE2to7sXE9UCJWa7nDFuizXAGbveSiA==
+
+"@heroui/use-pagination@2.2.15":
+  version "2.2.15"
+  resolved "https://registry.yarnpkg.com/@heroui/use-pagination/-/use-pagination-2.2.15.tgz#f9b476e880b6b21df6c2219d612b9178c41191d4"
+  integrity sha512-hTu0gY5BSGch+JW8SDpSG8zI8grYt+EYVS2bn7nrI8vUZQOseNXOmKpiFeshuQP9X129ACZjmEkH7/LMbs4E7Q==
+  dependencies:
+    "@heroui/shared-utils" "2.1.10"
+    "@react-aria/i18n" "3.12.10"
 
 "@heroui/use-safe-layout-effect@2.1.6":
   version "2.1.6"
@@ -3975,6 +4027,15 @@ framer-motion@11.13.1:
     motion-utils "^11.13.0"
     tslib "^2.4.0"
 
+framer-motion@^12.23.3:
+  version "12.23.3"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.23.3.tgz#c5b2548a755f52f789a218d0fc5cf96cf2fabc12"
+  integrity sha512-llmLkf44zuIZOPSrE4bl4J0UTg6bav+rlKEfMRKgvDMXqBrUtMg6cspoQeRVK3nqRLxTmAJhfGXk39UDdZD7Kw==
+  dependencies:
+    motion-dom "^12.23.2"
+    motion-utils "^12.23.2"
+    tslib "^2.4.0"
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
@@ -4745,10 +4806,30 @@ motion-dom@^11.13.0:
   dependencies:
     motion-utils "^11.18.1"
 
+motion-dom@^12.23.2:
+  version "12.23.2"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.23.2.tgz#4a808afda4cb657d4e05794ce1aec9b7bb294d32"
+  integrity sha512-73j6xDHX/NvVh5L5oS1ouAVnshsvmApOq4F3VZo5MkYSD/YVsVLal4Qp9wvVgJM9uU2bLZyc0Sn8B9c/MMKk4g==
+  dependencies:
+    motion-utils "^12.23.2"
+
 motion-utils@^11.13.0, motion-utils@^11.18.1:
   version "11.18.1"
   resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-11.18.1.tgz#671227669833e991c55813cf337899f41327db5b"
   integrity sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==
+
+motion-utils@^12.23.2:
+  version "12.23.2"
+  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.23.2.tgz#93e13c5abd611bf270fa3da5e962a72f80158d2d"
+  integrity sha512-cIEXlBlXAOUyiAtR0S+QPQUM9L3Diz23Bo+zM420NvSd/oPQJwg6U+rT+WRTpp0rizMsBGQOsAwhWIfglUcZfA==
+
+motion@^12.23.3:
+  version "12.23.3"
+  resolved "https://registry.yarnpkg.com/motion/-/motion-12.23.3.tgz#e6d4cd1c091afad07a822deadcdf0951e2391aa3"
+  integrity sha512-7N0Q4c+Xms+wuq2o27rPONLYNOhQUsLRpMi8CcVxv9FFJhGAqRNjJ1hrBCxHh+Rx6B2W2WPbCOLQc+QJ3rw6Rw==
+  dependencies:
+    framer-motion "^12.23.3"
+    tslib "^2.4.0"
 
 ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   version "2.1.3"

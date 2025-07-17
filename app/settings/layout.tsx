@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
 import Container from "@/components/shared/container/container";
 import SettingMenu from "@/components/settings/setting-menu";
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 
 export const metadata: Metadata = {
 	title: "Settings",
@@ -26,7 +26,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.NEW.LG,
+					startContent: ICONS.NEW.LG,
 					href: "/settings/cards/new",
 				},
 			],
@@ -40,7 +40,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.BACK.LG,
+					startContent: ICONS.BACK.LG,
 					href: "/settings/cards",
 				},
 			],
@@ -54,7 +54,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.BACK.LG,
+					startContent: ICONS.BACK.LG,
 					href: "/settings/cards",
 				},
 			],
@@ -72,7 +72,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.NEW.LG,
+					startContent: ICONS.NEW.LG,
 					href: "/settings/forecasts/new",
 				},
 			],
@@ -86,7 +86,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.BACK.LG,
+					startContent: ICONS.BACK.LG,
 					href: "/settings/forecasts",
 				},
 			],
@@ -100,7 +100,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					color: "primary",
 					variant: "solid",
 					size: "lg",
-					startContent: SYS_ICONS.BACK.LG,
+					startContent: ICONS.BACK.LG,
 					href: "/settings/forecasts",
 				},
 			],

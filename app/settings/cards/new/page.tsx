@@ -11,7 +11,7 @@ import { Checkbox } from "@heroui/checkbox";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
 
-import { TNewCard } from "@/types/card";
+import { TCreateNewCard } from "@/types/card";
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import BankCard from "@/components/shared/bank-card/bank-card";
@@ -26,7 +26,7 @@ export default function NewCardPage() {
 	const router = useRouter();
 	const { width } = useScreenSize();
 
-	const [newCard, setNewCard] = useState<TNewCard>({
+	const [newCard, setNewCard] = useState<TCreateNewCard>({
 		card_name: "",
 		card_balance_init: 0,
 		bank_code: "VIETCOMBANK",
@@ -89,7 +89,7 @@ export default function NewCardPage() {
 		}
 	}, [data, error]);
 
-	const onChangeValue = <K extends keyof TNewCard>(key: K, value: TNewCard[K]) => {
+	const onChangeValue = <K extends keyof TCreateNewCard>(key: K, value: TCreateNewCard[K]) => {
 		if (getFieldError(validateErrors, key)) {
 			setValidateErrors((prev) => prev.filter((error) => error.instancePath !== `/${key}`));
 		}

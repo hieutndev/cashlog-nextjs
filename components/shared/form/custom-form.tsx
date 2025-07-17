@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { Button, ButtonProps } from "@heroui/button";
 
-import SYS_ICONS from "@/configs/icons";
+import ICONS from "@/configs/icons";
 
 interface CustomFormProps {
 	formId: string;
@@ -78,7 +78,7 @@ export default function CustomForm({
 						type="reset"
 						onPress={onReset}
 					>
-						{resetButtonIcon ? SYS_ICONS.RESET.MD : resetButtonText}
+						{resetButtonIcon ? ICONS.RESET.MD : resetButtonText}
 					</Button>
 				)}
 			</div>
