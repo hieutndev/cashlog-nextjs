@@ -314,7 +314,7 @@ export default function CrudTransactionModal({
 														wrapper: "w-full flex gap-2",
 													}}
 													label={"From Account"}
-													value={transactionInfo.card_id.toString()}
+													value={transactionInfo.card_id?.toString()}
 													onValueChange={(e) =>
 														setForm<TCrudTransaction>(
 															"card_id",
@@ -407,7 +407,7 @@ export default function CrudTransactionModal({
 														label={"Select category"}
 														labelPlacement={"outside"}
 														placeholder={"Select category"}
-														selectedKeys={[transactionInfo.category_id?.toString() ?? 0]}
+														selectedKeys={[transactionInfo.category_id?.toString() ?? "-1"]}
 														variant={"bordered"}
 														onChange={(e) =>
 															setForm(
@@ -439,7 +439,7 @@ export default function CrudTransactionModal({
 														labelPlacement={"outside"}
 														placeholder={"Enter amount"}
 														type={"number"}
-														value={transactionInfo.amount.toString()}
+														value={transactionInfo.amount?.toString() ?? 0}
 														variant={"bordered"}
 														onValueChange={(e) =>
 															setForm<TCrudTransaction>(
@@ -482,7 +482,7 @@ export default function CrudTransactionModal({
 													label={"Description"}
 													labelPlacement={"outside"}
 													placeholder={"Enter description"}
-													value={transactionInfo.description.toString()}
+													value={transactionInfo.description?.toString()}
 													variant={"bordered"}
 													onValueChange={(e) =>
 														setForm<TCrudTransaction>(
