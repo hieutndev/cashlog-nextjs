@@ -122,7 +122,9 @@ export default function ForecastsPage() {
 					)}
 				</RadioGroup>
 			</div>
-			<Table>
+			<Table
+				isHeaderSticky
+			>
 				<TableHeader columns={forecastColumns}>
 					{(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
 				</TableHeader>
