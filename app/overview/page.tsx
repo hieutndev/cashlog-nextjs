@@ -97,7 +97,7 @@ export default function OverviewPage() {
 		})
 	);
 
-	console.log("🚀 ~ OverviewPage ~ cardsPerPage:", cardsPerPage);
+	
 
 	const totalCards = fetchCardResult?.results?.length || 0;
 	const totalPages = Math.ceil(totalCards / cardsPerPage);
@@ -126,7 +126,9 @@ export default function OverviewPage() {
 				})}
 				orientation={"vertical"}
 			>
-				<ContentHeader title={"Overview"} />
+				<ContentHeader classNames={{
+					title: "w-full sm:text-left text-center"
+				}} title={"Overview"}/>
 				<div className={"w-full grid grid-cols-12 gap-4"}>
 					<div
 						className={clsx("flex flex-col gap-4", {
@@ -251,7 +253,7 @@ export default function OverviewPage() {
 				</div>
 				<div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border"}>
 					<header>
-						<h6 className="text-xl font-semibold">Cashflow Chart</h6>
+						<h6 className="text-xl font-semibold text-center">Cashflow Chart</h6>
 					</header>
 					<main>
 						<Chart

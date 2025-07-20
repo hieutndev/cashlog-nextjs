@@ -50,8 +50,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					<HorizontalNav />
 					<div
 						className={clsx({
-							"px-8 pb-8": width > BREAK_POINT.XL,
-							"px-4 pb-4": width <= BREAK_POINT.XL,
+							"px-8 pb-8": width >= BREAK_POINT.XL,
+							"px-4 pb-4": width < BREAK_POINT.XL && width >= BREAK_POINT.MD,
+							"px-2 pb-2": width < BREAK_POINT.MD,
 						})}
 					>
 						{detecting ? (
