@@ -46,12 +46,12 @@ export default function ContentHeader({ title, breadcrumbs }: ContentHeaderProps
 							<Button
 								key={index}
 								{...button}
-								isIconOnly={width < BREAK_POINT.S}
+								isIconOnly={width < BREAK_POINT.SM}
 								onPress={() => {
 									button?.href && router.push(button.href);
 								}}
 							>
-								{width > BREAK_POINT.S ? button.children : null}
+								{width > BREAK_POINT.SM ? button.children : null}
 							</Button>
 						))}
 				</div>

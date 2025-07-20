@@ -28,8 +28,8 @@ export default function BankCardRadio({ card_id, card_name, card_balance, bank_c
 					"flex-row cursor-pointer rounded-lg px-4 py-2 border-2 border-dark/50",
 					"data-[selected=true]:border-primary data-[selected=true]:bg-primary/10 hover:border-primary hover:bg-primary/10 rounded-2xl",
 					{
-						"w-full": width > BREAK_POINT.S,
-						"w-full max-w-xs": width <= BREAK_POINT.S,
+						"w-full": width > BREAK_POINT.SM,
+						"w-full max-w-xs": width <= BREAK_POINT.SM,
 					}
 				),
 				wrapper: "rounded-xl h-3 w-3",

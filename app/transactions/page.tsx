@@ -231,8 +231,8 @@ export default function TransactionsPage() {
 		<section className={"w-full flex flex-col gap-4"}>
 			<div
 				className={clsx("flex gap-4", {
-					"justify-between items-center": width > BREAK_POINT.S,
-					"flex-col items-start": width <= BREAK_POINT.S,
+					"justify-between items-center": width > BREAK_POINT.SM,
+					"flex-col items-start": width <= BREAK_POINT.SM,
 				})}
 			>
 				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
@@ -388,7 +388,7 @@ export default function TransactionsPage() {
 						{(column) => (
 							<TableColumn
 								key={column.key}
-								align={["category_name"].includes(column.key) ? "center" : "start"}
+								align={["category_name", "date", "amount"].includes(column.key) ? "center" : "start"}
 							>
 								{column.label}
 							</TableColumn>

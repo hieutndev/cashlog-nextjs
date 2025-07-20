@@ -128,8 +128,8 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 	return (
 		<div
 			className={clsx({
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12": width <= BREAK_POINT.LG,
 			})}
 		>
 			{loadingCardInfo || !fetchCardInfoResult ? (
@@ -140,8 +140,8 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 				<div className={"flex flex-wrap-reverse items-start gap-4"}>
 					<div
 						className={clsx("border-gray-200 ", {
-							"w-1/2 border-r pr-4": width > BREAK_POINT.L,
-							"w-full border-t pt-4": width <= BREAK_POINT.L,
+							"w-1/2 border-r pr-4": width > BREAK_POINT.LG,
+							"w-full border-t pt-4": width <= BREAK_POINT.LG,
 						})}
 					>
 						<CustomForm
@@ -240,8 +240,8 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 					</div>
 					<div
 						className={clsx({
-							"w-full": width <= BREAK_POINT.L,
-							"w-1/2": width > BREAK_POINT.L,
+							"w-full": width <= BREAK_POINT.LG,
+							"w-1/2": width > BREAK_POINT.LG,
 						})}
 					>
 						<BankCard

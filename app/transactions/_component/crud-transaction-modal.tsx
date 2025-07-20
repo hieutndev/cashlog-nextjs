@@ -375,7 +375,7 @@ export default function CrudTransactionModal({
 												</RadioGroup>
 												<div
 													className={clsx("flex items-center gap-4", {
-														"flex-wrap": width <= BREAK_POINT.S,
+														"flex-wrap": width <= BREAK_POINT.SM,
 													})}
 												>
 													<DatePicker

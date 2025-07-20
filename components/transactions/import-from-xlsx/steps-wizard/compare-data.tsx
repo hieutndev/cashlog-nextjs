@@ -7,7 +7,7 @@ import { Alert } from "@heroui/alert";
 import { addToast } from "@heroui/toast";
 import clsx from "clsx";
 import Image from "next/image";
-import { Spinner } from '@heroui/spinner';
+import { Spinner } from "@heroui/spinner";
 
 import CompareCard from "./compare-card";
 
@@ -17,6 +17,8 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import { ILLUSTRATION_PATH } from "@/configs/path-config";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export interface CompareDataProps {
 	uploadResult: TImportFileXLSXResponse;
@@ -32,6 +34,8 @@ export const NoExistingData = ({ message }: { message: string }) => {
 };
 
 export const RenderCompareData = ({ data, type }: { data: string[]; type: "success" | "danger" }) => {
+	const { width } = useScreenSize();
+
 	return (
 		<div className={"h-full flex flex-wrap item-start gap-2"}>
 			{data.map((item) => {
@@ -39,8 +43,8 @@ export const RenderCompareData = ({ data, type }: { data: string[]; type: "succe
 					<Chip
 						key={item}
 						className={clsx({ "text-success": type === "success", "text-danger": type === "danger" })}
-						// className={"text-white"}
 						color={type}
+						size={width < BREAK_POINT.LG ? "sm" : "md"}
 						variant={"flat"}
 					>
 						{item}
@@ -52,6 +56,8 @@ export const RenderCompareData = ({ data, type }: { data: string[]; type: "succe
 };
 
 export default function CompareData({ uploadResult, onCompareSuccess }: CompareDataProps) {
+	const { width } = useScreenSize();
+
 	/* Validate Categories */
 
 	const {
@@ -178,9 +184,9 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 	return Array.isArray(validateCategoriesResult?.results?.missing_categories) &&
 		Array.isArray(validateCardsResult?.results?.missing_cards) &&
 		validateCategoriesResult.results.missing_categories.length === 0 &&
-		validateCardsResult.results.missing_cards.length === 0? (
-		<Container className={"justify-center items-center"}>
-			<div className={"w-full flex flex-col gap-8 max-w-2xl p-8 border shadow-lg rounded-2xl"}>
+		validateCardsResult.results.missing_cards.length === 0 ? (
+		<Container className={"justify-center items-center !p-0"}>
+			<div className={"w-full flex flex-col gap-8 lg:max-w-2xl lg:p-8 p-4 border shadow-lg rounded-2xl"}>
 				<Image
 					alt={"Completed Initialization"}
 					className={"w-full max-w-32 mx-auto"}
@@ -190,26 +196,36 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 				/>
 				<div className={"w-full flex flex-col gap-4 justify-center items-center"}>
 					<h2 className={"text-2xl font-semibold text-primary"}>Good job!</h2>
-					<div className={"flex flex-col items-center gap-1"}>
-						<p className={"min-w-max text-default-500 text-wrap w-3/4 text-center"}>
+					<div className={"w-full flex flex-col items-center gap-1"}>
+						<p
+							className={
+								"min-w-max text-default-500 text-wrap w-full text-sm lg:text-base lg:w-3/4 text-center"
+							}
+						>
 							All categories and cards are valid.
 						</p>
-						<p className={"min-w-max text-default-500 text-wrap w-3/4 text-center"}>
+						<p
+							className={
+								"min-w-max text-default-500 text-wrap w-full text-sm lg:text-base lg:w-3/4 text-center"
+							}
+						>
 							You can proceed to the next step now.
 						</p>
 					</div>
-					<div className={"flex items-center gap-4"}>
+					<div className={"w-full flex items-center gap-4"}>
 						<Button
+							isIconOnly={width < BREAK_POINT.LG}
 							size={"lg"}
 							startContent={ICONS.BACK.LG}
 							variant={"flat"}
 							onPress={() => onCompareSuccess("back")}
 						>
-							Previous Step
+							{width > BREAK_POINT.LG ? "Previous Step" : ""}
 						</Button>
 						<Button
 							color={"primary"}
 							endContent={ICONS.NEXT.LG}
+							fullWidth={width < BREAK_POINT.LG}
 							size={"lg"}
 							onPress={() => onCompareSuccess("next")}
 						>
@@ -219,12 +235,11 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 				</div>
 			</div>
 		</Container>
-	) : 
-		validatingCategories || validatingCards ?  (
-			<Container className={"flex flex-col items-center justify-center h-full"}>
-				<Spinner>Validating...</Spinner>
-			</Container>
-		) : (
+	) : validatingCategories || validatingCards ? (
+		<Container className={"flex flex-col items-center justify-center h-full"}>
+			<Spinner>Validating...</Spinner>
+		</Container>
+	) : (
 		<Container
 			className={"!p-0"}
 			orientation={"vertical"}
@@ -262,7 +277,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 			/>
 
 			<div className={"flex flex-col gap-4"}>
-				<Alert color={"warning"}>
+				<Alert className={"text-sm lg:text-base"} color={"warning"}>
 					Warning: Excel import will fail if any cards or categories are missing. Please initialization before
 					proceeding.
 				</Alert>
@@ -272,7 +287,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 					startContent={ICONS.GIT_PULL_REQUEST.LG}
 					onPress={handleInitCardsAndCategories}
 				>
-					Initialize Missing Cards & Categories
+					{width < BREAK_POINT.LG ? "Initialize Missing Data" : "Initialize Missing Cards & Categories"}
 				</Button>
 			</div>
 		</Container>

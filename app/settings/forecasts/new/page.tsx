@@ -108,8 +108,8 @@ export default function NewForecastPage() {
 	return (
 		<CustomForm
 			className={clsx("flex flex-col gap-4", {
-				"col-span-10": width >= BREAK_POINT.L,
-				"col-span-12": width < BREAK_POINT.L,
+				"col-span-10": width >= BREAK_POINT.LG,
+				"col-span-12": width < BREAK_POINT.LG,
 			})}
 			formId={"newForecastForm"}
 			onSubmit={handleCreateForecast}

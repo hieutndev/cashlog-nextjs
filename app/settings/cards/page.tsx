@@ -81,8 +81,8 @@ export default function SettingCardsPage() {
 	return (
 		<div
 			className={clsx("w-full flex flex-col gap-8", {
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12": width <= BREAK_POINT.LG,
 			})}
 		>
 			{loadingCard ? (
@@ -99,8 +99,8 @@ export default function SettingCardsPage() {
 									"relative overflow-hidden group rounded-3xl",
 									`bankcard-shadow-${card.card_color}`,
 									{
-										"w-full": width < BREAK_POINT.S,
-										"w-max": width >= BREAK_POINT.S,
+										"w-full": width < BREAK_POINT.SM,
+										"w-max": width >= BREAK_POINT.SM,
 									}
 								)}
 							>

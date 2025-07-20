@@ -30,8 +30,8 @@ export default function SettingMenu() {
 	return (
 		<div
 			className={clsx("flex flex-col gap-4 border-gray-200", {
-				"col-span-2 w-full max-w-48 border-r pr-4": width >= BREAK_POINT.L,
-				"col-span-12 w-full border-b pb-4": width < BREAK_POINT.L,
+				"col-span-2 w-full max-w-48 border-r pr-4": width >= BREAK_POINT.LG,
+				"col-span-12 w-full border-b pb-4": width < BREAK_POINT.LG,
 			})}
 		>
 			{SETTING_MENU.map((button) => (

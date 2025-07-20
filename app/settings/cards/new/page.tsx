@@ -103,14 +103,14 @@ export default function NewCardPage() {
 	return (
 		<div
 			className={clsx("w-full flex items-start gap-4", {
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12 flex-wrap-reverse": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12 flex-wrap-reverse": width <= BREAK_POINT.LG,
 			})}
 		>
 			<div
 				className={clsx("border-gray-200", {
-					"w-1/2 px-4 border-r": width > BREAK_POINT.M,
-					"w-full py-4 border-t": width <= BREAK_POINT.M,
+					"w-1/2 px-4 border-r": width > BREAK_POINT.MD,
+					"w-full py-4 border-t": width <= BREAK_POINT.MD,
 				})}
 			>
 				<CustomForm
@@ -201,8 +201,8 @@ export default function NewCardPage() {
 			</div>
 			<div
 				className={clsx({
-					"w-1/2": width > BREAK_POINT.M,
-					"w-full": width <= BREAK_POINT.M,
+					"w-1/2": width > BREAK_POINT.MD,
+					"w-full": width <= BREAK_POINT.MD,
 				})}
 			>
 				<BankCard

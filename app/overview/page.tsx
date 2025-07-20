@@ -91,9 +91,9 @@ export default function OverviewPage() {
 
 	const cardsPerPage: number = Number(
 		clsx({
-			1: width > BREAK_POINT.XL || width <= BREAK_POINT.M,
-			2: width <= BREAK_POINT.XL && width > BREAK_POINT.L,
-			3: width <= BREAK_POINT.L && width > BREAK_POINT.M,
+			1: width > BREAK_POINT.XL || width <= BREAK_POINT.MD,
+			2: width <= BREAK_POINT.XL && width > BREAK_POINT.LG,
+			3: width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
 		})
 	);
 
@@ -122,7 +122,7 @@ export default function OverviewPage() {
 			<Container
 				shadow
 				className={clsx("bg-white border border-gray-200 rounded-xl", {
-					"px-4": width <= BREAK_POINT.L,
+					"px-4": width <= BREAK_POINT.LG,
 				})}
 				orientation={"vertical"}
 			>
@@ -130,16 +130,16 @@ export default function OverviewPage() {
 				<div className={"w-full grid grid-cols-12 gap-4"}>
 					<div
 						className={clsx("flex flex-col gap-4", {
-							"col-span-8": width > BREAK_POINT.L,
-							"col-span-7": width <= BREAK_POINT.L && width > BREAK_POINT.M,
-							"col-span-12": width <= BREAK_POINT.M,
+							"col-span-8": width > BREAK_POINT.LG,
+							"col-span-7": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
+							"col-span-12": width <= BREAK_POINT.MD,
 						})}
 					>
 						<div className="flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
 							<header
 								className={clsx("flex justify-between items-center gap-4", {
-									"flex-col": width <= BREAK_POINT.L,
-									"flex-row": width > BREAK_POINT.L,
+									"flex-col": width <= BREAK_POINT.LG,
+									"flex-row": width > BREAK_POINT.LG,
 								})}
 							>
 								<h3 className="text-lg font-semibold">Financial Analytics</h3>
@@ -165,8 +165,8 @@ export default function OverviewPage() {
 							<main
 								className={clsx("grid gap-4", {
 									"grid-cols-3": width > BREAK_POINT.XL,
-									"grid-cols-2": width < BREAK_POINT.XL && width > BREAK_POINT.L,
-									"grid-cols-1": width <= BREAK_POINT.L,
+									"grid-cols-2": width < BREAK_POINT.XL && width > BREAK_POINT.LG,
+									"grid-cols-1": width <= BREAK_POINT.LG,
 								})}
 							>
 								{balanceFluctuationData.length > 0 ? (
@@ -195,9 +195,9 @@ export default function OverviewPage() {
 						className={clsx(
 							"h-max flex flex-col gap-4 bg-white border border-gray-200 p-4 rounded-3xl shadow-sm",
 							{
-								"col-span-4": width > BREAK_POINT.L,
-								"col-span-5": width <= BREAK_POINT.L && width > BREAK_POINT.M,
-								"col-span-12": width <= BREAK_POINT.M,
+								"col-span-4": width > BREAK_POINT.LG,
+								"col-span-5": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
+								"col-span-12": width <= BREAK_POINT.MD,
 							}
 						)}
 					>

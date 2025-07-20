@@ -25,8 +25,8 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 				`bankcard-${color}`,
 				className,
 				{
-					"w-full max-w-96": width < BREAK_POINT.S,
-					"w-96": width >= BREAK_POINT.S,
+					"w-full max-w-96": width < BREAK_POINT.SM,
+					"w-96": width >= BREAK_POINT.SM,
 				}
 			)}
 		>

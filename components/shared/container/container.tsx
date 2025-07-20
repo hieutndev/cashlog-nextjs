@@ -2,7 +2,6 @@
 
 import clsx from "clsx";
 
-import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
 
 interface ContainerProps {
@@ -31,10 +30,8 @@ export default function Container({
 
 	return (
 		<div
-			className={clsx("w-full h-full", WrapperOrientationClass[orientation], WrapperGapClass, className, {
+			className={clsx("w-full h-full p-2 sm:p-4 lg:p-8", WrapperOrientationClass[orientation], WrapperGapClass, className, {
 				"shadow-lg": shadow,
-				"p-8": width > BREAK_POINT.S,
-				"p-4": width <= BREAK_POINT.S,
 			})}
 		>
 			{children}

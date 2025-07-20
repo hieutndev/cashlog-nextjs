@@ -75,23 +75,23 @@ export default function SignInPage() {
 	return (
 		<div
 			className={clsx("w-full h-full", {
-				"grid grid-cols-2": width > BREAK_POINT.L,
-				"flex flex-col gap-4": width <= BREAK_POINT.L,
-				"px-32": width > BREAK_POINT.M,
-				"px-4": width <= BREAK_POINT.M,
+				"grid grid-cols-2": width > BREAK_POINT.LG,
+				"flex flex-col gap-4": width <= BREAK_POINT.LG,
+				"px-32": width > BREAK_POINT.MD,
+				"px-4": width <= BREAK_POINT.MD,
 			})}
 		>
 			<div
 				className={clsx("flex items-center justify-center", {
-					"h-full col-span-1 ": width > BREAK_POINT.L,
-					"h-max": width <= BREAK_POINT.L,
+					"h-full col-span-1 ": width > BREAK_POINT.LG,
+					"h-max": width <= BREAK_POINT.LG,
 				})}
 			>
 				<Image
 					alt={"Cashlog Logo"}
 					className={clsx({
-						"w-3/4": width > BREAK_POINT.L,
-						"max-w-64": width <= BREAK_POINT.L,
+						"w-3/4": width > BREAK_POINT.LG,
+						"max-w-64": width <= BREAK_POINT.LG,
 					})}
 					height={1200}
 					src={"/cashlog_icontext_vertical.png"}
@@ -100,14 +100,14 @@ export default function SignInPage() {
 			</div>
 			<div
 				className={clsx("flex flex-col items-center justify-center gap-8 px-4", {
-					"h-full col-span-1": width > BREAK_POINT.L,
-					"h-max": width <= BREAK_POINT.L,
+					"h-full col-span-1": width > BREAK_POINT.LG,
+					"h-max": width <= BREAK_POINT.LG,
 				})}
 			>
 				<h1
 					className={clsx("w-4/6 text-6xl font-bold text-primary", {
-						"text-left": width > BREAK_POINT.L,
-						"text-center": width <= BREAK_POINT.L,
+						"text-left": width > BREAK_POINT.LG,
+						"text-center": width <= BREAK_POINT.LG,
 					})}
 				>
 					Sign In.
@@ -116,8 +116,8 @@ export default function SignInPage() {
 					<CustomForm
 						className={clsx("flex flex-col gap-4", {
 							"w-4/6": width > BREAK_POINT.XL,
-							"w-5/6": width > BREAK_POINT.M && width <= BREAK_POINT.XL,
-							"w-full": width <= BREAK_POINT.M,
+							"w-5/6": width > BREAK_POINT.MD && width <= BREAK_POINT.XL,
+							"w-full": width <= BREAK_POINT.MD,
 						})}
 						formId={"loginForm"}
 						isLoading={signingIn}

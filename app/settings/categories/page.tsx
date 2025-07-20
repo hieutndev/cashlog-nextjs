@@ -110,8 +110,8 @@ export default function CategoriesPage() {
 	return (
 		<div
 			className={clsx("grid grid-cols-12 gap-4", {
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12": width <= BREAK_POINT.LG,
 			})}
 		>
 			{loadingCategories ? (
@@ -122,8 +122,8 @@ export default function CategoriesPage() {
 				<>
 					<div
 						className={clsx("flex flex-col gap-4", {
-							"col-span-6 border-r pr-4": width >= BREAK_POINT.S,
-							"col-span-12 border-b border-gray-200  pb-4": width < BREAK_POINT.S,
+							"col-span-6 border-r pr-4": width >= BREAK_POINT.SM,
+							"col-span-12 border-b border-gray-200  pb-4": width < BREAK_POINT.SM,
 						})}
 					>
 						<h3 className={"text-2xl font-semibold"}>List Categories</h3>
@@ -192,8 +192,8 @@ export default function CategoriesPage() {
 					</div>
 					<div
 						className={clsx("flex flex-col gap-4", {
-							"col-span-6": width >= BREAK_POINT.S,
-							"col-span-12": width < BREAK_POINT.S,
+							"col-span-6": width >= BREAK_POINT.SM,
+							"col-span-12": width < BREAK_POINT.SM,
 						})}
 					>
 						<div className={"flex items-center justify-between"}>

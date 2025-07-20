@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					className={clsx("relative h-100", {
 						"col-span-2": width > BREAK_POINT.XL,
 						"w-max": width <= BREAK_POINT.XL,
-						hidden: width <= BREAK_POINT.L,
+						hidden: width <= BREAK_POINT.LG,
 					})}
 				>
 					<Sidebar />

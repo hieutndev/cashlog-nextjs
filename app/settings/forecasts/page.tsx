@@ -84,8 +84,8 @@ export default function SettingForecastPage() {
 	return (
 		<div
 			className={clsx({
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12": width <= BREAK_POINT.LG,
 			})}
 		>
 			{loadingForecast ? (
