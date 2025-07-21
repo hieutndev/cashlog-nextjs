@@ -14,7 +14,6 @@ import BankCard from "@/components/shared/bank-card/bank-card";
 import { IAPIResponse } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SettingCardsPage() {
 	const router = useRouter();
@@ -79,12 +78,7 @@ export default function SettingCardsPage() {
 	}, [fetchCardResults]);
 
 	return (
-		<div
-			className={clsx("w-full flex flex-col gap-8", {
-				"col-span-10": width > BREAK_POINT.LG,
-				"col-span-12": width <= BREAK_POINT.LG,
-			})}
-		>
+		<div className={clsx("w-full flex flex-col gap-8 lg:col-span-10 col-span-12")}>
 			{loadingCard ? (
 				<div className="flex items-center justify-center">
 					<Spinner size={"lg"}>Loading...</Spinner>
@@ -96,12 +90,8 @@ export default function SettingCardsPage() {
 							<div
 								key={card.card_id}
 								className={clsx(
-									"relative overflow-hidden group rounded-3xl",
-									`bankcard-shadow-${card.card_color}`,
-									{
-										"w-full": width < BREAK_POINT.SM,
-										"w-max": width >= BREAK_POINT.SM,
-									}
+									"relative overflow-hidden group rounded-3xl sm:w-max w-full",
+									`bankcard-shadow-${card.card_color}`
 								)}
 							>
 								<BankCard

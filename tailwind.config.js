@@ -11,6 +11,12 @@ const config = {
     extend: {
       maxHeight: {
         "84": "21rem"
+      },
+      width: {
+        "84": "21rem",
+        "88": "22rem",
+        "92": "23rem",
+        "94": "23.5rem",
       }
     }
   },

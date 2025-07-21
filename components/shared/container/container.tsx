@@ -30,7 +30,7 @@ export default function Container({
 
 	return (
 		<div
-			className={clsx("w-full h-full p-2 sm:p-4 lg:p-8", WrapperOrientationClass[orientation], WrapperGapClass, className, {
+			className={clsx("w-full h-full px-4 py-2 lg:p-8", WrapperOrientationClass[orientation], WrapperGapClass, className, {
 				"shadow-lg": shadow,
 			})}
 		>

@@ -5,7 +5,6 @@ import { getBankLogo } from "@/configs/bank";
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
 
 interface BankCardProps {
 	cardName: string;
@@ -21,13 +20,9 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 	return (
 		<div
 			className={clsx(
-				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br",
+				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br sm:w-96 md:w-88 lg:w-92 w-full",
 				`bankcard-${color}`,
 				className,
-				{
-					"w-full max-w-96": width < BREAK_POINT.SM,
-					"w-96": width >= BREAK_POINT.SM,
-				}
 			)}
 		>
 			<div className={"absolute top-8 right-8"}>
