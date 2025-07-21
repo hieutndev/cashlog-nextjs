@@ -7,6 +7,9 @@ import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
+import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/modal";
+
+import { BREAK_POINT } from '../../../configs/break-point';
 
 import CategoryForm from "./_component/category-form";
 
@@ -15,7 +18,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
+import { sliceText } from "@/utils/string";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },
@@ -100,19 +103,28 @@ export default function CategoriesPage() {
 	const onSuccess = async () => {
 		await fetchCategories();
 		setFormAction("add");
+		onOpenChange();
 	};
 
 	const onEdit = (category: TCategory) => {
 		setFormAction("edit");
 		setSelectedCategory(category);
+		onOpenChange();
 	};
+
+	const onAddNewCategory = () => {
+		setFormAction("add");
+		setSelectedCategory(undefined);
+		onOpenChange();
+	};
+
+	/* CONFIG MODAL */
+
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
 	return (
 		<div
-			className={clsx("grid grid-cols-12 gap-4", {
-				"col-span-10": width > BREAK_POINT.LG,
-				"col-span-12": width <= BREAK_POINT.LG,
-			})}
+			className={clsx("grid grid-cols-12 gap-4 lg:col-span-10 col-span-12")}
 		>
 			{loadingCategories ? (
 				<div className={"w-full col-span-12 flex justify-center items-center h-full"}>
@@ -120,14 +132,19 @@ export default function CategoriesPage() {
 				</div>
 			) : (
 				<>
-					<div
-						className={clsx("flex flex-col gap-4", {
-							"col-span-6 border-r pr-4": width >= BREAK_POINT.SM,
-							"col-span-12 border-b border-gray-200  pb-4": width < BREAK_POINT.SM,
-						})}
-					>
-						<h3 className={"text-2xl font-semibold"}>List Categories</h3>
-						<Table aria-label="Categories Table">
+					<div className={clsx("flex flex-col gap-4 col-span-12 border-b border-gray-200 pb-4")}>
+						<div className="w-full flex items-center justify-between">
+							<h3 className={"text-2xl font-semibold"}>List Categories</h3>
+							<Button
+								color={"primary"}
+								isIconOnly={width < BREAK_POINT.SM}
+								startContent={ICONS.NEW.MD}
+								onPress={onAddNewCategory}
+							>
+								{width >= BREAK_POINT.SM ? "Add new category" : ""}
+							</Button>
+						</div>
+						<Table aria-label="Categories Table" className={"max-h-128"}>
 							<TableHeader columns={categoryColumns}>
 								{(column) => (
 									<TableColumn
@@ -154,7 +171,7 @@ export default function CategoriesPage() {
 																	base: `background-${getKeyValue(item, "color")} text-white`,
 																}}
 															>
-																{getKeyValue(item, columnKey)}
+																{width > BREAK_POINT.LG ? getKeyValue(item, columnKey) : sliceText(getKeyValue(item, columnKey), 20)}
 															</Chip>
 														</TableCell>
 													);
@@ -190,37 +207,30 @@ export default function CategoriesPage() {
 							</TableBody>
 						</Table>
 					</div>
-					<div
-						className={clsx("flex flex-col gap-4", {
-							"col-span-6": width >= BREAK_POINT.SM,
-							"col-span-12": width < BREAK_POINT.SM,
-						})}
-					>
-						<div className={"flex items-center justify-between"}>
-							<h3 className={"text-2xl font-semibold"}>
-								{formAction === "add" ? "Add new" : "Edit"} Category
-							</h3>
-							{formAction === "edit" && (
-								<Button
-									color={"danger"}
-									startContent={ICONS.XMARK.MD}
-									onPress={() => {
-										setFormAction("add");
-										setSelectedCategory(undefined);
-									}}
-								>
-									Cancel
-								</Button>
-							)}
-						</div>
+				</>
+			)}
+			<Modal
+				hideCloseButton
+				isOpen={isOpen}
+				placement={width >= BREAK_POINT.LG ? "center" : "top"}
+				onOpenChange={onOpenChange}
+			>
+				<ModalContent>
+					<ModalHeader>
+						<h3 className={"text-2xl font-semibold"}>
+							{formAction === "add" ? "Add new" : "Edit"} Category
+						</h3>
+					</ModalHeader>
+					
+					<ModalBody className={"mb-4"}>
 						<CategoryForm
 							action={formAction}
 							categoryInfo={selectedCategory}
 							onSuccess={onSuccess}
 						/>
-					</div>
-				</>
-			)}
+					</ModalBody>
+				</ModalContent>
+			</Modal>
 		</div>
 	);
 }
