@@ -234,7 +234,7 @@ export default function TransactionsPage() {
 				})}
 			>
 				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
-				<div className={"flex items-center md:gap-2 md:flex-wrap md:flex-row flex-row-reverse"}>
+				<div className={"flex items-center gap-2 md:flex-wrap md:flex-row flex-row-reverse"}>
 					<Button
 						color={"primary"}
 						startContent={ICONS.IMPORT.LG}

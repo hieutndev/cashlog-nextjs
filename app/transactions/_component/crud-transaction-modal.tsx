@@ -9,7 +9,7 @@ import { Alert } from "@heroui/alert";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { DatePicker } from "@heroui/date-picker";
 import { ErrorObject } from "ajv";
-import { parseAbsoluteToLocal } from "@internationalized/date";
+import { parseDate } from '@internationalized/date';
 import { addToast } from "@heroui/toast";
 import { Chip } from "@heroui/chip";
 import clsx from "clsx";
@@ -17,6 +17,7 @@ import { Spinner } from "@heroui/spinner";
 import { Select, SelectItem } from "@heroui/select";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
+import moment from "moment";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { TCrudTransaction as TCrudTransaction, TTransaction } from "@/types/transaction";
@@ -280,7 +281,7 @@ export default function CrudTransactionModal({
 		<Modal
 			isDismissable={false}
 			isOpen={isOpen}
-			placement="center"
+			placement={width < BREAK_POINT.SM ? "top" : "center"}
 			scrollBehavior="inside"
 			size="4xl"
 			onOpenChange={onOpenChange}
@@ -387,17 +388,19 @@ export default function CrudTransactionModal({
 														className={"w-max"}
 														label={"Transaction Date"}
 														labelPlacement={"outside"}
-														value={parseAbsoluteToLocal(transactionInfo.date)}
+														// value={parseAbsoluteToLocal(transactionInfo.date)}
+														value={parseDate(moment(transactionInfo.date).format("YYYY-MM-DD"))}
 														variant={"bordered"}
 														onChange={(e) =>
+														{	
 															setForm(
 																"date",
-																e?.toDate()?.toISOString() ?? new Date().toISOString(),
+																new Date(e?.toString()!).toISOString() ?? new Date().toISOString(),
 																validateErrors,
 																setValidateErrors,
 																setTransactionInfo
 															)
-														}
+														}}
 													/>
 													<Select
 														classNames={{
