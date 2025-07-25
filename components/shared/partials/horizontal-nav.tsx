@@ -31,13 +31,13 @@ export default function HorizontalNav() {
 	return (
 		<section
 			className={clsx("w-full flex justify-between items-center py-4 border-b", {
-				"px-8": width > BREAK_POINT.L,
-				"px-4": width <= BREAK_POINT.L,
+				"px-8": width > BREAK_POINT.LG,
+				"px-4": width <= BREAK_POINT.LG,
 			})}
 		>
 			<div
 				className={clsx("w-max", {
-					invisible: width > BREAK_POINT.L,
+					invisible: width > BREAK_POINT.LG,
 				})}
 			>
 				<Navbar
@@ -71,7 +71,7 @@ export default function HorizontalNav() {
 			</div>
 			<div
 				className={clsx({
-					invisible: width > BREAK_POINT.L,
+					invisible: width > BREAK_POINT.LG,
 				})}
 			>
 				<Image
@@ -84,7 +84,7 @@ export default function HorizontalNav() {
 			</div>
 			{hasCookie("refresh_token") ? (
 				<div className={"flex items-center gap-2"}>
-					{width >= BREAK_POINT.M && (
+					{width >= BREAK_POINT.MD && (
 						<Button
 							color={"primary"}
 							variant={"light"}

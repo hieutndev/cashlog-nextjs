@@ -27,12 +27,10 @@ import { TCard } from "@/types/card";
 import { IAPIResponse } from "@/types/global";
 import { makeListDate, upperFirstLetter } from "@/utils/text-transform";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
-import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
+import TransactionType from "@/components/transactions/transaction-type";
 
 export default function NewForecastPage() {
 	const router = useRouter();
-	const { width } = useScreenSize();
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
@@ -106,184 +104,215 @@ export default function NewForecastPage() {
 	}, [fetchCardsResult, errorCards]);
 
 	return (
-		<CustomForm
-			className={clsx("flex flex-col gap-4", {
-				"col-span-10": width >= BREAK_POINT.L,
-				"col-span-12": width < BREAK_POINT.L,
-			})}
-			formId={"newForecastForm"}
-			onSubmit={handleCreateForecast}
-		>
-			<div className={"flex items-start gap-4"}>
-				<div className={"flex flex-col gap-4 w-full border-r pr-4"}>
-					<Input
-						isRequired
-						errorMessage={getFieldError(validateErrors, "forecast_name")?.message}
-						isInvalid={!!getFieldError(validateErrors, "forecast_name")}
-						label={"Forecast Name"}
-						labelPlacement={"outside"}
-						name={"forecast_name"}
-						placeholder={"Enter forecast name"}
-						value={newForecast.forecast_name}
-						variant={"bordered"}
-						onValueChange={(value) =>
-							setForm<TNewForecast>(
-								"forecast_name",
-								value,
-								validateErrors,
-								setValidateErrors,
-								setNewForecast
-							)
-						}
-					/>
-					<RadioGroup
-						isRequired
-						classNames={{
-							label: "text-sm",
-						}}
-						label={"Select Card"}
-						value={newForecast.card_id.toString()}
-						onValueChange={(e) =>
-							setForm<TNewForecast>("card_id", +e, validateErrors, setValidateErrors, setNewForecast)
-						}
-					>
-						<ScrollShadow
-							hideScrollBar
-							className={"flex flex-col gap-2 max-h-84"}
-						>
-							{loadingCards ? (
-								<Skeleton className={"w-96 h-14 rounded-2xl flex justify-start items-center"} />
-							) : (
-								listCard.map((card) => (
-									<BankCardRadio
-										key={card.card_id}
-										{...card}
-									/>
-								))
-							)}
-						</ScrollShadow>
-					</RadioGroup>
-					<div className={"grid grid-cols-3 items-center gap-2"}>
-						<DatePicker
-							disableAnimation
-							hideTimeZone
+		<div className="col-span-12 lg:col-span-10 w-full flex flex-col gap-4">
+			<h3 className={"text-2xl font-semibold"}>New Forecast</h3>
+			<div className={"flex gap-4 flex-col-reverse lg:flex-row"}>
+				<CustomForm
+					className={clsx("flex flex-col gap-4")}
+					formId={"newForecastForm"}
+					onSubmit={handleCreateForecast}
+				>
+					<div className={"flex flex-col gap-4 w-full lg:border-r lg:border-gray-200 lg:pr-4"}>
+						<Input
 							isRequired
-							showMonthAndYearPickers
-							aria-label={"Forecast Date"}
-							label={"Forecast Date"}
+							errorMessage={getFieldError(validateErrors, "forecast_name")?.message}
+							isInvalid={!!getFieldError(validateErrors, "forecast_name")}
+							label={"Forecast Name"}
 							labelPlacement={"outside"}
-							value={parseDate(moment(newForecast.forecast_date).format("YYYY-MM-DD"))}
+							name={"forecast_name"}
+							placeholder={"Enter forecast name"}
+							value={newForecast.forecast_name}
 							variant={"bordered"}
-							onChange={(e) =>
+							onValueChange={(value) =>
 								setForm<TNewForecast>(
-									"forecast_date",
-									e?.toDate(getLocalTimeZone())?.toISOString() ?? moment().toISOString(),
+									"forecast_name",
+									value,
 									validateErrors,
 									setValidateErrors,
 									setNewForecast
 								)
 							}
 						/>
-						<Select
+						<RadioGroup
 							isRequired
-							disallowEmptySelection={true}
-							label={"Repeat Type"}
-							labelPlacement={"outside"}
-							placeholder={"Select repeat type"}
-							renderValue={(selectedKeys) => {
-								return upperFirstLetter(selectedKeys[0].textValue || "");
+							classNames={{
+								label: "text-sm",
 							}}
-							selectedKeys={[newForecast.repeat_type]}
-							variant={"bordered"}
-							onChange={(e) => {
+							label={"Select Card"}
+							value={newForecast.card_id.toString()}
+							onValueChange={(e) =>
+								setForm<TNewForecast>("card_id", +e, validateErrors, setValidateErrors, setNewForecast)
+							}
+						>
+							<ScrollShadow
+								hideScrollBar
+								className={"flex flex-col gap-2 max-h-84"}
+							>
+								{loadingCards ? (
+									<Skeleton className={"w-96 h-14 rounded-2xl flex justify-start items-center"} />
+								) : (
+									listCard.map((card) => (
+										<BankCardRadio
+											key={card.card_id}
+											{...card}
+										/>
+									))
+								)}
+							</ScrollShadow>
+						</RadioGroup>
+						<RadioGroup
+							isRequired
+							classNames={{
+								wrapper: "flex flex-row items-center gap-2",
+							}}
+							label={"Transaction Type"}
+							value={newForecast.direction}
+							onValueChange={(e) => {
 								setForm<TNewForecast>(
-									"repeat_type",
-									e.target.value,
+									"direction",
+									e,
 									validateErrors,
 									setValidateErrors,
 									setNewForecast
 								);
 							}}
 						>
-							{["hour", "day", "month", "year"].map((type) => (
-								<SelectItem
-									key={type}
-									className={"capitalize"}
-								>
-									{type}
-								</SelectItem>
-							))}
-						</Select>
-						<Input
-							isRequired
-							errorMessage={getFieldError(validateErrors, "repeat_times")?.message}
-							isInvalid={!!getFieldError(validateErrors, "repeat_times")}
-							label={"Repeat Times"}
-							labelPlacement={"outside"}
-							name={"repeat_times"}
-							placeholder={"Enter repeat times"}
-							type={"number"}
-							value={newForecast.repeat_times.toString()}
-							variant={"bordered"}
-							onValueChange={(value) =>
-								setForm<TNewForecast>(
-									"repeat_times",
-									Number(value),
-									validateErrors,
-									setValidateErrors,
-									setNewForecast
-								)
-							}
-						/>
-					</div>
+							<TransactionType
+								key={"in"}
+								type={"in"}
+							/>
+							<TransactionType
+								key={"out"}
+								type={"out"}
+							/>
+						</RadioGroup>
+						<div className={"grid sm:grid-cols-3 items-center gap-4 sm:gap-2"}>
+							<DatePicker
+								disableAnimation
+								hideTimeZone
+								isRequired
+								showMonthAndYearPickers
+								aria-label={"Forecast Date"}
+								label={"Forecast Date"}
+								labelPlacement={"outside"}
+								value={parseDate(moment(newForecast.forecast_date).format("YYYY-MM-DD"))}
+								variant={"bordered"}
+								onChange={(e) =>
+									setForm<TNewForecast>(
+										"forecast_date",
+										e?.toDate(getLocalTimeZone())?.toISOString() ?? moment().toISOString(),
+										validateErrors,
+										setValidateErrors,
+										setNewForecast
+									)
+								}
+							/>
+							<Select
+								isRequired
+								disallowEmptySelection={true}
+								label={"Repeat Type"}
+								labelPlacement={"outside"}
+								placeholder={"Select repeat type"}
+								renderValue={(selectedKeys) => {
+									return upperFirstLetter(selectedKeys[0].textValue || "");
+								}}
+								selectedKeys={[newForecast.repeat_type]}
+								variant={"bordered"}
+								onChange={(e) => {
+									setForm<TNewForecast>(
+										"repeat_type",
+										e.target.value,
+										validateErrors,
+										setValidateErrors,
+										setNewForecast
+									);
+								}}
+							>
+								{["hour", "day", "month", "year"].map((type) => (
+									<SelectItem
+										key={type}
+										className={"capitalize"}
+									>
+										{type}
+									</SelectItem>
+								))}
+							</Select>
+							<Input
+								isRequired
+								errorMessage={getFieldError(validateErrors, "repeat_times")?.message}
+								isInvalid={!!getFieldError(validateErrors, "repeat_times")}
+								label={"Repeat Times"}
+								labelPlacement={"outside"}
+								name={"repeat_times"}
+								placeholder={"Enter repeat times"}
+								type={"number"}
+								value={newForecast.repeat_times.toString()}
+								variant={"bordered"}
+								onValueChange={(value) =>
+									setForm<TNewForecast>(
+										"repeat_times",
+										Number(value),
+										validateErrors,
+										setValidateErrors,
+										setNewForecast
+									)
+								}
+							/>
+						</div>
 
-					<div className={"flex flex-col gap-2"}>
-						<Input
-							isRequired
-							errorMessage={getFieldError(validateErrors, "amount")?.message}
-							isInvalid={!!getFieldError(validateErrors, "amount")}
-							label={"Amount"}
-							labelPlacement={"outside"}
-							name={"amount"}
-							placeholder={"Enter amount"}
-							type={"number"}
-							value={newForecast.amount.toString()}
-							variant={"bordered"}
-							onValueChange={(value) =>
-								setForm<TNewForecast>(
-									"amount",
-									Number(value),
-									validateErrors,
-									setValidateErrors,
-									setNewForecast
-								)
-							}
-						/>
-						<div className={"flex items-center gap-1"}>
-							{makeSuggestAmount(newForecast.amount).map((val, index) => (
-								<Chip
-									key={index}
-									classNames={{
-										content: index === 0 && "font-semibold",
-									}}
-									color={index === 0 ? "primary" : "default"}
-									size={"sm"}
-									variant={"flat"}
-									onClick={() =>
-										setForm("amount", val, validateErrors, setValidateErrors, setNewForecast)
-									}
-								>
-									{index === 0 && "Current: "}
-									{val.toLocaleString()}
-								</Chip>
-							))}
+						<div className={"flex flex-col gap-2"}>
+							<Input
+								isRequired
+								errorMessage={getFieldError(validateErrors, "amount")?.message}
+								isInvalid={!!getFieldError(validateErrors, "amount")}
+								label={"Amount"}
+								labelPlacement={"outside"}
+								name={"amount"}
+								placeholder={"Enter amount"}
+								type={"number"}
+								value={newForecast.amount.toString()}
+								variant={"bordered"}
+								onValueChange={(value) =>
+									setForm<TNewForecast>(
+										"amount",
+										Number(value),
+										validateErrors,
+										setValidateErrors,
+										setNewForecast
+									)
+								}
+							/>
+							<div className={"flex items-center gap-1"}>
+								{makeSuggestAmount(newForecast.amount).map((val, index) => (
+									<Chip
+										key={index}
+										classNames={{
+											content: index === 0 && "font-semibold",
+										}}
+										color={index === 0 ? "primary" : "default"}
+										size={"sm"}
+										variant={"flat"}
+										onClick={() =>
+											setForm("amount", val, validateErrors, setValidateErrors, setNewForecast)
+										}
+									>
+										{index === 0 && "Current: "}
+										{val.toLocaleString()}
+									</Chip>
+								))}
+							</div>
 						</div>
 					</div>
-				</div>
-				<div className={"min-w-96 flex flex-col gap-2"}>
+				</CustomForm>
+				<div
+					className={
+						"w-full xl:min-w-96 flex flex-col gap-2 border-b border-gray-200 pb-4 lg:pb-0 lg:border-b-0"
+					}
+				>
 					<Table
+						className={"max-h-52 xl:max-h-full"}
 						classNames={{
-							wrapper: "bg-transparent shadow-none py-0",
+							wrapper: "bg-transparent shadow-none py-0 px-0",
 						}}
 						// topContent={<p className={"text-sm text-muted text-center font-medium"}>Forecast Pay Date</p>}
 					>
@@ -306,6 +335,6 @@ export default function NewForecastPage() {
 					</Table>
 				</div>
 			</div>
-		</CustomForm>
+		</div>
 	);
 }

@@ -6,18 +6,18 @@ import { ErrorObject } from "ajv";
 import { DatePicker } from "@heroui/date-picker";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { Radio, RadioGroup } from "@heroui/radio";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { addToast } from "@heroui/toast";
 import moment from "moment";
 import clsx from "clsx";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
+import { TForecastWithDetailAndCard, TNewForecast, TUpdateForecast } from "@/types/forecast";
 import { makeListDate } from "@/utils/text-transform";
-import {TForecastWithDetailAndCard, TNewForecast, TUpdateForecast} from "@/types/forecast";
 
 interface EditForecastProps {
 	forecastId: string | number;
@@ -61,7 +61,7 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 				card_id: forecastDetails.card_id,
 				forecast_date: forecastDetails.forecast_date,
 				repeat_times: forecastDetails.repeat_times,
-				repeat_type: forecastDetails.repeat_type
+				repeat_type: forecastDetails.repeat_type,
 			});
 		}
 	}, [forecastDetails]);
@@ -91,12 +91,13 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 	}, [updateForecastResult, updateForecastError]);
 
 	return (
-		<CustomForm
-			className={clsx("flex flex-col gap-4")}
-			formId={"newForecastForm"}
-			onSubmit={handleUpdateForecast}
-		>
-			<div className={"flex items-start gap-4"}>
+		<div className={"flex gap-4 flex-col-reverse lg:flex-row"}>
+			<CustomForm
+				className={clsx("w-full flex flex-col gap-4")}
+				formId={"newForecastForm"}
+				submitButtonSize={"lg"}
+				onSubmit={handleUpdateForecast}
+			>
 				<div className={"flex flex-col gap-4 w-full"}>
 					<Input
 						isRequired
@@ -142,8 +143,9 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 						))}
 					</RadioGroup>
 
-					<div className={"flex items-center gap-4"}>
+					<div className={"flex flex-col sm:flex-row items-center gap-4"}>
 						<Input
+							fullWidth
 							isRequired
 							errorMessage={getFieldError(validateErrors, "amount")?.message}
 							isInvalid={!!getFieldError(validateErrors, "amount")}
@@ -168,11 +170,12 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 
 						<DatePicker
 							disableAnimation
+							fullWidth
 							hideTimeZone
 							isRequired
 							showMonthAndYearPickers
 							aria-label={"Forecast Date"}
-							className={"w-max"}
+							className={"lg:w-max w-full"}
 							label={"Forecast Date"}
 							labelPlacement={"outside"}
 							size={"lg"}
@@ -190,6 +193,7 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 						/>
 
 						<Input
+							fullWidth
 							isRequired
 							errorMessage={getFieldError(validateErrors, "repeat_times")?.message}
 							isInvalid={!!getFieldError(validateErrors, "repeat_times")}
@@ -213,27 +217,29 @@ export default function EditForecast({ forecastId, forecastDetails, onEditSucces
 						/>
 					</div>
 				</div>
-				<div className={"min-w-96 flex flex-col gap-4"}>
-					<Table>
-						<TableHeader>
-							<TableColumn>Pay Times</TableColumn>
-							<TableColumn align={"end"}>Pay Date</TableColumn>
-						</TableHeader>
-						<TableBody>
-							{makeListDate(
-								new Date(forecastInfo.forecast_date),
-								forecastInfo.repeat_times,
-								forecastInfo.repeat_type
-							).map((date, index) => (
-								<TableRow key={index}>
-									<TableCell>#{index + 1}</TableCell>
-									<TableCell>{moment(date).format("DD-MM-YYYY")}</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
+			</CustomForm>
+			<div
+				className={"w-full xl:max-w-80 lg:max-w-64 flex flex-col gap-2 border-b border-gray-200 pb-4 lg:pb-0 lg:border-b-0"}
+			>
+				<Table className={"max-h-52 xl:max-h-full"}>
+					<TableHeader>
+						<TableColumn>Pay Times</TableColumn>
+						<TableColumn align={"end"}>Pay Date</TableColumn>
+					</TableHeader>
+					<TableBody>
+						{makeListDate(
+							new Date(forecastInfo.forecast_date),
+							forecastInfo.repeat_times,
+							forecastInfo.repeat_type
+						).map((date, index) => (
+							<TableRow key={index}>
+								<TableCell>#{index + 1}</TableCell>
+								<TableCell>{moment(date).format("DD-MM-YYYY")}</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
 			</div>
-		</CustomForm>
+		</div>
 	);
 }

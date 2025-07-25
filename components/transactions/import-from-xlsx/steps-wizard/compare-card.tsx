@@ -2,13 +2,14 @@
 import { Alert } from "@heroui/alert";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
-import { useEffect } from "react";
 import { Spinner } from "@heroui/spinner";
 import { clsx } from "clsx";
 
 import { RenderCompareData } from "./compare-data";
 
 import ICONS from "@/configs/icons";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/configs/break-point";
 
 interface CompareCardProps {
 	title: string;
@@ -25,10 +26,8 @@ export default function CompareCard({
 	emptyMessage,
 	isLoading = true,
 }: CompareCardProps) {
-	useEffect(() => {
-		console.log("Existing Data: ", existingData);
-		console.log("Missing Data: ", missingData);
-	}, [existingData, missingData]);
+
+	const {width} = useScreenSize();
 
 	return (
 		<Card>
@@ -42,8 +41,10 @@ export default function CompareCard({
 				{isLoading ? (
 					<Spinner>Validating...</Spinner>
 				) : Array.isArray(missingData) && missingData.length > 0 ? (
-					<div className={"w-full flex items-start gap-4"}>
-						<div className={"w-1/2 flex flex-col gap-4"}>
+					<div className={clsx("w-full flex items-start gap-4",
+						"lg:flex-row flex-col"
+					)}>
+						<div className={"w-full lg:w-1/2 flex flex-col gap-4"}>
 							<div className={"flex items-center gap-2 text-success"}>
 								{ICONS.CHECK_CIRCLE.LG}
 								<h4 className={"text-lg font-medium"}>Existing Data</h4>
@@ -54,8 +55,8 @@ export default function CompareCard({
 								type="success"
 							/>
 						</div>
-						<Divider orientation={"vertical"} />
-						<div className={"w-1/2 flex flex-col gap-4"}>
+						<Divider orientation={width > BREAK_POINT.LG ? "vertical": "horizontal"} />
+						<div className={"w-full lg:w-1/2 flex flex-col gap-4"}>
 							<div className={"flex items-center gap-2 text-danger"}>
 								{ICONS.ALERT_CIRCLE.LG}
 								<h4 className={"text-lg font-medium"}>Missing Data</h4>

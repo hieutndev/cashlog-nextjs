@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import Container from "@/components/shared/container/container";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -26,7 +26,7 @@ export default function AppIndexPage() {
 		isLoggedIn && (
 			<Container
 				shadow
-				className={"w-full h-full flex justify-center items-center"}
+				className={"w-full h-full flex justify-center items-center rounded-2xl"}
 				orientation={"vertical"}
 			>
 				<Spinner />

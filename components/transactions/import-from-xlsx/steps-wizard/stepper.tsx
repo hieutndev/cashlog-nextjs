@@ -14,9 +14,10 @@ export interface Step {
 
 interface StepperProps {
 	steps: Step[];
+	isDot?:boolean;
 }
 
-export default function Stepper({ steps }: StepperProps) {
+export default function Stepper({ steps, isDot = false }: StepperProps) {
 	const getStepIcon = (step: Step, index: number) => {
 		switch (step.status) {
 			case "completed":
@@ -54,11 +55,34 @@ export default function Stepper({ steps }: StepperProps) {
 	};
 
 	const calculateProgress = (steps: Step[]) => {
+		
 		const completedSteps = steps.filter((step) => step.status === "completed").length;
 		const currentStepProgress = steps.some((step) => step.status === "current") ? 0.5 : 0;
 
 		return ((completedSteps + currentStepProgress) / steps.length) * 100;
 	};
+
+	if (isDot) {
+		return (
+      <div className="flex items-center justify-center space-x-2">
+        {steps.map((step, index) => (
+          <div key={step.id} className="flex items-center">
+            <div
+              className={clsx(
+                "w-3 h-3 rounded-full transition-all duration-200",{
+                "bg-green-500": step.status === "completed",
+				"bg-blue-500 ring-4 ring-blue-100": step.status === "current",
+                "bg-red-500": step.status === "error",
+                "bg-gray-300": step.status === "pending",
+				}
+              )}
+            />
+            {index < steps.length - 1 && <div className="w-8 h-0.5 bg-gray-200 mx-2" />}
+          </div>
+        ))}
+      </div>
+    )
+	}
 
 	// Default variant with progress bar
 	return (

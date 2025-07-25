@@ -13,13 +13,10 @@ import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { IAPIResponse } from "@/types/global";
 import { TBankCode } from "@/types/bank";
-import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
+import ICONS from "@/configs/icons";
 
 export default function SettingCardsPage() {
 	const router = useRouter();
-
-	const { width } = useScreenSize();
 
 	const [listCards, setListCards] = useState<TCard[]>([]);
 
@@ -79,67 +76,70 @@ export default function SettingCardsPage() {
 	}, [fetchCardResults]);
 
 	return (
-		<div
-			className={clsx("w-full flex flex-col gap-8", {
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
-			})}
-		>
+		<div className={clsx("w-full flex flex-col gap-8 lg:col-span-10 col-span-12")}>
 			{loadingCard ? (
 				<div className="flex items-center justify-center">
 					<Spinner size={"lg"}>Loading...</Spinner>
 				</div>
 			) : (
-				<div className={"flex flex-wrap gap-4 w-full"}>
-					{listCards && listCards.length > 0 ? (
-						listCards.map((card) => (
-							<div
-								key={card.card_id}
-								className={clsx(
-									"relative overflow-hidden group rounded-3xl",
-									`bankcard-shadow-${card.card_color}`,
-									{
-										"w-full": width < BREAK_POINT.S,
-										"w-max": width >= BREAK_POINT.S,
-									}
-								)}
-							>
-								<BankCard
-									key={card.card_id}
-									bankCode={card.bank_code as TBankCode}
-									cardBalance={card.card_balance}
-									cardName={card.card_name}
-									color={card.card_color}
-								/>
+				<div className="flex flex-col gap-4">
+					<div className={"flex items-center justify-between"}>
+						<h3 className={"text-2xl font-semibold"}>List Cards</h3>
+						<Button
+							color={"primary"}
+							startContent={ICONS.NEW.MD}
+							onPress={() => router.push("/settings/cards/new")}
+						>
+							New Card
+						</Button>
+					</div>
+					<div className={"flex flex-wrap gap-4 w-full"}>
+						{listCards && listCards.length > 0 ? (
+							listCards.map((card) => (
 								<div
+									key={card.card_id}
 									className={clsx(
-										"absolute rounded-xl flex items-center justify-center gap-4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/90",
-										"transition-all duration-300 ease-in-out -top-96 group-hover:top-1/2"
+										"relative overflow-hidden group rounded-3xl sm:w-96 md:w-88 lg:w-92 w-full",
+										`bankcard-shadow-${card.card_color}`
 									)}
 								>
-									<Button
-										color={"primary"}
-										variant={"solid"}
-										onPress={() => router.push(`/settings/cards/${card.card_id}`)}
+									<BankCard
+										key={card.card_id}
+										bankCode={card.bank_code as TBankCode}
+										cardBalance={card.card_balance}
+										cardName={card.card_name}
+										color={card.card_color}
+									/>
+									<div
+										className={clsx(
+											"absolute rounded-xl flex items-center justify-center gap-4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/90",
+											"transition-all duration-300 ease-in-out -top-96 group-hover:top-1/2"
+										)}
 									>
-										View Details
-									</Button>
-									<Button
-										color={"danger"}
-										variant={"ghost"}
-										onPress={() => setSelectedCardId(card.card_id.toString())}
-									>
-										Delete
-									</Button>
+										<Button
+											color={"primary"}
+											variant={"solid"}
+											onPress={() => router.push(`/settings/cards/${card.card_id}`)}
+										>
+											View Details
+										</Button>
+										<Button
+											color={"danger"}
+											variant={"ghost"}
+											onPress={() => setSelectedCardId(card.card_id.toString())}
+										>
+											Delete
+										</Button>
+									</div>
 								</div>
-							</div>
-						))
-					) : (
-						<Alert
-							color={"danger"}
-							title={"No cards found. Please add a card."}
-						/>
-					)}
+							))
+						) : (
+							<Alert
+								color={"danger"}
+								title={"No cards found. Please add a card."}
+							/>
+						)}
+					</div>
 				</div>
 			)}
 		</div>

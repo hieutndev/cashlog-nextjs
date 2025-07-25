@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					className={clsx("relative h-100", {
 						"col-span-2": width > BREAK_POINT.XL,
 						"w-max": width <= BREAK_POINT.XL,
-						hidden: width <= BREAK_POINT.L,
+						hidden: width <= BREAK_POINT.LG,
 					})}
 				>
 					<Sidebar />
@@ -50,8 +50,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					<HorizontalNav />
 					<div
 						className={clsx({
-							"px-8 pb-8": width > BREAK_POINT.XL,
-							"px-4 pb-4": width <= BREAK_POINT.XL,
+							"px-8 pb-8": width >= BREAK_POINT.XL,
+							"px-4 pb-4": width < BREAK_POINT.XL && width >= BREAK_POINT.MD,
+							"px-2 pb-2": width < BREAK_POINT.MD,
 						})}
 					>
 						{detecting ? (

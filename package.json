@@ -38,6 +38,7 @@
 		"@heroui/theme": "2.4.13",
 		"@heroui/toast": "^2.0.9",
 		"@heroui/tooltip": "^2.2.18",
+		"@lottiefiles/dotlottie-react": "^0.14.3",
 		"@react-aria/ssr": "3.9.7",
 		"@react-aria/visually-hidden": "3.8.21",
 		"@react-stately/data": "^3.12.3",

@@ -31,9 +31,9 @@ function DetailBlock({ icon, label, value, color }: DetailBlockProps) {
 	const colorClass = color && colorMap[color] ? colorMap[color] : colorMap["default"];
 
 	return (
-		<div className={"flex items-center gap-4"}>
+		<div className={"flex items-center gap-4 sm:flex-row flex-col"}>
 			<div className={clsx("p-4 rounded-2xl", colorClass)}>{icon}</div>
-			<div className={"flex flex-col"}>
+			<div className={"flex flex-col text-center"}>
 				<p className={"text-md text-gray-400"}>{label}</p>
 				<p className={clsx("font-semibold text-lg capitalize", colorClass.split(" ")[1])}>{value}</p>
 			</div>

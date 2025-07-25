@@ -10,6 +10,7 @@ interface EnhancedProgressProps {
 }
 
 export function EnhancedProgress({ value, className, showGradient = true, animated = true }: EnhancedProgressProps) {
+
 	return (
 		<div className={clsx("w-full bg-gray-200 rounded-full h-3 overflow-hidden", className)}>
 			<div

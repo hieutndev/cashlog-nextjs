@@ -20,44 +20,14 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 		{
 			label: ["Settings", "Cards"],
 			key: "^/settings/cards",
-			customButton: [
-				{
-					children: "New Card",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.NEW.LG,
-					href: "/settings/cards/new",
-				},
-			],
 		},
 		{
 			label: ["Settings", "Cards", "New"],
 			key: "^/settings/cards/new",
-			customButton: [
-				{
-					children: "Back",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.BACK.LG,
-					href: "/settings/cards",
-				},
-			],
 		},
 		{
 			label: ["Settings", "Cards", "Card Details"],
 			key: "^/settings/cards/[^/]+",
-			customButton: [
-				{
-					children: "Back",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.BACK.LG,
-					href: "/settings/cards",
-				},
-			],
 		},
 		{
 			label: ["Settings", "Categories"],
@@ -66,16 +36,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 		{
 			label: ["Settings", "Forecasts"],
 			key: "^/settings/forecasts",
-			customButton: [
-				{
-					children: "New Forecast",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.NEW.LG,
-					href: "/settings/forecasts/new",
-				},
-			],
 		},
 		{
 			label: ["Settings", "Forecasts", "New Forecast"],

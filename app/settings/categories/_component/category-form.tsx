@@ -108,7 +108,7 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 			className={"flex flex-col gap-4"}
 			formId={"addNewCategory"}
 			submitButtonSize={"lg"}
-			submitButtonText={action === "add" ? "Add Category" : "Update Category"}
+			submitButtonText={action === "add" ? "Create new Category" : "Update Category"}
 			onSubmit={formAction}
 		>
 			<Input
@@ -153,13 +153,16 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 				</div>
 			</RadioGroup>
 			<Divider />
-			<Chip
-				classNames={{
-					base: `background-${categoryForm.color} text-white`,
-				}}
-			>
-				{categoryForm.category_name || "Category Name Here"}
-			</Chip>
+			<div className={"flex sm:flex-row flex-col sm:items-center gap-2"}>
+				<p className={"text-sm"}>Preview:</p>
+				<Chip
+					classNames={{
+						base: `background-${categoryForm.color} text-white`,
+					}}
+				>
+					{categoryForm.category_name || "Category Name Here"}
+				</Chip>
+			</div>
 		</CustomForm>
 	);
 }
