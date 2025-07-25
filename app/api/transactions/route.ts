@@ -20,10 +20,13 @@ export const GET = async (request: NextRequest) => {
         // Parse pagination parameters with defaults
         const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
         const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '10', 10))); // Cap at 100
+        
+        // Parse search parameter
+        const search = searchParams.get('search') || '';
 
-        console.log('userId', userId, 'page', page, 'limit', limit);
+        console.log('userId', userId, 'page', page, 'limit', limit, 'search', search);
 
-        const { transactions, total } = await getAllTransactions(userId, page, limit);
+        const { transactions, total } = await getAllTransactions(userId, page, limit, search);
         const totalPages = Math.ceil(total / limit);
 
         return Response.json(

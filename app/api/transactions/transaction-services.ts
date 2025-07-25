@@ -1,5 +1,7 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { JSONSchemaType } from "ajv";
+import _ from "lodash";
+import moment from "moment";
 
 import { REQUIRED_HEADERS, TCrudTransaction, TTransaction } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
@@ -139,7 +141,12 @@ export const updateCardBalance = async (card_id: number, user_id: number) => {
 	}
 };
 
-export const getAllTransactions = async (userId: string | number, page: number = 1, limit: number = 10) => {
+export const getAllTransactions = async (
+	userId: string | number, 
+	page: number = 1, 
+	limit: number = 10, 
+	search: string = ''
+) => {
 	let listTransaction: RowDataPacket[] | null = null;
 	let totalCount: RowDataPacket[] | null = null;
 
@@ -147,27 +154,61 @@ export const getAllTransactions = async (userId: string | number, page: number =
 		// Calculate offset
 		const offset = (page - 1) * limit;
 
-		// Get total count for pagination
-		totalCount = await dbQuery<RowDataPacket[]>(
-			QUERY_STRING.GET_TRANSACTIONS_COUNT_BY_USER_ID,
-			[userId]
-		);
+		if (search.trim()) {
+			// If search query is provided, get all transactions and filter on server side
+			const allTransactions = await dbQuery<RowDataPacket[]>(
+				QUERY_STRING.GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID,
+				[userId]
+			);
 
-		// Get paginated transactions
-		listTransaction = await dbQuery<RowDataPacket[]>(
-			QUERY_STRING.GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID_PAGINATED,
-			[userId, limit, offset]
-		);
+			// Perform fuzzy search using lodash
+			const searchLower = _.toLower(search.trim());
+			const filteredTransactions = _.filter(allTransactions, (transaction: any) => {
+				return _.some([
+					_.includes(_.toLower(transaction.card_name || ''), searchLower),
+					_.includes(_.toLower(transaction.category_name || ''), searchLower),
+					_.includes(_.toLower(transaction.description || ''), searchLower),
+					_.includes(_.toLower(transaction.amount || ''), searchLower),
+					_.includes(_.toLower(moment(transaction.date).format("YYYY-MM-DD") || ''), searchLower),
+					_.includes(_.toLower(moment(transaction.date).format("DD-MM-YYYY") || ''), searchLower),
+					_.includes(_.toLower(moment(transaction.date).format("YYYY/MM/DD") || ''), searchLower),
+					_.includes(_.toLower(moment(transaction.date).format("DD/MM/YYYY") || ''), searchLower),
+				]);
+			});
+
+			// Apply pagination to filtered results
+			const total = filteredTransactions.length;
+			
+			listTransaction = _.slice(filteredTransactions, offset, offset + limit);
+			
+			return {
+				transactions: listTransaction,
+				total
+			};
+		} else {
+			// No search query, use original pagination query
+			// Get total count for pagination
+			totalCount = await dbQuery<RowDataPacket[]>(
+				QUERY_STRING.GET_TRANSACTIONS_COUNT_BY_USER_ID,
+				[userId]
+			);
+
+			// Get paginated transactions
+			listTransaction = await dbQuery<RowDataPacket[]>(
+				QUERY_STRING.GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID_PAGINATED,
+				[userId, limit, offset]
+			);
+
+			const total = totalCount && totalCount.length > 0 ? (totalCount[0] as any).total : 0;
+
+			return {
+				transactions: listTransaction,
+				total
+			};
+		}
 	} catch (error: unknown) {
 		throw new ApiError((error as Error).message || "Error in getAllTransactions", 500);
 	}
-
-	const total = totalCount && totalCount.length > 0 ? (totalCount[0] as any).total : 0;
-
-	return {
-		transactions: listTransaction,
-		total
-	};
 };
 
 export const getTransactionById = async (transactionId: TTransaction["transaction_id"], userId: TUser["user_id"]) => {

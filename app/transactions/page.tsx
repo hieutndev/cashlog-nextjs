@@ -12,11 +12,13 @@ import { addToast } from "@heroui/toast";
 import { useDisclosure } from "@heroui/modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
+import { Input } from "@heroui/input";
 
 import CrudTransactionModal from "./_component/crud-transaction-modal";
 
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
 import { useFetch } from "@/hooks/useFetch";
+import { useDebounce } from "@/hooks/useDebounce";
 import ICONS from "@/configs/icons";
 import { TCard } from "@/types/card";
 import { getBankLogo } from "@/configs/bank";
@@ -51,9 +53,26 @@ export default function TransactionsPage() {
 		totalPages: 0,
 	});
 
+	// Search state
+	const [searchQuery, setSearchQuery] = useState<string>(() => {
+		return searchParams.get("search") || "";
+	});
+	const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
 	// HANDLE FETCH TRANSACTION
-	// Create a memoized URL that only changes when page or limit changes
-	const transactionUrl = useMemo(() => `/transactions?page=${currentPage}&limit=${limit}`, [currentPage, limit]);
+	// Create a memoized URL that changes when page, limit, or search changes
+	const transactionUrl = useMemo(() => {
+		const params = new URLSearchParams();
+
+		params.set("page", currentPage.toString());
+		params.set("limit", limit.toString());
+
+		if (debouncedSearchQuery.trim()) {
+			params.set("search", debouncedSearchQuery.trim());
+		}
+
+		return `/transactions?${params.toString()}`;
+	}, [currentPage, limit, debouncedSearchQuery]);
 
 	const {
 		data: fetchTransactionResults,
@@ -65,6 +84,13 @@ export default function TransactionsPage() {
 	useEffect(() => {
 		fetchTransactions();
 	}, [transactionUrl]);
+
+	// Reset to page 1 when search query changes
+	useEffect(() => {
+		if (debouncedSearchQuery !== (searchParams.get("search") || "")) {
+			setCurrentPage(1);
+		}
+	}, [debouncedSearchQuery, searchParams]);
 
 	const [dataTable, setDataTable] = useState<IDataTable<TTransactionWithCardAndCategory>>({
 		columns: [
@@ -136,6 +162,30 @@ export default function TransactionsPage() {
 		const params = new URLSearchParams(searchParams.toString());
 
 		params.set("page", page.toString());
+
+		if (debouncedSearchQuery.trim()) {
+			params.set("search", debouncedSearchQuery.trim());
+		} else {
+			params.delete("search");
+		}
+
+		router.push(`/transactions?${params.toString()}`);
+	};
+
+	// Handle search change
+	const handleSearchChange = (value: string) => {
+		setSearchQuery(value);
+
+		// Update URL immediately for search (debounced value will handle the API call)
+		const params = new URLSearchParams(searchParams.toString());
+
+		if (value.trim()) {
+			params.set("search", value.trim());
+			params.set("page", "1"); // Reset to page 1 when searching
+		} else {
+			params.delete("search");
+		}
+
 		router.push(`/transactions?${params.toString()}`);
 	};
 
@@ -253,6 +303,7 @@ export default function TransactionsPage() {
 					</Button>
 				</div>
 			</div>
+
 			<div className={"flex items-center justify-between gap-4"}>
 				<div className={"flex items-start flex-wrap gap-4"}>
 					<Select
@@ -367,6 +418,20 @@ export default function TransactionsPage() {
 							</SelectItem>
 						)}
 					</Select>
+					<Input
+						isClearable
+						// classNames={{
+						// 	inputWrapper: "h-12",
+						// }}
+						label={"Search"}
+						labelPlacement={"outside"}
+						placeholder="Enter what you want to search..."
+						startContent={ICONS.SEARCH.MD}
+						value={searchQuery}
+						variant={"bordered"}
+						onClear={() => handleSearchChange("")}
+						onValueChange={handleSearchChange}
+					/>
 				</div>
 			</div>
 			{fetchingTransactions ? (
@@ -397,10 +462,7 @@ export default function TransactionsPage() {
 								</div>
 							)
 						}
-						className={clsx({
-							"h-[70vh]": width > BREAK_POINT.XL,
-							"h-screen": width <= BREAK_POINT.XL,
-						})}
+						className={clsx("xl:h-[80vh] h-full")}
 						selectionMode={"single"}
 					>
 						<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
@@ -523,7 +585,6 @@ export default function TransactionsPage() {
 								showShadow
 								color="primary"
 								page={pagination.page}
-								
 								total={pagination.totalPages}
 								onChange={handlePageChange}
 							/>
