@@ -63,6 +63,7 @@ export const config = {
         "/api/categories/:path*",
         "/api/forecasts/:path*",
         "/api/analytics/:path*",
+        "/api/settings/:path*",
         // "/api/users/x-rftk"
     ],
 };
