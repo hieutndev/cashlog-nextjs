@@ -74,53 +74,33 @@ export default function SignInPage() {
 
 	return (
 		<div
-			className={clsx("w-full h-full", {
-				"grid grid-cols-2": width > BREAK_POINT.LG,
-				"flex flex-col gap-4": width <= BREAK_POINT.LG,
-				"px-32": width > BREAK_POINT.MD,
-				"px-4": width <= BREAK_POINT.MD,
-			})}
+			className={clsx("w-full h-full md:px-32 px-4 lg:grid lg:grid-cols-2 flex flex-col gap-4")}
 		>
 			<div
-				className={clsx("flex items-center justify-center", {
-					"h-full col-span-1 ": width > BREAK_POINT.LG,
-					"h-max": width <= BREAK_POINT.LG,
-				})}
+				className={clsx("flex items-center justify-center lg:col-span-1 h-max lg:h-full")}
 			>
 				<Image
 					alt={"Cashlog Logo"}
-					className={clsx({
-						"w-3/4": width > BREAK_POINT.LG,
-						"max-w-64": width <= BREAK_POINT.LG,
-					})}
+					className={clsx("w-40 sm:w-2/5 sm:px-0 sm:py-0 md:w-2/5 lg:w-full")}
 					height={1200}
-					src={"/cashlog_icontext_vertical.png"}
+					src={width  >= BREAK_POINT.SM ? "/cashlog_icontext_vertical.png": "/cashlog_icon.png"}
 					width={1200}
 				/>
 			</div>
 			<div
-				className={clsx("flex flex-col items-center justify-center gap-8 px-4", {
-					"h-full col-span-1": width > BREAK_POINT.LG,
-					"h-max": width <= BREAK_POINT.LG,
-				})}
+				className={clsx("flex flex-col item-start items-center justify-start lg:justify-center gap-8 px-4 lg:h-full lg:col-span-1 h-max")}
 			>
 				<h1
-					className={clsx("w-4/6 text-6xl font-bold text-primary", {
-						"text-left": width > BREAK_POINT.LG,
-						"text-center": width <= BREAK_POINT.LG,
-					})}
+					className={clsx("w-full sm:w-4/6 text-5xl sm:text-6xl font-bold text-primary xl:text-left text-center")}
 				>
 					Sign In.
 				</h1>
 				<div className={"w-full flex flex-col gap-8 items-center"}>
 					<CustomForm
-						className={clsx("flex flex-col gap-4", {
-							"w-4/6": width > BREAK_POINT.XL,
-							"w-5/6": width > BREAK_POINT.MD && width <= BREAK_POINT.XL,
-							"w-full": width <= BREAK_POINT.MD,
-						})}
+						className={clsx("flex flex-col gap-4 xl:w-4/6 md:w-5/6 w-full")}
 						formId={"loginForm"}
 						isLoading={signingIn}
+						loadingText={"Signing In..."}
 						submitButtonSize={"lg"}
 						submitButtonText={"Sign In"}
 						onSubmit={handleSubmit}

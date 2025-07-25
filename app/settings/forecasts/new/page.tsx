@@ -27,11 +27,10 @@ import { TCard } from "@/types/card";
 import { IAPIResponse } from "@/types/global";
 import { makeListDate, upperFirstLetter } from "@/utils/text-transform";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
-import useScreenSize from "@/hooks/useScreenSize";
+import TransactionType from "@/components/transactions/transaction-type";
 
 export default function NewForecastPage() {
 	const router = useRouter();
-	const { width } = useScreenSize();
 
 	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
 
@@ -107,7 +106,7 @@ export default function NewForecastPage() {
 	return (
 		<div className="col-span-12 lg:col-span-10 w-full flex flex-col gap-4">
 			<h3 className={"text-2xl font-semibold"}>New Forecast</h3>
-			<div className={"flex gap-4 flex-col-reverse lg:flex-row "}>
+			<div className={"flex gap-4 flex-col-reverse lg:flex-row"}>
 				<CustomForm
 					className={clsx("flex flex-col gap-4")}
 					formId={"newForecastForm"}
@@ -160,6 +159,32 @@ export default function NewForecastPage() {
 									))
 								)}
 							</ScrollShadow>
+						</RadioGroup>
+						<RadioGroup
+							isRequired
+							classNames={{
+								wrapper: "flex flex-row items-center gap-2",
+							}}
+							label={"Transaction Type"}
+							value={newForecast.direction}
+							onValueChange={(e) => {
+								setForm<TNewForecast>(
+									"direction",
+									e,
+									validateErrors,
+									setValidateErrors,
+									setNewForecast
+								);
+							}}
+						>
+							<TransactionType
+								key={"in"}
+								type={"in"}
+							/>
+							<TransactionType
+								key={"out"}
+								type={"out"}
+							/>
 						</RadioGroup>
 						<div className={"grid sm:grid-cols-3 items-center gap-4 sm:gap-2"}>
 							<DatePicker
@@ -279,9 +304,13 @@ export default function NewForecastPage() {
 						</div>
 					</div>
 				</CustomForm>
-				<div className={"w-full xl:min-w-96 flex flex-col gap-2 border-b border-gray-200 pb-4 lg:pb-0 lg:border-b-0"}>
+				<div
+					className={
+						"w-full xl:min-w-96 flex flex-col gap-2 border-b border-gray-200 pb-4 lg:pb-0 lg:border-b-0"
+					}
+				>
 					<Table
-						className={"max-h-96"}
+						className={"max-h-52 xl:max-h-full"}
 						classNames={{
 							wrapper: "bg-transparent shadow-none py-0 px-0",
 						}}

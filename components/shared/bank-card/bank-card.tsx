@@ -4,7 +4,6 @@ import Image from "next/image";
 import { getBankLogo } from "@/configs/bank";
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
-import useScreenSize from "@/hooks/useScreenSize";
 
 interface BankCardProps {
 	cardName: string;
@@ -15,12 +14,11 @@ interface BankCardProps {
 }
 
 export default function BankCard({ cardName, cardBalance, color, bankCode = "VIETCOMBANK", className }: BankCardProps) {
-	const { width } = useScreenSize();
 
 	return (
 		<div
 			className={clsx(
-				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br sm:w-96 md:w-88 lg:w-92 w-full",
+				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br sm:w-96 md:w-88 lg:w-92 xl:w-full w-full",
 				`bankcard-${color}`,
 				className,
 			)}

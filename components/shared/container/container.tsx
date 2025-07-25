@@ -2,7 +2,6 @@
 
 import clsx from "clsx";
 
-import useScreenSize from "@/hooks/useScreenSize";
 
 interface ContainerProps {
 	orientation?: "horizontal" | "vertical";
@@ -23,8 +22,6 @@ export default function Container({
 		horizontal: "flex flex-row",
 		vertical: "flex flex-col",
 	};
-
-	const { width } = useScreenSize();
 
 	const WrapperGapClass: string = `gap-${gapSize}`;
 

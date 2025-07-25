@@ -15,6 +15,10 @@ export default function TransactionsLayout({ children }: { children: React.React
 			label: ["Transactions"],
 			key: "^/transactions",
 		},
+		{
+			label: ["Transactions", "Import from Excel"],
+			key: "^/transactions/import-transactions",
+		},
 	];
 
 	return (

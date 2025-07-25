@@ -93,7 +93,6 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 					<Button
 						isIconOnly
 						color={"danger"}
-						size={"lg"}
 						startContent={ICONS.XMARK.LG}
 						onPress={() => setEditMode(false)}
 					/>
@@ -101,7 +100,6 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 					<Button
 						isIconOnly
 						color={"warning"}
-						size={"lg"}
 						startContent={ICONS.EDIT.MD}
 						variant={"ghost"}
 						onPress={() => setEditMode(true)}

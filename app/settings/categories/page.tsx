@@ -120,7 +120,7 @@ export default function CategoriesPage() {
 
 	/* CONFIG MODAL */
 
-	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const { isOpen, onOpenChange } = useDisclosure();
 
 	return (
 		<div
@@ -137,11 +137,10 @@ export default function CategoriesPage() {
 							<h3 className={"text-2xl font-semibold"}>List Categories</h3>
 							<Button
 								color={"primary"}
-								isIconOnly={width < BREAK_POINT.SM}
 								startContent={ICONS.NEW.MD}
 								onPress={onAddNewCategory}
 							>
-								{width >= BREAK_POINT.SM ? "Add new category" : ""}
+								New category
 							</Button>
 						</div>
 						<Table aria-label="Categories Table" className={"max-h-128"}>
@@ -213,6 +212,7 @@ export default function CategoriesPage() {
 				hideCloseButton
 				isOpen={isOpen}
 				placement={width >= BREAK_POINT.LG ? "center" : "top"}
+				size={"2xl"}
 				onOpenChange={onOpenChange}
 			>
 				<ModalContent>
