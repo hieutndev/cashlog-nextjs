@@ -11,6 +11,8 @@ import Container from "@/components/shared/container/container";
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TImportFileXLSXResponse } from "@/types/transaction";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/configs/break-point";
 
 export default function UploadFileStep({
 	onUploadSuccess,
@@ -20,6 +22,7 @@ export default function UploadFileStep({
 	onUploadSuccess?: () => void;
 	onUploadResult?: (result: TImportFileXLSXResponse) => void;
 }) {
+	const { width } = useScreenSize();
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [currentUploadProgress, setCurrentUploadProgress] = useState<number | null>(null);
 	const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -100,7 +103,7 @@ export default function UploadFileStep({
 			if (onUploadResult && uploadFileResult.results) {
 				onUploadResult(uploadFileResult.results);
 			}
-			
+
 			// Move to next step after a short delay
 			setTimeout(() => {
 				if (onUploadSuccess) {
@@ -125,8 +128,9 @@ export default function UploadFileStep({
 		<Container
 			className={"!p-0"}
 			gapSize={8}
+			orientation={width < BREAK_POINT.LG ? "vertical" : "horizontal"}
 		>
-			<div className={"w-3/5 flex flex-col gap-4"}>
+			<div className={"lg:w-3/5 w-full flex flex-col gap-4"}>
 				<FileUpload
 					acceptedFileTypes={[".xlsx", ".xls"]}
 					className={"!max-w-full min-h-96"}
@@ -137,8 +141,8 @@ export default function UploadFileStep({
 				/>
 				{alertMessage && <Alert color={"danger"}>{alertMessage}</Alert>}
 			</div>
-			<Divider orientation={"vertical"} />
-			<div className={"w-2/5 flex flex-col gap-4"}>
+			<Divider orientation={width < BREAK_POINT.LG ? "horizontal" : "vertical"} />
+			<div className={"lg:w-2/5 w-full flex flex-col gap-4"}>
 				<div className={"flex items-center gap-2"}>
 					<LuFileSpreadsheet />
 					<h2 className={"text-xl font-semibold"}>File Requirements:</h2>

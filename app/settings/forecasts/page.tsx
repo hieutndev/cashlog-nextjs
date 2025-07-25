@@ -84,8 +84,8 @@ export default function SettingForecastPage() {
 	return (
 		<div
 			className={clsx({
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12": width <= BREAK_POINT.L,
+				"col-span-10": width > BREAK_POINT.LG,
+				"col-span-12": width <= BREAK_POINT.LG,
 			})}
 		>
 			{loadingForecast ? (
@@ -94,7 +94,16 @@ export default function SettingForecastPage() {
 				</div>
 			) : (
 				<div className="flex flex-col gap-4">
-					<h3 className={"text-2xl font-semibold"}>List Forecasts</h3>
+					<div className={"flex items-center justify-between"}>
+						<h3 className={"text-2xl font-semibold"}>List Forecasts</h3>
+						<Button
+							color={"primary"}
+							startContent={ICONS.NEW.MD}
+							onPress={() => router.push("/settings/forecasts/new")}
+						>
+							New Forecast
+						</Button>
+					</div>
 					<Table>
 						<TableHeader columns={forecastColumns}>
 							{(column) => (

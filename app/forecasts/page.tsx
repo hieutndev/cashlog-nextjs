@@ -7,12 +7,17 @@ import { getKeyValue, Table, TableBody, TableCell, TableColumn, TableHeader, Tab
 import clsx from "clsx";
 import moment from "moment";
 import { Alert } from "@heroui/alert";
+import { Button } from "@heroui/button";
+import { useRouter } from "next/navigation";
 
 import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
 import BankCardRadio from "@/components/shared/bank-card-radio/bank-card-radio";
 import { TForecastRowData } from "@/types/forecast";
+import ICONS from "@/configs/icons";
+import { BREAK_POINT } from "@/configs/break-point";
+import useScreenSize from "@/hooks/useScreenSize";
 
 export default function ForecastsPage() {
 	const {
@@ -95,8 +100,23 @@ export default function ForecastsPage() {
 		},
 	];
 
+	const router = useRouter();
+
+	const { width } = useScreenSize();
+
 	return (
 		<section className={"flex flex-col gap-4"}>
+			<div className={"flex items-center justify-between"}>
+				<h3 className={"text-2xl font-semibold"}>Forecasts Table</h3>
+				<Button
+					color={"primary"}
+					isIconOnly={width < BREAK_POINT.SM}
+					startContent={ICONS.NEW.MD}
+					onPress={() => router.push("/settings/forecasts/new")}
+				>
+					{width >= BREAK_POINT.SM ? "Create new Forecast" : ""}
+				</Button>
+			</div>
 			<div className={"flex items-center gap-4"}>
 				<RadioGroup
 					label={"Select card"}
@@ -122,7 +142,7 @@ export default function ForecastsPage() {
 					)}
 				</RadioGroup>
 			</div>
-			<Table>
+			<Table isHeaderSticky>
 				<TableHeader columns={forecastColumns}>
 					{(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
 				</TableHeader>
@@ -150,7 +170,9 @@ export default function ForecastsPage() {
 									case "date":
 										return (
 											<TableCell>
-												{moment(getKeyValue(item, columnKey)).format("DD-MM-YYYY")}
+												<p className={"min-w-max"}>
+													{moment(getKeyValue(item, columnKey)).format("DD-MM-YYYY")}
+												</p>
 											</TableCell>
 										);
 									case "amount":

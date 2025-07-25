@@ -31,7 +31,7 @@ export const Sidebar = () => {
 	};
 
 	useEffect(() => {
-		console.log("width > BREAK_POINT.L", width, width > BREAK_POINT.L);
+		console.log("width > BREAK_POINT.L", width, width > BREAK_POINT.LG);
 	}, [width]);
 
 	return (

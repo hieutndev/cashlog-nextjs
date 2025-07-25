@@ -10,6 +10,7 @@ import { addToast } from "@heroui/toast";
 import { Checkbox } from "@heroui/checkbox";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
+import { Button } from "@heroui/button";
 
 import { TCreateNewCard } from "@/types/card";
 import CustomForm from "@/components/shared/form/custom-form";
@@ -19,12 +20,10 @@ import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { useFetch } from "@/hooks/useFetch";
 import { getFieldError } from "@/utils/get-field-error";
-import useScreenSize from "@/hooks/useScreenSize";
-import { BREAK_POINT } from "@/configs/break-point";
+import ICONS from "@/configs/icons";
 
 export default function NewCardPage() {
 	const router = useRouter();
-	const { width } = useScreenSize();
 
 	const [newCard, setNewCard] = useState<TCreateNewCard>({
 		card_name: "",
@@ -101,116 +100,119 @@ export default function NewCardPage() {
 	};
 
 	return (
-		<div
-			className={clsx("w-full flex items-start gap-4", {
-				"col-span-10": width > BREAK_POINT.L,
-				"col-span-12 flex-wrap-reverse": width <= BREAK_POINT.L,
-			})}
-		>
-			<div
-				className={clsx("border-gray-200", {
-					"w-1/2 px-4 border-r": width > BREAK_POINT.M,
-					"w-full py-4 border-t": width <= BREAK_POINT.M,
-				})}
-			>
-				<CustomForm
-					className={"flex flex-col gap-4"}
-					disableSubmitButton={validateErrors.length > 0}
-					formId={"addNewCardForm"}
-					loadingText={"Creating..."}
-					submitButtonSize={"lg"}
-					submitButtonText={"Create card"}
-					onSubmit={createCard}
+		<div className={"flex flex-col gap-4 col-span-12 lg:col-span-10"}>
+			<div className={"flex items-center justify-between"}>
+				<h3 className={"text-2xl font-semibold"}>New Card</h3>
+				<Button
+					color={"primary"}
+					startContent={ICONS.BACK.MD}
+					onPress={() => router.push("/settings/cards")}
 				>
-					<Input
-						isRequired
-						errorMessage={getFieldError(validateErrors, "card_name")?.message}
-						isInvalid={!!getFieldError(validateErrors, "card_name")}
-						label={"Card Name"}
-						labelPlacement={"outside"}
-						name={"card_name"}
-						placeholder={"Enter card name..."}
-						size={"lg"}
-						value={newCard.card_name}
-						variant={"bordered"}
-						onValueChange={(value) => onChangeValue("card_name", value)}
-					/>
-					<Input
-						isRequired
-						endContent={"VND"}
-						errorMessage={getFieldError(validateErrors, "card_balance_init")?.message}
-						isInvalid={!!getFieldError(validateErrors, "card_balance_init")}
-						label={"Current Balance"}
-						labelPlacement={"outside"}
-						size={"lg"}
-						type={"number"}
-						value={newCard.card_balance_init.toString()}
-						variant={"bordered"}
-						onValueChange={(value) => onChangeValue("card_balance_init", +value)}
-					/>
-					<Select
-						isRequired
-						disallowEmptySelection={true}
-						label={"Select Bank"}
-						labelPlacement={"outside"}
-						selectedKeys={[newCard.bank_code]}
-						size={"lg"}
-						value={newCard.bank_code}
-						variant={"bordered"}
-						onChange={(e) => onChangeValue("bank_code", e.target.value as TBankCode)}
-					>
-						{ListBankCode.map((bank) => (
-							<SelectItem key={bank.key}>{bank.value}</SelectItem>
-						))}
-					</Select>
-					<RadioGroup
-						isRequired
-						classNames={{
-							label: "text-dark",
-						}}
-						label={"Select Card Color"}
-						orientation="horizontal"
-						size={"lg"}
-						value={newCard.card_color}
-						onValueChange={(value) => onChangeValue("card_color", value as TColor)}
-					>
-						{ListColors.map((color) => (
-							<Radio
-								key={color}
-								className={"capitalize"}
-								classNames={{
-									label: "flex items-center gap-1",
-								}}
-								value={color}
-							>
-								<div className={clsx("w-6 h-6 bg-gradient-to-br rounded-md", `bankcard-${color}`)} />
-								{color}
-							</Radio>
-						))}
-					</RadioGroup>
-					<Divider />
-					<div className={"flex justify-end"}>
-						<Checkbox
-							isSelected={createMoreCard}
-							onValueChange={setCreateMoreCard}
-						>
-							Create more cards?
-						</Checkbox>
-					</div>
-				</CustomForm>
+					Back
+				</Button>
 			</div>
-			<div
-				className={clsx({
-					"w-1/2": width > BREAK_POINT.M,
-					"w-full": width <= BREAK_POINT.M,
-				})}
-			>
-				<BankCard
-					bankCode={newCard.bank_code}
-					cardBalance={newCard.card_balance_init}
-					cardName={newCard.card_name}
-					color={newCard.card_color}
-				/>
+			<div className={clsx("w-full flex items-start gap-4 flex-wrap-reverse md:flex-nowrap")}>
+				<div
+					className={clsx("border-gray-200 w-full border-t md:border-t-0 md:w-1/2 pt-4 md:pt-0 pr-0 md:pr-4 md:border-r")}
+				>
+					<CustomForm
+						className={"flex flex-col gap-4"}
+						disableSubmitButton={validateErrors.length > 0}
+						formId={"addNewCardForm"}
+						loadingText={"Creating..."}
+						submitButtonSize={"lg"}
+						submitButtonText={"Create card"}
+						onSubmit={createCard}
+					>
+						<Input
+							isRequired
+							errorMessage={getFieldError(validateErrors, "card_name")?.message}
+							isInvalid={!!getFieldError(validateErrors, "card_name")}
+							label={"Card Name"}
+							labelPlacement={"outside"}
+							name={"card_name"}
+							placeholder={"Enter card name..."}
+							size={"lg"}
+							value={newCard.card_name}
+							variant={"bordered"}
+							onValueChange={(value) => onChangeValue("card_name", value)}
+						/>
+						<Input
+							isRequired
+							endContent={"VND"}
+							errorMessage={getFieldError(validateErrors, "card_balance_init")?.message}
+							isInvalid={!!getFieldError(validateErrors, "card_balance_init")}
+							label={"Current Balance"}
+							labelPlacement={"outside"}
+							size={"lg"}
+							type={"number"}
+							value={newCard.card_balance_init.toString()}
+							variant={"bordered"}
+							onValueChange={(value) => onChangeValue("card_balance_init", +value)}
+						/>
+						<Select
+							isRequired
+							disallowEmptySelection={true}
+							label={"Select Bank"}
+							labelPlacement={"outside"}
+							selectedKeys={[newCard.bank_code]}
+							size={"lg"}
+							value={newCard.bank_code}
+							variant={"bordered"}
+							onChange={(e) => onChangeValue("bank_code", e.target.value as TBankCode)}
+						>
+							{ListBankCode.map((bank) => (
+								<SelectItem key={bank.key}>{bank.value}</SelectItem>
+							))}
+						</Select>
+						<RadioGroup
+							isRequired
+							classNames={{
+								label: "text-dark",
+							}}
+							label={"Select Card Color"}
+							orientation="horizontal"
+							size={"lg"}
+							value={newCard.card_color}
+							onValueChange={(value) => onChangeValue("card_color", value as TColor)}
+						>
+							{ListColors.map((color) => (
+								<Radio
+									key={color}
+									className={"capitalize"}
+									classNames={{
+										label: "flex items-center gap-1",
+									}}
+									value={color}
+								>
+									<div
+										className={clsx("w-6 h-6 bg-gradient-to-br rounded-md", `bankcard-${color}`)}
+									/>
+									{color}
+								</Radio>
+							))}
+						</RadioGroup>
+						<Divider />
+						<div className={"flex justify-end"}>
+							<Checkbox
+								isSelected={createMoreCard}
+								onValueChange={setCreateMoreCard}
+							>
+								Create more cards?
+							</Checkbox>
+						</div>
+					</CustomForm>
+				</div>
+				<div
+					className={clsx("xl:w-96 md:w-1/2 w-full")}
+				>
+					<BankCard
+						bankCode={newCard.bank_code}
+						cardBalance={newCard.card_balance_init}
+						cardName={newCard.card_name}
+						color={newCard.card_color}
+					/>
+				</div>
 			</div>
 		</div>
 	);

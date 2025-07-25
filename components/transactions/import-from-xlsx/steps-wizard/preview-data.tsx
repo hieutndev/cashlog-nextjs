@@ -5,6 +5,7 @@ import { Button } from "@heroui/button";
 import moment from "moment";
 import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
+import clsx from "clsx";
 
 import Container from "@/components/shared/container/container";
 import { TCreateMultipleTransactionsResponse, TCrudTransaction, TImportFileXLSXResponse } from "@/types/transaction";
@@ -14,13 +15,18 @@ import { TCategory } from "@/types/category";
 import { IAPIResponse } from "@/types/global";
 import { formatDate } from "@/utils/date";
 import ICONS from "@/configs/icons";
+import useScreenSize from "@/hooks/useScreenSize";
+import { BREAK_POINT } from "@/configs/break-point";
 
 interface PreviewDataProps {
 	uploadResult: TImportFileXLSXResponse;
 	onCancelImport?: () => void;
+	onSubmitSuccess?: () => void;
 }
 
-export default function PreviewData({ uploadResult, onCancelImport }: PreviewDataProps) {
+export default function PreviewData({ uploadResult, onCancelImport, onSubmitSuccess }: PreviewDataProps) {
+	const { width } = useScreenSize();
+
 	/* FETCH USER's CATEGORIES */
 
 	const {
@@ -109,10 +115,7 @@ export default function PreviewData({ uploadResult, onCancelImport }: PreviewDat
 
 	useEffect(() => {
 		if (createMultipleResult) {
-			addToast({
-				title: "Success",
-				description: createMultipleResult.message,
-			});
+			onSubmitSuccess?.();
 		}
 
 		if (createMultipleError) {
@@ -141,17 +144,32 @@ export default function PreviewData({ uploadResult, onCancelImport }: PreviewDat
 			gapSize={4}
 			orientation={"vertical"}
 		>
-			<div className={"flex items-center gap-2"}>
+			<div className={clsx("flex gap-2", "lg:flex-row flex-col", "lg:items-center items-start")}>
 				<h2 className={""}>
 					<span className={"font-bold text-primary"}>{mappedData.length}</span> transactions will be imported
 				</h2>
-				<div className={"flex items-center gap-2"}>
-					<Chip color={"success"}>{mappedData.filter((row) => row.direction === "in").length} Income</Chip>
-					<Chip color={"danger"}>{mappedData.filter((row) => row.direction === "out").length} Expense</Chip>
-					<Chip color={"secondary"}>
+				<div className={"flex items-center flex-wrap gap-2"}>
+					<Chip
+						color={"success"}
+						size={width < BREAK_POINT.LG ? "sm" : "md"}
+					>
+						{mappedData.filter((row) => row.direction === "in").length} Income
+					</Chip>
+					<Chip
+						color={"danger"}
+						size={width < BREAK_POINT.LG ? "sm" : "md"}
+					>
+						{mappedData.filter((row) => row.direction === "out").length} Expense
+					</Chip>
+					<Chip
+						color={"secondary"}
+						size={width < BREAK_POINT.LG ? "sm" : "md"}
+					>
 						{Array.from(new Set(mappedData.map((row) => row.category_id))).length} Categories
 					</Chip>
-					<Chip>{Array.from(new Set(mappedData.map((row) => row.card_id))).length} Cards</Chip>
+					<Chip size={width < BREAK_POINT.LG ? "sm" : "md"}>
+						{Array.from(new Set(mappedData.map((row) => row.card_id))).length} Cards
+					</Chip>
 				</div>
 			</div>
 			<Table
@@ -199,17 +217,18 @@ export default function PreviewData({ uploadResult, onCancelImport }: PreviewDat
 						))}
 				</TableBody>
 			</Table>
-			<div className={"flex items-center gap-4"}>
+			<div className={"flex items-center lg:gap-4 gap-2"}>
 				<Button
 					className={"min-w-max"}
-					
 					disabled={mappedData.length === 0}
+					isIconOnly={ width < BREAK_POINT.LG}
 					size={"lg"}
 					startContent={ICONS.XMARK.LG}
 					variant={"flat"}
 					onPress={onCancelImport}
+
 				>
-					Cancel
+					{width < BREAK_POINT.LG ? "" : "Cancel"}
 				</Button>
 				<Button
 					fullWidth

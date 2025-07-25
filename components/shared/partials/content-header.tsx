@@ -13,12 +13,19 @@ export type BreadcrumbsType = {
 	customButton?: (ButtonProps & { href: string })[];
 };
 
+export type CustomClassNames = {
+	title?: string;
+	customButton?: string;
+	breadcrumbs?: string;
+};
+
 interface ContentHeaderProps {
 	title?: string;
 	breadcrumbs?: BreadcrumbsType[];
+	classNames?: CustomClassNames;
 }
 
-export default function ContentHeader({ title, breadcrumbs }: ContentHeaderProps) {
+export default function ContentHeader({ title, breadcrumbs, classNames }: ContentHeaderProps) {
 	const pathname = usePathname();
 
 	const router = useRouter();
@@ -39,19 +46,20 @@ export default function ContentHeader({ title, breadcrumbs }: ContentHeaderProps
 	return (
 		<div className="flex flex-col gap-2">
 			<div className={"w-full flex justify-between items-center gap-4"}>
-				<h1 className="text-3xl font-bold">{title}</h1>
+				<h1 className={`text-3xl font-bold ${classNames?.title || ""}`}>{title}</h1>
 				<div className={"flex gap-2"}>
 					{parseBreadcrumbs?.customButton &&
 						parseBreadcrumbs?.customButton.map((button, index) => (
 							<Button
 								key={index}
 								{...button}
-								isIconOnly={width < BREAK_POINT.S}
+								className={`${button.className || ""} ${classNames?.customButton || ""}`}
+								isIconOnly={width < BREAK_POINT.SM}
 								onPress={() => {
 									button?.href && router.push(button.href);
 								}}
 							>
-								{width > BREAK_POINT.S ? button.children : null}
+								{width > BREAK_POINT.SM ? button.children : null}
 							</Button>
 						))}
 				</div>
@@ -59,6 +67,7 @@ export default function ContentHeader({ title, breadcrumbs }: ContentHeaderProps
 			{parseBreadcrumbs && (
 				<Breadcrumbs
 					key={parseBreadcrumbs.key}
+					className={classNames?.breadcrumbs}
 					size={"lg"}
 				>
 					{parseBreadcrumbs.label.map((label, index) => (

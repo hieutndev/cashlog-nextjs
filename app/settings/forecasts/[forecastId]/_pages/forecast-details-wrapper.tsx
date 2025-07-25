@@ -58,8 +58,8 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 	return (
 		<section
 			className={clsx("w-full flex flex-col gap-8", {
-				"col-span-10": width >= BREAK_POINT.L,
-				"col-span-12": width < BREAK_POINT.L,
+				"col-span-10": width >= BREAK_POINT.LG,
+				"col-span-12": width < BREAK_POINT.LG,
 			})}
 		>
 			<div className={"w-full flex items-center justify-between"}>
@@ -93,7 +93,6 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 					<Button
 						isIconOnly
 						color={"danger"}
-						size={"lg"}
 						startContent={ICONS.XMARK.LG}
 						onPress={() => setEditMode(false)}
 					/>
@@ -101,7 +100,6 @@ export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsCo
 					<Button
 						isIconOnly
 						color={"warning"}
-						size={"lg"}
 						startContent={ICONS.EDIT.MD}
 						variant={"ghost"}
 						onPress={() => setEditMode(true)}

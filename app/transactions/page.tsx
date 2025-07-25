@@ -39,7 +39,7 @@ export default function TransactionsPage() {
 
 	// Pagination state
 	const [currentPage, setCurrentPage] = useState<number>(() => {
-		const page = searchParams.get('page');
+		const page = searchParams.get("page");
 
 		return page ? Math.max(1, parseInt(page, 10)) : 1;
 	});
@@ -48,15 +48,12 @@ export default function TransactionsPage() {
 		page: 1,
 		limit: 10,
 		total: 0,
-		totalPages: 0
+		totalPages: 0,
 	});
 
 	// HANDLE FETCH TRANSACTION
 	// Create a memoized URL that only changes when page or limit changes
-	const transactionUrl = useMemo(() => 
-		`/transactions?page=${currentPage}&limit=${limit}`, 
-		[currentPage, limit]
-	);
+	const transactionUrl = useMemo(() => `/transactions?page=${currentPage}&limit=${limit}`, [currentPage, limit]);
 
 	const {
 		data: fetchTransactionResults,
@@ -114,16 +111,17 @@ export default function TransactionsPage() {
 		// Filtering and sorting should be handled on the server side
 		setDataTable((prev) => ({
 			...prev,
-			rows: fetchTransactionResults?.results?.map((transaction) => ({
-				...transaction,
-				date: new Date(transaction.date).toLocaleString(),
-			})) ?? [],
+			rows:
+				fetchTransactionResults?.results?.map((transaction) => ({
+					...transaction,
+					date: new Date(transaction.date).toLocaleString(),
+				})) ?? [],
 		}));
 	};
 
 	useEffect(() => {
 		onSelectFilterAndSort();
-		
+
 		// Update pagination state
 		if (fetchTransactionResults?.pagination) {
 			setPagination(fetchTransactionResults.pagination);
@@ -133,11 +131,11 @@ export default function TransactionsPage() {
 	// Handle page change
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
-		
+
 		// Update URL
 		const params = new URLSearchParams(searchParams.toString());
 
-		params.set('page', page.toString());
+		params.set("page", page.toString());
 		router.push(`/transactions?${params.toString()}`);
 	};
 
@@ -201,7 +199,7 @@ export default function TransactionsPage() {
 		if (selectedDeleteTransactionId) {
 			deleteTransaction({
 				method: "DELETE",
-				body: { transactionId: selectedDeleteTransactionId }
+				body: { transactionId: selectedDeleteTransactionId },
 			});
 		}
 	}, [selectedDeleteTransactionId, deleteTransaction]);
@@ -231,23 +229,23 @@ export default function TransactionsPage() {
 		<section className={"w-full flex flex-col gap-4"}>
 			<div
 				className={clsx("flex gap-4", {
-					"justify-between items-center": width > BREAK_POINT.S,
-					"flex-col items-start": width <= BREAK_POINT.S,
+					"justify-between items-center": width > BREAK_POINT.SM,
+					"flex-col items-start": width <= BREAK_POINT.SM,
 				})}
 			>
 				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
-				<div className={"flex items-center gap-2 flex-wrap"}>
+				<div className={"flex items-center gap-2 md:flex-wrap md:flex-row flex-row-reverse"}>
 					<Button
 						color={"primary"}
 						startContent={ICONS.IMPORT.LG}
 						variant={"light"}
 						onPress={() => router.push("/transactions/import-transactions")}
 					>
-						Import from Excel
+						{width < BREAK_POINT.MD ? "Import" : "Import from Excel"}
 					</Button>
 					<Button
 						color={"primary"}
-						startContent={ICONS.NEW.LG}
+						startContent={ICONS.NEW.MD}
 						variant={"solid"}
 						onPress={handleCreateTransaction}
 					>
@@ -372,144 +370,168 @@ export default function TransactionsPage() {
 				</div>
 			</div>
 			{fetchingTransactions ? (
-				<div className={"flex items-center justify-center h-[70vh] bg-white shadow-sm rounded-xl border border-gray-100"}>
+				<div
+					className={
+						"flex items-center justify-center h-[70vh] bg-white shadow-sm rounded-xl border border-gray-100"
+					}
+				>
 					<Spinner size={"lg"}>Loading...</Spinner>
 				</div>
 			) : (
-				<Table
-					aria-label={"Transactions table"}
-					className={clsx({
-						"h-[70vh]": width > BREAK_POINT.XL,
-						"h-screen": width <= BREAK_POINT.XL,
-					})}
-					selectionMode={"single"}
-				>
-					<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
-						{(column) => (
-							<TableColumn
-								key={column.key}
-								align={["category_name"].includes(column.key) ? "center" : "start"}
-							>
-								{column.label}
-							</TableColumn>
-						)}
-					</TableHeader>
-					<TableBody
-						emptyContent={
-							fetchingTransactions ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"
+				<>
+					<Table
+						isHeaderSticky
+						aria-label={"Transactions table"}
+						bottomContent={
+							width >= BREAK_POINT.MD &&
+							pagination.totalPages > 1 && (
+								<div className="flex justify-center mt-4">
+									<Pagination
+										showControls
+										showShadow
+										color="primary"
+										page={pagination.page}
+										total={pagination.totalPages}
+										onChange={handlePageChange}
+									/>
+								</div>
+							)
 						}
-						items={dataTable.rows}
+						className={clsx({
+							"h-[70vh]": width > BREAK_POINT.XL,
+							"h-screen": width <= BREAK_POINT.XL,
+						})}
+						selectionMode={"single"}
 					>
-						{(item) => (
-							<TableRow
-								key={item.transaction_id}
-								className={clsx({
-									"text-success": item.direction === "in",
-									"text-danger": item.direction === "out",
-								})}
-							>
-								{(columnKey) => {
-									switch (columnKey) {
-										case "card_name":
-											return (
-												<TableCell className={"capitalize min-w-max"}>
-													<div className={"flex items-center gap-2"}>
-														<Image
-															alt={`Logo bank`}
-															className={"w-4"}
-															height={1200}
-															src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
-															width={1200}
-														/>
-														<p>{getKeyValue(item, columnKey)}</p>
-													</div>
-												</TableCell>
-											);
-
-										case "amount":
-											return (
-												<TableCell className={"capitalize min-w-max"}>
-													{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
-												</TableCell>
-											);
-
-										case "description":
-											return (
-												<TableCell className={"min-w-max text-wrap"}>
-													{sliceText(getKeyValue(item, columnKey), 30)}
-												</TableCell>
-											);
-
-										case "category_name":
-											return (
-												<TableCell className={"capitalize min-w-max"}>
-													{getKeyValue(item, columnKey) ? (
-														<Chip
-															classNames={{
-																base: `background-${getKeyValue(item, "category_color")} text-white w-max h-max px-2 py-1.5`,
-																content: `ellipsis max-w-[20ch]`,
-															}}
-														>
-															{sliceText(getKeyValue(item, columnKey), 20)}
-														</Chip>
-													) : (
-														""
-													)}
-												</TableCell>
-											);
-
-										case "date":
-											return (
-												<TableCell className={"min-w-max capitalize text-center"}>
-													{formatDate(getKeyValue(item, columnKey), "onlyDate")}
-												</TableCell>
-											);
-
-										case "action":
-											return (
-												<TableCell className={"min-w-max"}>
-													<Button
-														isIconOnly
-														color={"warning"}
-														variant={"light"}
-														onPress={() => handleUpdate(item)}
-													>
-														{ICONS.EDIT.MD}
-													</Button>
-													<Button
-														isIconOnly
-														color={"danger"}
-														variant={"light"}
-														onPress={() =>
-															setSelectedDeleteTransactionId(item.transaction_id)
-														}
-													>
-														{ICONS.TRASH.MD}
-													</Button>
-												</TableCell>
-											);
-
-										default:
-											return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+						<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
+							{(column) => (
+								<TableColumn
+									key={column.key}
+									align={
+										["category_name", "date", "amount"].includes(column.key) ? "center" : "start"
 									}
-								}}
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+								>
+									{column.label}
+								</TableColumn>
+							)}
+						</TableHeader>
+						<TableBody
+							emptyContent={fetchingTransactions ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"}
+							items={dataTable.rows}
+						>
+							{(item) => (
+								<TableRow
+									key={item.transaction_id}
+									className={clsx({
+										"text-success": item.direction === "in",
+										"text-danger": item.direction === "out",
+									})}
+								>
+									{(columnKey) => {
+										switch (columnKey) {
+											case "card_name":
+												return (
+													<TableCell className={"capitalize min-w-max"}>
+														<div className={"flex items-center gap-2"}>
+															<Image
+																alt={`Logo bank`}
+																className={"w-4"}
+																height={1200}
+																src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
+																width={1200}
+															/>
+															<p>{getKeyValue(item, columnKey)}</p>
+														</div>
+													</TableCell>
+												);
+
+											case "amount":
+												return (
+													<TableCell className={"capitalize min-w-max"}>
+														{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
+													</TableCell>
+												);
+
+											case "description":
+												return (
+													<TableCell className={"min-w-max text-wrap"}>
+														{sliceText(getKeyValue(item, columnKey), 30)}
+													</TableCell>
+												);
+
+											case "category_name":
+												return (
+													<TableCell className={"capitalize min-w-max"}>
+														{getKeyValue(item, columnKey) ? (
+															<Chip
+																classNames={{
+																	base: `background-${getKeyValue(item, "category_color")} text-white w-max h-max px-2 py-1.5`,
+																	content: `ellipsis max-w-[20ch]`,
+																}}
+															>
+																{sliceText(getKeyValue(item, columnKey), 20)}
+															</Chip>
+														) : (
+															""
+														)}
+													</TableCell>
+												);
+
+											case "date":
+												return (
+													<TableCell className={"min-w-max capitalize text-center"}>
+														{formatDate(getKeyValue(item, columnKey), "onlyDate")}
+													</TableCell>
+												);
+
+											case "action":
+												return (
+													<TableCell className={"min-w-max"}>
+														<Button
+															isIconOnly
+															color={"warning"}
+															variant={"light"}
+															onPress={() => handleUpdate(item)}
+														>
+															{ICONS.EDIT.MD}
+														</Button>
+														<Button
+															isIconOnly
+															color={"danger"}
+															variant={"light"}
+															onPress={() =>
+																setSelectedDeleteTransactionId(item.transaction_id)
+															}
+														>
+															{ICONS.TRASH.MD}
+														</Button>
+													</TableCell>
+												);
+
+											default:
+												return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+										}
+									}}
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+					{width < BREAK_POINT.MD && pagination.totalPages > 1 && (
+						<div className="flex justify-center mt-4">
+							<Pagination
+								showControls
+								showShadow
+								color="primary"
+								page={pagination.page}
+								
+								total={pagination.totalPages}
+								onChange={handlePageChange}
+							/>
+						</div>
+					)}
+				</>
 			)}
-			{pagination.totalPages > 1 && (
-				<div className="flex justify-center mt-4">
-					<Pagination
-						showControls
-						showShadow
-						color="primary"
-						page={pagination.page}
-						total={pagination.totalPages}
-						onChange={handlePageChange}
-					/>
-				</div>
-			)}
+
 			<CrudTransactionModal
 				defaultData={defaultUpdateData}
 				isOpen={isOpen}
