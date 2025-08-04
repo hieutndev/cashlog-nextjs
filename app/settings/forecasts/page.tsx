@@ -23,11 +23,13 @@ export default function SettingForecastPage() {
 	const { width } = useScreenSize();
 
 	const [listForecasts, setListForecasts] = useState<TForecastWithCard[]>([]);
+	const [selectedForecast, setSelectedForecast] = useState<TForecastWithCard | null>(null);
 
 	const {
 		data: fetchForecastResult,
 		loading: loadingForecast,
 		error: errorForecast,
+		fetch: fetchForecasts,
 	} = useFetch<IAPIResponse<TForecastWithCard[]>>("/forecasts");
 
 	useEffect(() => {
@@ -56,30 +58,42 @@ export default function SettingForecastPage() {
 		{ key: "action", label: "Action" },
 	];
 
-	const handleDelete = (forecastId: number) => {
-		fetch(`/api/forecasts/${forecastId}`, {
-			method: "DELETE",
-		})
-			.then((response) => response.json())
-			.then((response) => {
-				if (response.status === "success") {
-					setListForecasts((prevForecasts) =>
-						prevForecasts.filter((forecast) => forecast.forecast_id !== forecastId)
-					);
-					addToast({
-						title: "Success",
-						description: response.message,
-						color: "success",
-					});
-				} else {
-					addToast({
-						title: "Error",
-						description: response.message,
-						color: "danger",
-					});
-				}
+	const {
+		data: deleteResult,
+		error: deleteError,
+		fetch: deleteForecast,
+	} = useFetch<IAPIResponse>(`/forecasts/${selectedForecast?.forecast_id}`, {
+		method: "DELETE",
+		skip: true,
+	});
+
+	useEffect(() => {
+		if (selectedForecast) {
+			deleteForecast();
+		}
+	}, [selectedForecast]);
+
+	useEffect(() => {
+		if (deleteResult) {
+			addToast({
+				title: "Success",
+				description: deleteResult.message,
+				color: "success",
 			});
-	};
+			fetchForecasts();
+			setSelectedForecast(null);
+		}
+
+		if (deleteError) {
+			const parsedError = JSON.parse(deleteError);
+
+			addToast({
+				title: "Error",
+				description: parsedError.message,
+				color: "danger",
+			});
+		}
+	}, [deleteResult, deleteError]);
 
 	return (
 		<div
@@ -208,7 +222,7 @@ export default function SettingForecastPage() {
 																isIconOnly
 																color={"danger"}
 																variant={"ghost"}
-																onPress={() => handleDelete(+item.forecast_id)}
+																onPress={() => setSelectedForecast(item)}
 															>
 																{ICONS.TRASH.MD}
 															</Button>
