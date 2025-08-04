@@ -18,7 +18,7 @@ import useScreenSize from "@/hooks/useScreenSize";
 export default function ImportTransactionsPage() {
 	const router = useRouter();
 
-	const [currentStep, setCurrentStep] = useState<number>(4);
+	const [currentStep, setCurrentStep] = useState<number>(1);
 	const [uploadFileResult, setUploadFileResult] = useState<TImportFileXLSXResponse | null>(null);
 
 	const handleUpdateStep = useCallback(
