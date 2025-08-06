@@ -39,28 +39,48 @@ export default function TransactionsPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
-	// Pagination state
+	const sortSelection: FilterAndSortItem[] = [
+		{
+			key: "date_desc",
+			label: "Newest First",
+			startIcon: ICONS.DATE_DESC.MD,
+		},
+		{
+			key: "date_asc",
+			label: "Oldest First",
+			startIcon: ICONS.DATE_ASC.MD,
+		},
+		{
+			key: "amount_desc",
+			label: "Highest Amount First",
+			startIcon: ICONS.SORT_UP.MD,
+		},
+		{
+			key: "amount_asc",
+			label: "Lowest Amount First",
+			startIcon: ICONS.SORT_DOWN.MD,
+		},
+	];
+
 	const [currentPage, setCurrentPage] = useState<number>(() => {
 		const page = searchParams.get("page");
 
 		return page ? Math.max(1, parseInt(page, 10)) : 1;
 	});
-	const limit = 10; // Make it a constant instead of state
+	const limit = 10;
 	const [pagination, setPagination] = useState<IPagination>({
 		page: 1,
-		limit: 10,
+		limit,
 		total: 0,
 		totalPages: 0,
 	});
 
-	// Search state
 	const [searchQuery, setSearchQuery] = useState<string>(() => {
 		return searchParams.get("search") || "";
 	});
 	const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
 	// HANDLE FETCH TRANSACTION
-	// Create a memoized URL that changes when page, limit, or search changes
 	const transactionUrl = useMemo(() => {
 		const params = new URLSearchParams();
 
@@ -105,36 +125,11 @@ export default function TransactionsPage() {
 		rows: [],
 	});
 
-	const sortSelection: FilterAndSortItem[] = [
-		{
-			key: "date_desc",
-			label: "Newest First",
-			startIcon: ICONS.DATE_DESC.MD,
-		},
-		{
-			key: "date_asc",
-			label: "Oldest First",
-			startIcon: ICONS.DATE_ASC.MD,
-		},
-		{
-			key: "amount_desc",
-			label: "Highest Amount First",
-			startIcon: ICONS.SORT_UP.MD,
-		},
-		{
-			key: "amount_asc",
-			label: "Lowest Amount First",
-			startIcon: ICONS.SORT_DOWN.MD,
-		},
-	];
-
 	const [sortSelected, setSortSelected] = useState("date_desc");
 	const [cardSelected, setCardSelected] = useState("");
 	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
 
 	const onSelectFilterAndSort = () => {
-		// Since we're using server-side pagination, we'll just set the data directly
-		// Filtering and sorting should be handled on the server side
 		setDataTable((prev) => ({
 			...prev,
 			rows:
@@ -147,14 +142,13 @@ export default function TransactionsPage() {
 
 	useEffect(() => {
 		onSelectFilterAndSort();
-
-		// Update pagination state
 		if (fetchTransactionResults?.pagination) {
+			console.log("fetchTransactionResults.pagination", fetchTransactionResults.pagination);
+
 			setPagination(fetchTransactionResults.pagination);
 		}
 	}, [fetchTransactionResults]);
 
-	// Handle page change
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 
@@ -172,11 +166,9 @@ export default function TransactionsPage() {
 		router.push(`/transactions?${params.toString()}`);
 	};
 
-	// Handle search change
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value);
 
-		// Update URL immediately for search (debounced value will handle the API call)
 		const params = new URLSearchParams(searchParams.toString());
 
 		if (value.trim()) {
@@ -214,13 +206,13 @@ export default function TransactionsPage() {
 	}, [fetchCardResults]);
 
 	// HANDLE DELETE TRANSACTION
-	const [selectedDeleteTransactionId, setSelectedDeleteTransactionId] = useState<string | null>(null);
+	const [selectedTransaction, setSelectedTransaction] = useState<TTransactionWithCardAndCategory | null>(null);
 
 	const {
 		data: deleteTransactionResults,
 		error: errorDeleteTransaction,
 		fetch: deleteTransaction,
-	} = useFetch<IAPIResponse>("/transactions", {
+	} = useFetch<IAPIResponse>(`/transactions?transactionId=${selectedTransaction?.transaction_id ?? -1}`, {
 		method: "DELETE",
 		skip: true,
 	});
@@ -233,7 +225,7 @@ export default function TransactionsPage() {
 				description: deleteTransactionResults.message,
 				color: "success",
 			});
-			setSelectedDeleteTransactionId(null);
+			setSelectedTransaction(null);
 		}
 
 		if (errorDeleteTransaction) {
@@ -243,16 +235,13 @@ export default function TransactionsPage() {
 				color: "danger",
 			});
 		}
-	}, [deleteTransactionResults, errorDeleteTransaction, fetchTransactions]);
+	}, [deleteTransactionResults, errorDeleteTransaction]);
 
 	useEffect(() => {
-		if (selectedDeleteTransactionId) {
-			deleteTransaction({
-				method: "DELETE",
-				body: { transactionId: selectedDeleteTransactionId },
-			});
+		if (selectedTransaction) {
+			deleteTransaction();
 		}
-	}, [selectedDeleteTransactionId, deleteTransaction]);
+	}, [selectedTransaction]);
 
 	// HANDLE OPEN NEW TRANSACTION MODAL
 
@@ -260,17 +249,17 @@ export default function TransactionsPage() {
 
 	// HANDLE OPEN UPDATE TRANSACTION MODAL
 
-	const [defaultUpdateData, setDefaultUpdateData] = useState<TTransaction | null>(null);
+	const [defaultData, setDefaultData] = useState<TTransaction | null>(null);
 	const [modalMode, setModalMode] = useState<"create" | "update">("create");
 
 	const handleUpdate = (item: TTransaction) => {
-		setDefaultUpdateData(item);
+		setDefaultData(item);
 		setModalMode("update");
 		onOpen();
 	};
 
 	const handleCreateTransaction = () => {
-		setDefaultUpdateData(null);
+		setDefaultData(null);
 		setModalMode("create");
 		onOpen();
 	};
@@ -420,9 +409,6 @@ export default function TransactionsPage() {
 					</Select>
 					<Input
 						isClearable
-						// classNames={{
-						// 	inputWrapper: "h-12",
-						// }}
 						label={"Search"}
 						labelPlacement={"outside"}
 						placeholder="Enter what you want to search..."
@@ -561,9 +547,7 @@ export default function TransactionsPage() {
 															isIconOnly
 															color={"danger"}
 															variant={"light"}
-															onPress={() =>
-																setSelectedDeleteTransactionId(item.transaction_id)
-															}
+															onPress={() => setSelectedTransaction(item)}
 														>
 															{ICONS.TRASH.MD}
 														</Button>
@@ -594,7 +578,7 @@ export default function TransactionsPage() {
 			)}
 
 			<CrudTransactionModal
-				defaultData={defaultUpdateData}
+				defaultData={defaultData}
 				isOpen={isOpen}
 				mode={modalMode}
 				onOpenChange={onOpenChange}

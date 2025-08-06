@@ -224,6 +224,7 @@ export const QUERY_STRING = {
                                                                   transaction_categories tc ON tn.category_id = tc.category_id
                                                              WHERE u.user_id = ?
                                                              ORDER BY tn.date DESC
+                                                                        
                                                              LIMIT ? OFFSET ?;`,
 	GET_TRANSACTIONS_COUNT_BY_USER_ID: `SELECT COUNT(*) as total
                                         FROM transactions_new tn
