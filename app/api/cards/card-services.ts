@@ -1,6 +1,8 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { JSONSchemaType } from "ajv";
 
+import { updateCardBalance } from "../transactions/transaction-services";
+
 import { TCard, TUpdateCard, TCreateNewCard } from "@/types/card";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
@@ -303,6 +305,24 @@ export const createMultipleCards = async (card_names: string[], user_id: TUser["
 			created_new: createdNew,
 			user_cards: await getAllCardsOfUser(user_id),
 		};
+	} catch (error: unknown) {
+		throw error;
+	}
+};
+
+export const syncAllCardsBalance = async (userId: TUser["user_id"]) => {
+	try {
+		const cards = await getAllCardsOfUser(userId);
+
+		if (!cards || cards.length === 0) {
+			throw new ApiError("No cards found for user", 404);
+		}
+
+		const syncPromises = cards.map(async (card) => {
+			updateCardBalance(card.card_id, userId);
+		});
+
+		return Promise.all(syncPromises)
 	} catch (error: unknown) {
 		throw error;
 	}

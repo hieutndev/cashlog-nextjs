@@ -3,7 +3,7 @@ import { RiArrowLeftRightFill } from "react-icons/ri";
 import { PiTarget } from "react-icons/pi";
 import { FiSearch, FiSettings } from "react-icons/fi";
 import { GrFormNextLink, GrFormPreviousLink } from "react-icons/gr";
-import { LuCalendarArrowDown, LuCalendarArrowUp, LuCircleAlert, LuCircleCheck, LuFileUp, LuPlay } from "react-icons/lu";
+import { LuCalendarArrowDown, LuCalendarArrowUp, LuCircleAlert, LuCircleCheck, LuFileUp, LuPlay, LuRefreshCcw } from "react-icons/lu";
 import { IoAnalyticsSharp, IoLogOutOutline } from "react-icons/io5";
 import {
 	FaArrowDownWideShort,
@@ -231,6 +231,12 @@ const ICONS = {
 		MD: <LuGitPullRequestArrow size={SIZE_ICON.md} />,
 		LG: <LuGitPullRequestArrow size={SIZE_ICON.lg} />,
 		XL: <LuGitPullRequestArrow size={SIZE_ICON.xl} />,
+	},
+	SYNC: {
+		SM: <LuRefreshCcw size={SIZE_ICON.sm} />,
+		MD: <LuRefreshCcw size={SIZE_ICON.md} />,
+		LG: <LuRefreshCcw size={SIZE_ICON.lg} />,
+		XL: <LuRefreshCcw size={SIZE_ICON.xl} />,
 	}
 };
 

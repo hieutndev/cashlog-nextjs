@@ -130,13 +130,42 @@ export default function TransactionsPage() {
 	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
 
 	const onSelectFilterAndSort = () => {
-		setDataTable((prev) => ({
-			...prev,
-			rows:
-				fetchTransactionResults?.results?.map((transaction) => ({
+
+		let initData = fetchTransactionResults?.results?.map((transaction) => ({
 					...transaction,
 					date: new Date(transaction.date).toLocaleString(),
-				})) ?? [],
+				})) ?? [];
+
+		if (sortSelected) {
+			switch (sortSelected) {
+				case "date_desc":
+					initData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+					break;
+				case "date_asc":
+					initData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+					break;
+				case "amount_desc":
+					initData.sort((a, b) => b.amount - a.amount);
+					break;
+				case "amount_asc":
+					initData.sort((a, b) => a.amount - b.amount);
+					break;
+				default:
+					break;
+			}
+		}
+
+		if (cardSelected) {
+			initData = initData.filter((transaction) => transaction.card_id.toString() === cardSelected);
+		}
+		if (transactionTypeSelected) {
+			initData = initData.filter((transaction) => transaction.direction === transactionTypeSelected);
+		}
+
+
+		setDataTable((prev) => ({
+			...prev,
+			rows: initData,
 		}));
 	};
 
@@ -147,7 +176,7 @@ export default function TransactionsPage() {
 
 			setPagination(fetchTransactionResults.pagination);
 		}
-	}, [fetchTransactionResults]);
+	}, [fetchTransactionResults, sortSelected, cardSelected, transactionTypeSelected]);
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
@@ -293,10 +322,10 @@ export default function TransactionsPage() {
 				</div>
 			</div>
 
-			<div className={"flex items-center justify-between gap-4"}>
-				<div className={"flex items-start flex-wrap gap-4"}>
+			<div className={"flex items-center justify-between flex-wrap gap-4"}>
+				<div className={"w-full lg:w-max flex items-start flex-wrap gap-4"}>
 					<Select
-						className={"w-60"}
+						className={"w-full lg:w-60"}
 						items={sortSelection}
 						label={"Sort"}
 						labelPlacement={"outside"}
@@ -328,7 +357,7 @@ export default function TransactionsPage() {
 						)}
 					</Select>
 					<Select
-						className={"w-56"}
+						className={"w-full lg:w-60"}
 						items={listCards}
 						label={"Filter by card"}
 						labelPlacement={"outside"}
@@ -359,9 +388,8 @@ export default function TransactionsPage() {
 							</SelectItem>
 						)}
 					</Select>
-
 					<Select
-						className={"w-60"}
+						className={"w-full lg:w-60"}
 						items={[
 							{
 								key: "in",
@@ -407,18 +435,19 @@ export default function TransactionsPage() {
 							</SelectItem>
 						)}
 					</Select>
-					<Input
-						isClearable
-						label={"Search"}
-						labelPlacement={"outside"}
-						placeholder="Enter what you want to search..."
-						startContent={ICONS.SEARCH.MD}
-						value={searchQuery}
-						variant={"bordered"}
-						onClear={() => handleSearchChange("")}
-						onValueChange={handleSearchChange}
-					/>
 				</div>
+				<Input
+					isClearable
+					className={"w-full xl:w-72"}
+					label={"Search"}
+					labelPlacement={"outside"}
+					placeholder="Enter what you want to search..."
+					startContent={ICONS.SEARCH.MD}
+					value={searchQuery}
+					variant={"bordered"}
+					onClear={() => handleSearchChange("")}
+					onValueChange={handleSearchChange}
+				/>
 			</div>
 			{fetchingTransactions ? (
 				<div
