@@ -33,7 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	});
 
 	useEffect(() => {
-		if (checkSessionResult?.status !== "success") {
+		
+		console.log("🚀 ~ AuthProvider ~ checkSessionResult:", checkSessionResult)
+		if (checkSessionResult && checkSessionResult.status !== "success") {
+			console.log(checkSessionResult.status);
+			
 			deleteCookie("access_token", { path: "/" });
 			deleteCookie("refresh_token", { path: "/" });
 			deleteCookie("username", { path: "/" });

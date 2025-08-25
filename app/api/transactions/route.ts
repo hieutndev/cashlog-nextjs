@@ -21,12 +21,15 @@ export const GET = async (request: NextRequest) => {
         const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
         const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '10', 10))); // Cap at 100
         
-        // Parse search parameter
+        // Parse filter parameters
         const search = searchParams.get('search') || '';
+        const cardId = searchParams.get('cardId') || '';
+        const transactionType = searchParams.get('transactionType') || '';
+        const sortBy = searchParams.get('sortBy') || 'date_desc';
 
-        console.log('userId', userId, 'page', page, 'limit', limit, 'search', search);
+        console.log('userId', userId, 'page', page, 'limit', limit, 'search', search, 'cardId', cardId, 'transactionType', transactionType, 'sortBy', sortBy);
 
-        const { transactions, total } = await getAllTransactions(userId, page, limit, search);
+        const { transactions, total } = await getAllTransactions(userId, page, limit, search, cardId, transactionType, sortBy);
         const totalPages = Math.ceil(total / limit);
 
         return Response.json(

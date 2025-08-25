@@ -209,10 +209,10 @@ export default function CategoriesPage() {
 				</>
 			)}
 			<Modal
-				hideCloseButton
+				// hideCloseButton
 				isOpen={isOpen}
 				placement={width >= BREAK_POINT.LG ? "center" : "top"}
-				size={"2xl"}
+				size={width >= BREAK_POINT.SM ? "2xl" : "full"}
 				onOpenChange={onOpenChange}
 			>
 				<ModalContent>

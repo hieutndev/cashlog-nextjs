@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
 import { Input } from "@heroui/input";
 
-import CrudTransactionModal from "./_component/crud-transaction-modal";
+import CrudTransactionModal from "./_component/transaction-form-modal";
 
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
 import { useFetch } from "@/hooks/useFetch";
@@ -80,6 +80,11 @@ export default function TransactionsPage() {
 	});
 	const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+	// Filter and sort state
+	const [sortSelected, setSortSelected] = useState("date_desc");
+	const [cardSelected, setCardSelected] = useState("");
+	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
+
 	// HANDLE FETCH TRANSACTION
 	const transactionUrl = useMemo(() => {
 		const params = new URLSearchParams();
@@ -91,8 +96,20 @@ export default function TransactionsPage() {
 			params.set("search", debouncedSearchQuery.trim());
 		}
 
+		if (cardSelected) {
+			params.set("cardId", cardSelected);
+		}
+
+		if (transactionTypeSelected) {
+			params.set("transactionType", transactionTypeSelected);
+		}
+
+		if (sortSelected) {
+			params.set("sortBy", sortSelected);
+		}
+
 		return `/transactions?${params.toString()}`;
-	}, [currentPage, limit, debouncedSearchQuery]);
+	}, [currentPage, limit, debouncedSearchQuery, cardSelected, transactionTypeSelected, sortSelected]);
 
 	const {
 		data: fetchTransactionResults,
@@ -125,65 +142,37 @@ export default function TransactionsPage() {
 		rows: [],
 	});
 
-	const [sortSelected, setSortSelected] = useState("date_desc");
-	const [cardSelected, setCardSelected] = useState("");
-	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
-
-	const onSelectFilterAndSort = () => {
-
-		let initData = fetchTransactionResults?.results?.map((transaction) => ({
-					...transaction,
-					date: new Date(transaction.date).toLocaleString(),
-				})) ?? [];
-
-		if (sortSelected) {
-			switch (sortSelected) {
-				case "date_desc":
-					initData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-					break;
-				case "date_asc":
-					initData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-					break;
-				case "amount_desc":
-					initData.sort((a, b) => b.amount - a.amount);
-					break;
-				case "amount_asc":
-					initData.sort((a, b) => a.amount - b.amount);
-					break;
-				default:
-					break;
-			}
-		}
-
-		if (cardSelected) {
-			initData = initData.filter((transaction) => transaction.card_id.toString() === cardSelected);
-		}
-		if (transactionTypeSelected) {
-			initData = initData.filter((transaction) => transaction.direction === transactionTypeSelected);
-		}
-
-
-		setDataTable((prev) => ({
-			...prev,
-			rows: initData,
-		}));
-	};
-
+	// Update data table when fetch results change
 	useEffect(() => {
-		onSelectFilterAndSort();
+		if (fetchTransactionResults?.results) {
+			const formattedData = fetchTransactionResults.results.map((transaction) => ({
+				...transaction,
+				date: new Date(transaction.date).toLocaleString(),
+			}));
+
+			setDataTable((prev) => ({
+				...prev,
+				rows: formattedData,
+			}));
+		}
+
 		if (fetchTransactionResults?.pagination) {
 			console.log("fetchTransactionResults.pagination", fetchTransactionResults.pagination);
-
 			setPagination(fetchTransactionResults.pagination);
 		}
-	}, [fetchTransactionResults, sortSelected, cardSelected, transactionTypeSelected]);
+	}, [fetchTransactionResults]);
+
+	// Reset to page 1 when filters change
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [sortSelected, cardSelected, transactionTypeSelected, debouncedSearchQuery]);
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 
-		// Update URL
+		// Update URL to preserve current state
 		const params = new URLSearchParams(searchParams.toString());
-
+		
 		params.set("page", page.toString());
 
 		if (debouncedSearchQuery.trim()) {
