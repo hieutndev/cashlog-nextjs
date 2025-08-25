@@ -1,4 +1,5 @@
 // write middleware to check access_token in Authorization header
+"use server";
 
 import { NextRequest, NextResponse } from "next/server";
 import { decodeJwt } from "jose";

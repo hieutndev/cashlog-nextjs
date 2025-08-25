@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getCookie, hasCookie, setCookie } from "cookies-next";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
@@ -12,10 +12,13 @@ interface FetchOptions<TBody> {
   skip?: boolean; // skip fetch on mount,
   options?: {
     removeContentType?: boolean;
-  }
+  };
 }
 
-type SearchParams = Record<string, string | number | boolean | null | undefined>;
+type SearchParams = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
 
 interface FetchState<T> {
   data: T | null;
@@ -35,7 +38,7 @@ const buildQueryString = (params: SearchParams): string => {
 
   const queryString = searchParams.toString();
 
-  return queryString ? `?${queryString}` : '';
+  return queryString ? `?${queryString}` : "";
 };
 
 const parseURL = (url: string, searchParams?: SearchParams) => {
@@ -59,7 +62,7 @@ const parseURL = (url: string, searchParams?: SearchParams) => {
 
     if (queryString) {
       // Check if URL already has query parameters
-      if (baseUrl.includes('?')) {
+      if (baseUrl.includes("?")) {
         // URL already has query params, append with &
         return `${baseUrl}&${queryString.substring(1)}`; // Remove the leading '?'
       } else {
@@ -73,19 +76,18 @@ const parseURL = (url: string, searchParams?: SearchParams) => {
 };
 
 async function refreshToken() {
-
   const headers = new Headers();
 
   headers.append("Content-Type", "application/json");
-  headers.append("x-rftk", getCookie("refresh_token") as string || "");
+  headers.append("x-rftk", (getCookie("refresh_token") as string) || "");
 
   const response = await fetch(`${BASE_URL}/accounts/rftk`, {
     method: "GET",
-    headers
+    headers,
   });
 
   if (!response.ok) {
-    throw new Error("Failed to refresh token");
+    throw new Error("RefreshTokenExpiredError");
   }
 
   const data = await response.json();
@@ -97,13 +99,17 @@ async function refreshToken() {
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
   options?: FetchOptions<TBody>
-): FetchState<TResponse> & { fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void> };
+): FetchState<TResponse> & {
+  fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void>;
+};
 
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
   searchParams?: SearchParams,
   options?: FetchOptions<TBody>
-): FetchState<TResponse> & { fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void> };
+): FetchState<TResponse> & {
+  fetch: (overrideOptions?: FetchOptions<TBody>) => Promise<void>;
+};
 
 export function useFetch<TResponse = any, TBody = any>(
   url: string,
@@ -111,16 +117,40 @@ export function useFetch<TResponse = any, TBody = any>(
   options?: FetchOptions<TBody>
 ) {
   // Determine if the second parameter is searchParams or options
-  const isSearchParams = searchParamsOrOptions &&
-    typeof searchParamsOrOptions === 'object' &&
-    !('method' in searchParamsOrOptions) &&
-    !('body' in searchParamsOrOptions) &&
-    !('headers' in searchParamsOrOptions) &&
-    !('skip' in searchParamsOrOptions) &&
-    !('options' in searchParamsOrOptions);
+  const isSearchParams =
+    searchParamsOrOptions &&
+    typeof searchParamsOrOptions === "object" &&
+    !("method" in searchParamsOrOptions) &&
+    !("body" in searchParamsOrOptions) &&
+    !("headers" in searchParamsOrOptions) &&
+    !("skip" in searchParamsOrOptions) &&
+    !("options" in searchParamsOrOptions);
 
-  const searchParams = isSearchParams ? searchParamsOrOptions as SearchParams : undefined;
-  const finalOptions = isSearchParams ? options : searchParamsOrOptions as FetchOptions<TBody>;
+  const searchParams = isSearchParams
+    ? (searchParamsOrOptions as SearchParams)
+    : undefined;
+  const rawOptions = isSearchParams
+    ? options
+    : (searchParamsOrOptions as FetchOptions<TBody>);
+
+  // Memoize the final options to prevent unnecessary re-renders
+  const finalOptions = useMemo(
+    () => rawOptions || {},
+    [
+      rawOptions?.method,
+      rawOptions?.skip,
+      rawOptions?.options?.removeContentType,
+      JSON.stringify(rawOptions?.headers || {}),
+      // Note: body is handled separately in fetchData to avoid serialization issues
+    ]
+  );
+
+  // Memoize searchParams to prevent unnecessary re-renders
+  const memoizedSearchParams = useMemo(
+    () => searchParams,
+    [JSON.stringify(searchParams || {})]
+  );
+
   const [state, setState] = useState<FetchState<TResponse>>({
     data: null,
     loading: !finalOptions?.skip,
@@ -134,11 +164,15 @@ export function useFetch<TResponse = any, TBody = any>(
     }
 
     return JSON.stringify(fetchBody);
-  }
+  };
 
   const fetchData = async (overrideOptions?: FetchOptions<TBody>) => {
-
-    setState((prevState) => ({ ...prevState, loading: true, error: null, statusCode: null }));
+    setState((prevState) => ({
+      ...prevState,
+      loading: true,
+      error: null,
+      statusCode: null,
+    }));
 
     const mergedOptions = {
       ...finalOptions,
@@ -147,34 +181,39 @@ export function useFetch<TResponse = any, TBody = any>(
         ...finalOptions?.headers,
         ...overrideOptions?.headers,
       },
-      body: overrideOptions?.body ?? finalOptions?.body,
+      body: overrideOptions?.body ?? rawOptions?.body,
     };
 
-
     try {
-
-
-      const response = await fetch(parseURL(url, searchParams), {
+      const response = await fetch(parseURL(url, memoizedSearchParams), {
         method: mergedOptions.method ?? "GET",
         headers: {
-          ...(mergedOptions.options?.removeContentType ? {} : { "Content-Type": "application/json" }),
-          "Authorization": `Bearer ${getCookie("access_token") || ""}`,
+          ...(mergedOptions.options?.removeContentType
+            ? {}
+            : { "Content-Type": "application/json" }),
+          Authorization: `Bearer ${getCookie("access_token") || ""}`,
           ...(mergedOptions.headers || {}),
         },
-        body: mergedOptions.body ? parseFetchBody(mergedOptions.body) : undefined,
+        body: mergedOptions.body
+          ? parseFetchBody(mergedOptions.body)
+          : undefined,
       });
 
       if (response.status === 401 && hasCookie("refresh_token")) {
         await refreshToken();
 
-        const retryResponse = await fetch(parseURL(url, searchParams), {
+        const retryResponse = await fetch(parseURL(url, memoizedSearchParams), {
           method: mergedOptions.method ?? "GET",
           headers: {
-            ...(mergedOptions.options?.removeContentType ? {} : { "Content-Type": "application/json" }),
-            "Authorization": `Bearer ${getCookie("access_token") || ""}`,
+            ...(mergedOptions.options?.removeContentType
+              ? {}
+              : { "Content-Type": "application/json" }),
+            Authorization: `Bearer ${getCookie("access_token") || ""}`,
             ...(mergedOptions.headers || {}),
           },
-          body: mergedOptions.body ? parseFetchBody(mergedOptions.body) : undefined,
+          body: mergedOptions.body
+            ? parseFetchBody(mergedOptions.body)
+            : undefined,
         });
 
         if (!retryResponse.ok) {
@@ -184,7 +223,7 @@ export function useFetch<TResponse = any, TBody = any>(
             data: null,
             loading: false,
             error: errorText || retryResponse.statusText,
-            statusCode: retryResponse.status
+            statusCode: retryResponse.status,
           });
 
           return;
@@ -192,29 +231,52 @@ export function useFetch<TResponse = any, TBody = any>(
 
         const retryData = await retryResponse.json();
 
-        setState({ data: retryData, loading: false, error: null, statusCode: retryResponse.status });
+        setState({
+          data: retryData,
+          loading: false,
+          error: null,
+          statusCode: retryResponse.status,
+        });
 
         return;
       }
 
       if (!response.ok) {
-        const errorText = await response.text();
+
+
+        const responseText = await response.text();
+
+        const errorJson = JSON.parse(responseText || '{}');
 
         setState({
           data: null,
           loading: false,
-          error: errorText || response.statusText,
-          statusCode: response.status
+          error: responseText || response.statusText,
+          statusCode: response.status,
         });
+
+        if (errorJson.message === "NO_PERMISSION") {
+          window.location.href = "/sign-in?message=NO_PERMISSION";
+        }
 
         return;
       }
 
       const data = await response.json();
 
-      setState({ data, loading: false, error: null, statusCode: response.status });
+      setState({
+        data,
+        loading: false,
+        error: null,
+        statusCode: response.status,
+      });
     } catch (error: any) {
-      setState({ data: null, loading: false, error: error.message, statusCode: null });
+      if (error.message === "RefreshTokenExpiredError") {
+        setState({ data: null, loading: false, error: null, statusCode: null });
+        window.location.href = "/sign-in?message=EXPIRED_REFRESH_TOKEN";
+      } else {
+        setState({ data: null, loading: false, error: error.message, statusCode: null });
+      }
     }
   };
 
@@ -222,7 +284,14 @@ export function useFetch<TResponse = any, TBody = any>(
     if (!finalOptions?.skip) {
       fetchData();
     }
-  }, [url, searchParams, finalOptions]);
+  }, [
+    url,
+    memoizedSearchParams,
+    finalOptions.method,
+    finalOptions.skip,
+    finalOptions.options?.removeContentType,
+    JSON.stringify(finalOptions.headers || {}),
+  ]);
 
   return { ...state, fetch: fetchData };
 }
