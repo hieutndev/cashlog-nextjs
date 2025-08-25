@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useReactiveCookiesNext } from "cookies-next/client";
 import { usePathname } from "next/navigation";
 
+import { useFetch } from "@/hooks/useFetch";
+import { IAPIResponse } from "@/types/global";
+
 interface IAuthContext {
 	isLoggedIn: boolean | null;
 	detecting: boolean;
@@ -16,11 +19,30 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-	const { getCookie } = useReactiveCookiesNext();
+	const { getCookie, deleteCookie } = useReactiveCookiesNext();
 	const [isLoggedIn, setIsLoggedIn] = useState<null | boolean>(null);
 	const [detecting, setDetecting] = useState(true);
 
+
+	const { data: checkSessionResult, fetch: checkSession } = useFetch<IAPIResponse>(`/users/check-sessions`, {
+		method: 'POST',
+		body: {
+			refresh_token: getCookie("refresh_token")
+		},
+		skip: true,
+	});
+
+	useEffect(() => {
+		if (checkSessionResult?.status !== "success") {
+			deleteCookie("access_token", { path: "/" });
+			deleteCookie("refresh_token", { path: "/" });
+			deleteCookie("username", { path: "/" });
+		}
+	}, [checkSessionResult]);
+
 	const pathname = usePathname();
+
+
 
 	useEffect(() => {
 		setDetecting(true);
@@ -34,13 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		if (isLoggedIn === null) {
 			setDetecting(true);
 		} else {
+			checkSession({
+				body: {
+					refresh_token: getCookie("refresh_token")
+				},
+			})
 			setDetecting(false);
 		}
 	}, [isLoggedIn]);
 
 	useEffect(() => {
-		console.log("AuthProvider - Pathname changed:", pathname);
-
 		setDetecting(true);
 	}, [pathname]);
 
