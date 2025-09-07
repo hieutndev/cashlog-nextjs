@@ -122,13 +122,6 @@ export default function TransactionsPage() {
 		fetchTransactions();
 	}, [transactionUrl]);
 
-	// Reset to page 1 when search query changes
-	useEffect(() => {
-		if (debouncedSearchQuery !== (searchParams.get("search") || "")) {
-			setCurrentPage(1);
-		}
-	}, [debouncedSearchQuery, searchParams]);
-
 	const [dataTable, setDataTable] = useState<IDataTable<TTransactionWithCardAndCategory>>({
 		columns: [
 			{ key: "card_name", label: "Card" },
@@ -141,6 +134,11 @@ export default function TransactionsPage() {
 		],
 		rows: [],
 	});
+
+	// Reset to page 1 when filters change
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [sortSelected, cardSelected, transactionTypeSelected, debouncedSearchQuery]);
 
 	// Update data table when fetch results change
 	useEffect(() => {
@@ -161,11 +159,6 @@ export default function TransactionsPage() {
 			setPagination(fetchTransactionResults.pagination);
 		}
 	}, [fetchTransactionResults]);
-
-	// Reset to page 1 when filters change
-	useEffect(() => {
-		setCurrentPage(1);
-	}, [sortSelected, cardSelected, transactionTypeSelected, debouncedSearchQuery]);
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
@@ -197,6 +190,21 @@ export default function TransactionsPage() {
 		}
 
 		router.push(`/transactions?${params.toString()}`);
+	};
+
+	const handleSortChange = (value: string) => {
+		setSortSelected(value);
+		// Page will be reset to 1 by the useEffect hook
+	};
+
+	const handleCardFilterChange = (value: string) => {
+		setCardSelected(value);
+		// Page will be reset to 1 by the useEffect hook
+	};
+
+	const handleTransactionTypeChange = (value: "out" | "in" | "") => {
+		setTransactionTypeSelected(value);
+		// Page will be reset to 1 by the useEffect hook
 	};
 
 	// HANDLE FETCH CARD
@@ -334,7 +342,7 @@ export default function TransactionsPage() {
 						)}
 						selectedKeys={[sortSelected]}
 						variant={"faded"}
-						onChange={(e) => setSortSelected(e.target.value)}
+						onChange={(e) => handleSortChange(e.target.value)}
 					>
 						{(item) => (
 							<SelectItem
@@ -366,7 +374,7 @@ export default function TransactionsPage() {
 						)}
 						selectedKeys={[cardSelected]}
 						variant={"faded"}
-						onChange={(e) => setCardSelected(e.target.value)}
+						onChange={(e) => handleCardFilterChange(e.target.value)}
 					>
 						{(card) => (
 							<SelectItem
@@ -409,7 +417,7 @@ export default function TransactionsPage() {
 						)}
 						selectedKeys={[transactionTypeSelected]}
 						variant={"faded"}
-						onChange={(e) => setTransactionTypeSelected(e.target.value as "out" | "in" | "")}
+						onChange={(e) => handleTransactionTypeChange(e.target.value as "out" | "in" | "")}
 					>
 						{(item) => (
 							<SelectItem key={item.key}>

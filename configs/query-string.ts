@@ -250,4 +250,87 @@ export const QUERY_STRING = {
                              card_id     = ?,
                              category_id = ?
                          WHERE transaction_id = ?`,
+	GET_CATEGORY_STATS_BY_USER_ID: `SELECT
+                                        COALESCE(tc.category_name, 'Uncategorized') as category,
+                                        COALESCE(tc.color, 'slate') as color,
+                                        SUM(tn.amount) as total
+                                    FROM transactions_new tn
+                                    JOIN cards c ON tn.card_id = c.card_id
+                                    JOIN users u ON c.user_id = u.user_id
+                                    LEFT JOIN transaction_categories tc ON tn.category_id = tc.category_id
+                                    WHERE u.user_id = ?
+                                    GROUP BY tc.category_id, tc.category_name, tc.color
+                                    HAVING total > 0
+                                    ORDER BY total DESC`,
+
+	// Optimized analytics queries for better performance
+	GET_DAILY_ANALYTICS_BY_USER_ID: `
+		SELECT 
+			DATE(tn.date) as date,
+			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
+			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
+		FROM transactions_new tn
+		JOIN cards c ON tn.card_id = c.card_id
+		WHERE c.user_id = ?
+			AND tn.date >= ?
+			AND tn.date <= ?
+		GROUP BY DATE(tn.date)
+		ORDER BY DATE(tn.date)
+	`,
+
+	GET_WEEKLY_ANALYTICS_BY_USER_ID: `
+		SELECT 
+			YEARWEEK(tn.date, 1) as week,
+			YEAR(tn.date) as year,
+			WEEK(tn.date, 1) as week_number,
+			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
+			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
+		FROM transactions_new tn
+		JOIN cards c ON tn.card_id = c.card_id
+		WHERE c.user_id = ?
+			AND tn.date >= ?
+			AND tn.date <= ?
+		GROUP BY YEARWEEK(tn.date, 1), YEAR(tn.date), WEEK(tn.date, 1)
+		ORDER BY YEARWEEK(tn.date, 1)
+	`,
+
+	GET_MONTHLY_ANALYTICS_BY_USER_ID: `
+		SELECT 
+			YEAR(tn.date) as year,
+			MONTH(tn.date) as month,
+			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
+			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
+		FROM transactions_new tn
+		JOIN cards c ON tn.card_id = c.card_id
+		WHERE c.user_id = ?
+			AND tn.date >= ?
+			AND tn.date <= ?
+		GROUP BY YEAR(tn.date), MONTH(tn.date)
+		ORDER BY YEAR(tn.date), MONTH(tn.date)
+	`,
+
+	GET_YEARLY_ANALYTICS_BY_USER_ID: `
+		SELECT 
+			YEAR(tn.date) as year,
+			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
+			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
+		FROM transactions_new tn
+		JOIN cards c ON tn.card_id = c.card_id
+		WHERE c.user_id = ?
+			AND tn.date >= ?
+			AND tn.date <= ?
+		GROUP BY YEAR(tn.date)
+		ORDER BY YEAR(tn.date)
+	`,
+
+	GET_PERIOD_TOTALS_BY_USER_ID: `
+		SELECT 
+			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as total_income,
+			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as total_expense
+		FROM transactions_new tn
+		JOIN cards c ON tn.card_id = c.card_id
+		WHERE c.user_id = ?
+			AND tn.date >= ?
+			AND tn.date <= ?
+	`,
 };

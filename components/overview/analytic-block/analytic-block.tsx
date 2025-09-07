@@ -49,6 +49,7 @@ export default function AnalyticBlock({ labelIcon, label, value, color, timeRang
 					<p className={clsx("text-2xl font-semibold")}>{value.amount.toLocaleString()} VND</p>
 					<div className={"flex items-center gap-1"}>
 						<Chip
+							className={"text-xs"}
 							color={value.cashFlowWarning === "up" ? "success" : "danger"}
 							startContent={value.icon}
 							variant={"light"}
@@ -57,11 +58,7 @@ export default function AnalyticBlock({ labelIcon, label, value, color, timeRang
 						</Chip>
 						<p
 							className={clsx(
-								"text-sm text-default"
-								// 	{
-								// 	"text-success/70": value.cashFlowWarning === "up",
-								// 	"text-danger/70": value.cashFlowWarning === "down",
-								// }
+								"text-xs text-default"
 							)}
 						>
 							{value.subAmount.toLocaleString()} VND last {timeRange}
