@@ -7,4 +7,5 @@ export const MAP_ICON: Record<string, React.ReactNode> = {
 	up: ICONS.INCOME.MD,
 	expense: ICONS.EXPENSE.MD,
 	down: ICONS.EXPENSE.MD,
+	neutral: ICONS.NEUTRAL.MD,
 };

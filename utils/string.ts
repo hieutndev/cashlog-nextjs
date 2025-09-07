@@ -1,6 +1,9 @@
-import * as crypto from "crypto";
 export const randomUniqueString = (size = 32) => {
-    return crypto.randomBytes(size).toString("hex");
+	const array = new Uint8Array(size);
+
+	crypto.getRandomValues(array);
+
+	return Array.from(array, b => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const sliceText = (text: string, numsSlice: number = 4): string => {

@@ -108,9 +108,9 @@ export default function SettingCardsPage() {
 	return (
 		<div className={clsx("w-full flex flex-col gap-8 lg:col-span-10 col-span-12")}>
 			<div className="flex flex-col gap-4">
-				<div className={"flex items-center justify-between"}>
+				<div className={"flex items-center justify-between flex-wrap gap-4"}>
 					<h3 className={"text-2xl font-semibold"}>List Cards</h3>
-					<div className={"flex items-center gap-2"}>
+					<div className={"flex items-center gap-2 flex-row-reverse md:flex-row"}>
 						<Button
 							color={"primary"}
 							startContent={ICONS.SYNC.MD}

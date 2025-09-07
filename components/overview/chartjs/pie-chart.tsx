@@ -1,0 +1,123 @@
+"use client";
+
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+interface PieChartProps {
+    data: {
+        category: string;
+        color: string;
+        total: number;
+    }[];
+}
+
+export default function PieChart({ data }: PieChartProps) {
+    // Generate colors based on category colors or use default colors
+    const generateColors = (categories: PieChartProps["data"]) => {
+        const colorMap: Record<string, string> = {
+            red: "#ef4444",
+            orange: "#f97316",
+            amber: "#f59e0b",
+            yellow: "#eab308",
+            lime: "#84cc16",
+            green: "#22c55e",
+            emerald: "#10b981",
+            teal: "#14b8a6",
+            cyan: "#06b6d4",
+            sky: "#0ea5e9",
+            blue: "#3b82f6",
+            indigo: "#6366f1",
+            violet: "#8b5cf6",
+            purple: "#a855f7",
+            fuchsia: "#d946ef",
+            pink: "#ec4899",
+            rose: "#f43f5e",
+            slate: "#64748b",
+            gray: "#6b7280",
+            zinc: "#71717a",
+            neutral: "#737373",
+            stone: "#78716c",
+        };
+
+        return categories.map(category => colorMap[category.color] || "#64748b");
+    };
+
+    const chartData = {
+        labels: data.map(item => item.category),
+        datasets: [
+            {
+                data: data.map(item => item.total),
+                backgroundColor: generateColors(data),
+                borderColor: generateColors(data).map(color => color + "CC"), // Add transparency to border
+                borderWidth: 2,
+                hoverBackgroundColor: generateColors(data).map(color => color + "DD"),
+                hoverBorderColor: generateColors(data).map(color => color),
+                hoverBorderWidth: 3,
+            },
+        ],
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false, // Hide default legend since we'll use custom one
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context: any) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+
+                        return `${label}: ${value.toLocaleString()} VND (${percentage}%)`;
+                    }
+                }
+            }
+        },
+    };
+
+    // Show empty state if no data
+    if (!data || data.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+                <div className="text-center">
+                    <p className="text-lg font-medium">No category data available</p>
+                    <p className="text-sm">Start adding transactions with categories to see the breakdown</p>
+                </div>
+            </div>
+        );
+    }
+
+    const colors = generateColors(data);
+
+    return (
+        <div className="flex flex-row items-start gap-8 w-full h-96">
+            <div className="w-1/3 h-full aspect-square">
+                <Pie data={chartData} options={options} />
+            </div>
+            <div className="w-2/3 h-full overflow-y-auto grid grid-cols-3">
+                {data.map((item, index) => (
+                    <div key={item.category} className="col-span-1 flex items-center gap-2">
+                        <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: colors[index] }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                {item.category}
+                            </span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                ({Number(item.total).toLocaleString()} VND)
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}

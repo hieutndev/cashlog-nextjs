@@ -19,8 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
 	useEffect(() => {
 		if (!isLoggedIn) {
-			// Redirect to dashboard or home page if already signed in
-			router.push("/sign-in"); // Adjust the path as needed
+			router.push("/sign-in"); 
 		}
 	}, [isLoggedIn]);
 

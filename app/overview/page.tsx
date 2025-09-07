@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { addToast } from "@heroui/toast";
 import { ChipProps } from "@heroui/chip";
 import { Button } from "@heroui/button";
-import moment from "moment";
 import { Select, SelectItem } from "@heroui/select";
 import { Spinner } from "@heroui/spinner";
 import clsx from "clsx";
@@ -16,7 +15,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import { TAnalyticsResponse } from "@/types/analytics";
-import Chart from "@/components/overview/chartjs/chart";
+import PieChart from "@/components/overview/chartjs/pie-chart";
 import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -49,6 +48,15 @@ export default function OverviewPage() {
 		skip: true,
 	});
 
+	const {
+		data: categoryStatsResult,
+		loading: loadingCategoryStats,
+		error: categoryStatsError,
+		fetch: fetchCategoryStats,
+	} = useFetch<IAPIResponse<{ category: string; color: string; total: number }[]>>(`/analytics/category-breakdown`, {
+		skip: true,
+	});
+
 	useEffect(() => {
 		if (analyticsError) {
 			const parseError = JSON.parse(analyticsError);
@@ -74,9 +82,22 @@ export default function OverviewPage() {
 	}, [fetchCardResult, fetchCardError]);
 
 	useEffect(() => {
+		if (categoryStatsError) {
+			const parseError = JSON.parse(categoryStatsError);
+
+			addToast({
+				title: "Error",
+				description: parseError.message,
+				color: "danger",
+			});
+		}
+	}, [categoryStatsResult, categoryStatsError]);
+
+	useEffect(() => {
 		if (isLoggedIn) {
 			fetchAnalytics();
 			fetchCards();
+			fetchCategoryStats();
 		}
 	}, [isLoggedIn]);
 
@@ -97,7 +118,7 @@ export default function OverviewPage() {
 		})
 	);
 
-	
+
 
 	const totalCards = fetchCardResult?.results?.length || 0;
 	const totalPages = Math.ceil(totalCards / cardsPerPage);
@@ -128,16 +149,16 @@ export default function OverviewPage() {
 			>
 				<ContentHeader classNames={{
 					title: "w-full sm:text-left text-center"
-				}} title={"Overview"}/>
-				<div className={"w-full grid grid-cols-12 gap-4"}>
+				}} title={"Overview"} />
+				<div className={"w-full h-full grid grid-cols-12 gap-4"}>
 					<div
-						className={clsx("flex flex-col gap-4", {
+						className={clsx("h-full flex flex-col gap-4", {
 							"col-span-8": width > BREAK_POINT.LG,
 							"col-span-7": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
 							"col-span-12": width <= BREAK_POINT.MD,
 						})}
 					>
-						<div className="flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
+						<div className="h-full flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
 							<header
 								className={clsx("flex justify-between items-center gap-4", {
 									"flex-col": width <= BREAK_POINT.LG,
@@ -251,7 +272,7 @@ export default function OverviewPage() {
 						</main>
 					</div>
 				</div>
-				<div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border"}>
+				{/* <div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border"}>
 					<header>
 						<h6 className="text-xl font-semibold text-center">Cashflow Chart</h6>
 					</header>
@@ -260,6 +281,14 @@ export default function OverviewPage() {
 							columnLabels={analyticsResult?.results?.charts?.[moment().format("M")]?.columnLabels ?? []}
 							dataSets={analyticsResult?.results?.charts?.[moment().format("M")]?.dataSets ?? []}
 						/>
+					</main>
+				</div> */}
+				<div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border"}>
+					<header>
+						<h6 className="text-lg font-semibold text-center">Category Breakdown</h6>
+					</header>
+					<main>
+						<PieChart data={categoryStatsResult?.results ?? []} />
 					</main>
 				</div>
 			</Container>
