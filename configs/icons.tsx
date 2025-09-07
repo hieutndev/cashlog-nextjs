@@ -15,6 +15,7 @@ import {
 	FaBarsProgress,
 	FaCreditCard,
 	FaEllipsis,
+	FaGripLines,
 	FaListUl,
 	FaPencil,
 	FaPlus,
@@ -183,6 +184,12 @@ const ICONS = {
 		MD: <FaArrowTrendDown size={SIZE_ICON.md} />,
 		LG: <FaArrowTrendDown size={SIZE_ICON.lg} />,
 		XL: <FaArrowTrendDown size={SIZE_ICON.xl} />,
+	},
+	NEUTRAL: {
+		SM: <FaGripLines size={SIZE_ICON.sm} />,
+		MD: <FaGripLines size={SIZE_ICON.md} />,
+		LG: <FaGripLines size={SIZE_ICON.lg} />,
+		XL: <FaGripLines size={SIZE_ICON.xl} />,
 	},
 	ELLIPSIS: {
 		SM: <FaEllipsis size={SIZE_ICON.sm} />,

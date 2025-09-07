@@ -150,15 +150,15 @@ export default function OverviewPage() {
 				<ContentHeader classNames={{
 					title: "w-full sm:text-left text-center"
 				}} title={"Overview"} />
-				<div className={"w-full grid grid-cols-12 gap-4"}>
+				<div className={"w-full h-full grid grid-cols-12 gap-4"}>
 					<div
-						className={clsx("flex flex-col gap-4", {
+						className={clsx("h-full flex flex-col gap-4", {
 							"col-span-8": width > BREAK_POINT.LG,
 							"col-span-7": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
 							"col-span-12": width <= BREAK_POINT.MD,
 						})}
 					>
-						<div className="flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
+						<div className="h-full flex flex-col gap-4 bg-white border p-4 rounded-3xl shadow-sm">
 							<header
 								className={clsx("flex justify-between items-center gap-4", {
 									"flex-col": width <= BREAK_POINT.LG,

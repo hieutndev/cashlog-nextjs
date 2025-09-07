@@ -170,17 +170,86 @@ export const calculateDailyIncomeExpense = async (userId: string | number, month
 
 
 export const makeBalanceFluctuationResponse = (totalCurrent: number, totalLast: number) => {
+
+    let diff = totalCurrent - totalLast;
+
     return {
         amount: totalCurrent,
         percentage: totalLast === 0
             ? 0
-            : ((totalCurrent - totalLast) / totalLast) * 100,
-        subAmount: totalCurrent - totalLast,
+            : (diff / totalLast) * 100,
+        subAmount: diff,
         last: totalLast,
-        cashFlow: totalCurrent - totalLast > 0 ? "up" : "down",
-        cashFlowWarning: totalCurrent - totalLast > 0 ? "up" : "down",
-        icon: totalCurrent - totalLast > 0 ? "up" : "down",
+        cashFlow: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
+        cashFlowWarning: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
+        icon: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
     }
+}
+
+export const makeSavingFluctuationResponse = (totalCurrent: number, totalLast: number) => {
+
+    let diff = totalCurrent - Math.abs(totalLast);
+
+
+    return {
+        amount: totalCurrent,
+        percentage: Math.abs(totalLast) === 0
+            ? 0
+            : ((diff) / Math.abs(totalLast)) * 100,
+        subAmount: diff,
+        last: totalLast,
+        cashFlow: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
+        cashFlowWarning: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
+        icon: diff === 0
+            ? "neutral"
+            : diff > 0
+                ? "up"
+                : "down",
+    }
+}
+
+const getSavingFluctuationLabelIcon = (value: number) => {
+    if (value === 0) return "neutral";
+
+    return value > 0 ? "income" : "expense";
+}
+
+const getSavingFluctuationColor = (value: number) => {
+    if (value === 0) return "primary";
+
+    return value > 0 ? "success" : "danger";
+}
+
+const getBalanceFluctuationColor = (value: number[], type: 'income' | 'expense') => {
+    if (value.every(val => val === 0)) return "primary";
+
+    return type === 'income' ? "success" : "danger";
+}
+
+const getBalanceFluctuationLabelIcon = (value: number[], type: 'income' | 'expense') => {
+    if (value.every(val => val === 0)) return "neutral";
+
+    return type;
 }
 
 export const calculateTotalSummary = (income: number, expense: number): TTimePeriodSummary => {
@@ -293,106 +362,82 @@ export const calculateAnalytics = async (userId: string | number) => {
             balanceFluctuation: {
                 month: [
                     {
-                        label: "Total Income This Month",
-                        labelIcon: "income",
-                        value: makeBalanceFluctuationResponse(
-                            currentMonthTotals.total_income,
-                            lastMonthTotals.total_income
-                        ),
-                        color: "success",
+                        label: "Total Income",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentMonthTotals.total_income, lastMonthTotals.total_income], 'income'),
+                        value: makeBalanceFluctuationResponse(currentMonthTotals.total_income, lastMonthTotals.total_income),
+                        color: getBalanceFluctuationColor([currentMonthTotals.total_income, lastMonthTotals.total_income], 'income'),
                     },
                     {
-                        label: "Total Expense This Month",
-                        labelIcon: "expense",
-                        value: makeBalanceFluctuationResponse(
-                            currentMonthTotals.total_expense,
-                            lastMonthTotals.total_expense
-                        ),
-                        color: "danger",
+                        label: "Total Expense",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentMonthTotals.total_expense, lastMonthTotals.total_expense], 'expense'),
+                        value: makeBalanceFluctuationResponse(currentMonthTotals.total_expense, lastMonthTotals.total_expense),
+                        color: getBalanceFluctuationColor([currentMonthTotals.total_expense, lastMonthTotals.total_expense], 'expense'),
                     },
                     {
-                        label: "Total Savings This Month",
-                        labelIcon: currentMonthSavings >= 0 ? "income" : "expense",
-                        value: makeBalanceFluctuationResponse(currentMonthSavings, lastMonthSavings),
-                        color: currentMonthSavings >= 0 ? "success" : "danger",
+                        label: "Total Savings",
+                        labelIcon: getSavingFluctuationLabelIcon(currentMonthSavings),
+                        value: makeSavingFluctuationResponse(currentMonthSavings, lastMonthSavings),
+                        color: getSavingFluctuationColor(currentMonthSavings),
                     },
                 ],
                 year: [
                     {
-                        label: "Total Income This Year",
-                        labelIcon: "income",
-                        value: makeBalanceFluctuationResponse(
-                            currentYearTotals.total_income,
-                            lastYearTotals.total_income
-                        ),
-                        color: "success",
+                        label: "Total Income",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentYearTotals.total_income, lastYearTotals.total_income], 'income'),
+                        value: makeBalanceFluctuationResponse(currentYearTotals.total_income, lastYearTotals.total_income),
+                        color: getBalanceFluctuationColor([currentYearTotals.total_income, lastYearTotals.total_income], 'income'),
                     },
                     {
-                        label: "Total Expense This Year",
-                        labelIcon: "expense",
-                        value: makeBalanceFluctuationResponse(
-                            currentYearTotals.total_expense,
-                            lastYearTotals.total_expense
-                        ),
-                        color: "danger",
+                        label: "Total Expense",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentYearTotals.total_expense, lastYearTotals.total_expense], 'expense'),
+                        value: makeBalanceFluctuationResponse(currentYearTotals.total_expense, lastYearTotals.total_expense),
+                        color: getBalanceFluctuationColor([currentYearTotals.total_expense, lastYearTotals.total_expense], 'expense'),
                     },
                     {
-                        label: "Total Savings This Year",
-                        labelIcon: currentYearSavings >= 0 ? "income" : "expense",
-                        value: makeBalanceFluctuationResponse(currentYearSavings, lastYearSavings),
-                        color: currentYearSavings >= 0 ? "success" : "danger",
+                        label: "Total Savings",
+                        labelIcon: getSavingFluctuationLabelIcon(currentYearSavings),
+                        value: makeSavingFluctuationResponse(currentYearSavings, lastYearSavings),
+                        color: getSavingFluctuationColor(currentYearSavings),
                     },
                 ],
                 day: [
                     {
-                        label: "Total Income Today",
-                        labelIcon: "income",
-                        value: makeBalanceFluctuationResponse(
-                            todayTotals.total_income,
-                            yesterdayTotals.total_income
-                        ),
-                        color: "success",
+                        label: "Total Income",
+                        labelIcon: getBalanceFluctuationLabelIcon([todayTotals.total_income, yesterdayTotals.total_income], 'income'),
+                        value: makeBalanceFluctuationResponse(todayTotals.total_income, yesterdayTotals.total_income),
+                        color: getBalanceFluctuationColor([todayTotals.total_income, yesterdayTotals.total_income], 'income'),
                     },
                     {
-                        label: "Total Expense Today",
-                        labelIcon: "expense",
-                        value: makeBalanceFluctuationResponse(
-                            todayTotals.total_expense,
-                            yesterdayTotals.total_expense
-                        ),
-                        color: "danger",
+                        label: "Total Expense",
+                        labelIcon: getBalanceFluctuationLabelIcon([todayTotals.total_expense, yesterdayTotals.total_expense], 'expense'),
+                        value: makeBalanceFluctuationResponse(todayTotals.total_expense, yesterdayTotals.total_expense),
+                        color: getBalanceFluctuationColor([todayTotals.total_expense, yesterdayTotals.total_expense], 'expense'),
                     },
                     {
-                        label: "Total Savings Today",
-                        labelIcon: todaySavings >= 0 ? "income" : "expense",
-                        value: makeBalanceFluctuationResponse(todaySavings, yesterdaySavings),
-                        color: todaySavings >= 0 ? "success" : "danger",
+                        label: "Total Savings",
+                        labelIcon: getSavingFluctuationLabelIcon(todaySavings),
+                        value: makeSavingFluctuationResponse(todaySavings, yesterdaySavings),
+                        color: getSavingFluctuationColor(todaySavings),
                     },
                 ],
                 week: [
                     {
-                        label: "Total Income This Week",
-                        labelIcon: "income",
-                        value: makeBalanceFluctuationResponse(
-                            currentWeekTotals.total_income,
-                            lastWeekTotals.total_income
-                        ),
-                        color: "success",
+                        label: "Total Income",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentWeekTotals.total_income, lastWeekTotals.total_income], 'income'),
+                        value: makeBalanceFluctuationResponse(currentWeekTotals.total_income, lastWeekTotals.total_income),
+                        color: getBalanceFluctuationColor([currentWeekTotals.total_income, lastWeekTotals.total_income], 'income'),
                     },
                     {
-                        label: "Total Expense This Week",
-                        labelIcon: "expense",
-                        value: makeBalanceFluctuationResponse(
-                            currentWeekTotals.total_expense,
-                            lastWeekTotals.total_expense
-                        ),
-                        color: "danger",
+                        label: "Total Expense",
+                        labelIcon: getBalanceFluctuationLabelIcon([currentWeekTotals.total_expense, lastWeekTotals.total_expense], 'expense'),
+                        value: makeBalanceFluctuationResponse(currentWeekTotals.total_expense, lastWeekTotals.total_expense),
+                        color: getBalanceFluctuationColor([currentWeekTotals.total_expense, lastWeekTotals.total_expense], 'expense'),
                     },
                     {
-                        label: "Total Savings This Week",
-                        labelIcon: currentWeekSavings >= 0 ? "income" : "expense",
-                        value: makeBalanceFluctuationResponse(currentWeekSavings, lastWeekSavings),
-                        color: currentWeekSavings >= 0 ? "success" : "danger",
+                        label: "Total Savings",
+                        labelIcon: getSavingFluctuationLabelIcon(currentWeekSavings),
+                        value: makeSavingFluctuationResponse(currentWeekSavings, lastWeekSavings),
+                        color: getSavingFluctuationColor(currentWeekSavings),
                     },
                 ]
             },
@@ -415,3 +460,5 @@ export const calculateAnalytics = async (userId: string | number) => {
         throw new Error(error instanceof Error ? error.message : "Error in calculateAnalytics");
     }
 }
+
+
