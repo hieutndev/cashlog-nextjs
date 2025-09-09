@@ -70,11 +70,19 @@ export default function PieChart({ data }: PieChartProps) {
                 callbacks: {
                     label: function (context: any) {
                         const label = context.label || '';
-                        const value = context.parsed || 0;
-                        const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                        const percentage = ((value / total) * 100).toFixed(1);
+                        // Ensure parsed value is a number
+                        const rawValue = context.parsed ?? 0;
+                        const value = Number(rawValue) || 0;
 
-                        return `${label}: ${value.toLocaleString()} VND (${percentage}%)`;
+                        // Safely get dataset array (works even if data items are strings)
+                        const dataset = context.dataset ?? context.chart?.data?.datasets?.[context.datasetIndex];
+                        const dataArr: any[] = (dataset && dataset.data) || [];
+
+                        const total = dataArr.reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0);
+
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+                        return `${label}: ${Number(value).toLocaleString()} VND (${percentage}%)`;
                     }
                 }
             }
