@@ -33,6 +33,7 @@ export const SITE_CONFIG = {
 		},
 	],
 	nonAuthUrls: ["/sign-in", "/sign-up", "/forgot-password"],
+	CURRENCY_STRING: "đ"
 };
 
 export type TSiteConfig = typeof SITE_CONFIG;

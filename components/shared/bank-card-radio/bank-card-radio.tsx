@@ -9,6 +9,7 @@ import { TBankCode } from "@/types/bank";
 import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
 import { TCard } from "@/types/card";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 export interface AccountCardProps {
 	card_id: TCard["card_id"];
@@ -42,7 +43,7 @@ export default function BankCardRadio({ card_id, card_name, card_balance, bank_c
 				<div className={"flex items-center gap-2"}>
 					<p className={"text-sm min-w-max"}>{cutString(card_name, 12)}</p>
 					<p className={"text-sm min-w-max"}>|</p>
-					<p className={"text-sm"}>{card_balance.toLocaleString()} VND</p>
+					<p className={"text-sm"}>{card_balance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
 				</div>
 				<Image
 					alt={card_name}

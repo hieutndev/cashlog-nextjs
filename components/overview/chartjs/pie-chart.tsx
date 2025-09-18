@@ -3,6 +3,8 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 
+import { SITE_CONFIG } from "@/configs/site-config";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface PieChartProps {
@@ -82,7 +84,7 @@ export default function PieChart({ data }: PieChartProps) {
 
                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
 
-                        return `${label}: ${Number(value).toLocaleString()} VND (${percentage}%)`;
+                        return `${label}: ${Number(value).toLocaleString()}${SITE_CONFIG.CURRENCY_STRING} (${percentage}%)`;
                     }
                 }
             }
@@ -105,10 +107,10 @@ export default function PieChart({ data }: PieChartProps) {
 
     return (
         <div className="flex flex-row items-start gap-8 w-full h-96">
-            <div className="w-1/3 h-full aspect-square">
+            <div className="w-1/4 h-full aspect-square">
                 <Pie data={chartData} options={options} />
             </div>
-            <div className="w-2/3 h-full overflow-y-auto grid grid-cols-3">
+            <div className="w-3/4 h-full overflow-y-auto grid grid-cols-4">
                 {data.map((item, index) => (
                     <div key={item.category} className="col-span-1 flex items-center gap-2">
                         <div
@@ -120,7 +122,7 @@ export default function PieChart({ data }: PieChartProps) {
                                 {item.category}
                             </span>
                             <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
-                                ({Number(item.total).toLocaleString()} VND)
+                                ({Number(item.total).toLocaleString()}{SITE_CONFIG.CURRENCY_STRING})
                             </span>
                         </div>
                     </div>

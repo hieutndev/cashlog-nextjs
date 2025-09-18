@@ -1,12 +1,12 @@
 import "@/styles/globals.css";
 import { Metadata } from "next";
 import clsx from "clsx";
+import Script from "next/script";
 
 import { Providers } from "../components/providers/providers";
 
 import { SITE_CONFIG } from "@/configs/site-config";
 import AppLayout from "@/components/shared/layouts/app-layout";
-import Script from "next/script";
 
 export const metadata: Metadata = {
 	title: {

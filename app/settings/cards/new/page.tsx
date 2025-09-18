@@ -21,6 +21,7 @@ import { TBankCode } from "@/types/bank";
 import { useFetch } from "@/hooks/useFetch";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 export default function NewCardPage() {
 	const router = useRouter();
@@ -139,7 +140,7 @@ export default function NewCardPage() {
 						/>
 						<Input
 							isRequired
-							endContent={"VND"}
+							endContent={SITE_CONFIG.CURRENCY_STRING}
 							errorMessage={getFieldError(validateErrors, "card_balance_init")?.message}
 							isInvalid={!!getFieldError(validateErrors, "card_balance_init")}
 							label={"Current Balance"}

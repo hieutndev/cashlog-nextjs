@@ -29,6 +29,13 @@ export type TAnalyticsSummary = {
 
 
 
+export type TMonthlyAnalyticsResponse = {
+    income: (number | null)[];
+    expenses: (number | null)[];
+    savings: (number | null)[];
+    months: string[];
+}
+
 export type TAnalyticsResponse = {
     balanceFluctuation: TBalanceFluctuation;
     summary: TAnalyticsSummary

@@ -2,9 +2,10 @@ import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Chip, ChipProps } from "@heroui/chip";
 import clsx from "clsx";
+import { Tooltip } from "@heroui/tooltip";
 
 import ICONS from "@/configs/icons";
-import { Tooltip } from "@heroui/tooltip";
+import { SITE_CONFIG } from "@/configs/site-config";
 export interface AnalyticBlockProps {
 	labelIcon: React.ReactNode;
 	label: string;
@@ -21,7 +22,7 @@ export interface AnalyticBlockProps {
 	timeRange: string;
 }
 
-export default function AnalyticBlock({ labelIcon, label, value, color, timeRange }: AnalyticBlockProps) {
+export default function AnalyticBlock({ label, value, timeRange }: AnalyticBlockProps) {
 	return (
 		<Card shadow={"sm"}>
 			<CardBody className={"flex flex-col gap-2 pt-2 pb-4"}>
@@ -39,8 +40,8 @@ export default function AnalyticBlock({ labelIcon, label, value, color, timeRang
 					</div>
 				</div>
 				<div className={"flex flex-col gap-2"}>
-					<p className={clsx("text-2xl font-bold")}>{value.amount.toLocaleString()} VND</p>
-					<Tooltip size={"sm"} content={`Last ${timeRange}: ${value.last.toLocaleString()} VND`}>
+					<p className={clsx("text-2xl font-bold")}>{value.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
+					<Tooltip content={`Last ${timeRange}: ${value.last.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`} size={"sm"}>
 						<div className={"flex items-center gap-1"}>
 
 							<Chip
@@ -60,7 +61,7 @@ export default function AnalyticBlock({ labelIcon, label, value, color, timeRang
 									"text-xs text-default"
 								)}
 							>
-								<span className={"font-semibold"}>{value.subAmount > 0 && "+"}{value.subAmount.toLocaleString()}</span> VND last {timeRange}
+								<span className={"font-semibold"}>{value.subAmount > 0 && "+"}{value.subAmount.toLocaleString()}</span>{SITE_CONFIG.CURRENCY_STRING} last {timeRange}
 							</p>
 						</div>
 					</Tooltip>

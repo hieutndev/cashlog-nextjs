@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getBankLogo } from "@/configs/bank";
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 interface BankCardProps {
 	cardName: string;
@@ -34,7 +35,7 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 			</div>
 			<div className="w-full h-full p-8 flex flex-col justify-end gap-4">
 				<p className="text-xl font-medium tracking-widest">{cardName}</p>
-				<h1 className="font-semibold text-2xl">{cardBalance.toLocaleString()} VND</h1>
+				<h1 className="font-semibold text-2xl">{cardBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</h1>
 			</div>
 		</div>
 	);

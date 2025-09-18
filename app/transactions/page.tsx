@@ -27,6 +27,7 @@ import useScreenSize from "@/hooks/useScreenSize";
 import { TTransaction, TTransactionWithCardAndCategory } from "@/types/transaction";
 import { formatDate } from "@/utils/date";
 import { sliceText } from "@/utils/string";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 type FilterAndSortItem = {
 	key: string;
@@ -522,7 +523,7 @@ export default function TransactionsPage() {
 											case "amount":
 												return (
 													<TableCell className={"capitalize min-w-max"}>
-														{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()} VND`}
+														{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`}
 													</TableCell>
 												);
 
