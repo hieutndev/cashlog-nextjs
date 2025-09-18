@@ -33,6 +33,7 @@ import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 interface CrudTransactionModalProps {
 	isOpen: boolean;
@@ -435,7 +436,7 @@ export default function CrudTransactionModal({
 												<div className={"flex flex-col gap-2"}>
 													<Input
 														isRequired
-														endContent={"VND"}
+														endContent={SITE_CONFIG.CURRENCY_STRING}
 														errorMessage={getFieldError(validateErrors, "amount")?.message}
 														isInvalid={!!getFieldError(validateErrors, "amount")}
 														label={"Amount"}
@@ -481,7 +482,7 @@ export default function CrudTransactionModal({
 													</div>
 												</div>
 												<Textarea
-													endContent={"VND"}
+													endContent={SITE_CONFIG.CURRENCY_STRING}
 													label={"Description"}
 													labelPlacement={"outside"}
 													placeholder={"Enter description"}

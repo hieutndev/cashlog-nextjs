@@ -260,26 +260,86 @@ export const calculateTotalSummary = (income: number, expense: number): TTimePer
     };
 }
 
-export const calculateAnalytics = async (userId: string | number) => {
+export const getMonthlyAnalyticsData = async (userId: string | number) => {
     try {
-        // Define time periods
         const currentDate = moment();
-        const CURRENT_MONTH = currentDate.month() + 1;
-        const CURRENT_YEAR = currentDate.year();
+        const currentYear = currentDate.year();
+        const currentMonth = currentDate.month() + 1; // moment months are 0-indexed
 
-        const previousMonth = currentDate.clone().subtract(1, "month");
-        const LAST_MONTH = previousMonth.month() + 1;
-        const LAST_MONTH_YEAR = previousMonth.year();
+        // Initialize arrays with null values for all 12 months
+        const income: (number | null)[] = new Array(12).fill(null);
+        const expenses: (number | null)[] = new Array(12).fill(null);
+        const savings: (number | null)[] = new Array(12).fill(null);
 
-        const LAST_YEAR = CURRENT_YEAR - 1;
+        // Get data for each month up to current month
+        for (let month = 1; month <= currentMonth; month++) {
+            const startDate = moment({ year: currentYear, month: month - 1 }).startOf('month').format('YYYY-MM-DD');
+            const endDate = moment({ year: currentYear, month: month - 1 }).endOf('month').format('YYYY-MM-DD');
+
+            const monthlyTotals = await getPeriodTotals(userId, startDate, endDate);
+            
+            const monthIndex = month - 1; // Convert to 0-based index
+
+            income[monthIndex] = monthlyTotals.total_income;
+            expenses[monthIndex] = monthlyTotals.total_expense;
+            savings[monthIndex] = monthlyTotals.total_income - monthlyTotals.total_expense;
+        }
+
+        return {
+            income,
+            expenses,
+            savings,
+            months: [
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ]
+        };
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : "Error in getMonthlyAnalyticsData");
+    }
+};
+
+export const calculateAnalytics = async (
+    userId: string | number,
+    timePeriod: string = 'month',
+    specificTime: number | null = null
+) => {
+    try {
+        const currentDate = moment();
+        let CURRENT_MONTH = currentDate.month() + 1;
+        let CURRENT_YEAR = currentDate.year();
+
+        if (specificTime !== null) {
+            if (timePeriod === 'month') {
+                CURRENT_MONTH = specificTime;
+            } else if (timePeriod === 'year') {
+                CURRENT_YEAR = specificTime;
+                CURRENT_MONTH = 12;
+            }
+        }
+
+        let LAST_MONTH, LAST_MONTH_YEAR, LAST_YEAR;
+
+        if (specificTime !== null && timePeriod === 'month') {
+            const targetMonth = moment({ year: CURRENT_YEAR, month: specificTime - 1 });
+            const previousMonth = targetMonth.clone().subtract(1, "month");
+
+            LAST_MONTH = previousMonth.month() + 1;
+            LAST_MONTH_YEAR = previousMonth.year();
+        } else {
+            const previousMonth = currentDate.clone().subtract(1, "month");
+
+            LAST_MONTH = previousMonth.month() + 1;
+            LAST_MONTH_YEAR = previousMonth.year();
+        }
+
+        LAST_YEAR = CURRENT_YEAR - 1;
         const YESTERDAY = currentDate.clone().subtract(1, "day");
         const LAST_WEEK_START = currentDate.clone().subtract(1, "week").startOf('isoWeek');
         const LAST_WEEK_END = currentDate.clone().subtract(1, "week").endOf('isoWeek');
         const CURRENT_WEEK_START = currentDate.clone().startOf('isoWeek');
         const CURRENT_WEEK_END = currentDate.clone().endOf('isoWeek');
 
-        // Calculate totals for different time periods using optimized queries
-        // All time totals
         const allTimeTotals = await getPeriodTotals(
             userId,
             '1970-01-01',

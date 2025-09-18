@@ -17,6 +17,7 @@ import { getBankLogo } from "@/configs/bank";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
 import useScreenSize from "@/hooks/useScreenSize";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 export default function SettingForecastPage() {
 	const router = useRouter();
@@ -164,7 +165,7 @@ export default function SettingForecastPage() {
 															color={"primary"}
 															variant={"flat"}
 														>
-															{item.amount?.toLocaleString()} VND
+															{item.amount?.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
 														</Chip>
 													</TableCell>
 												);

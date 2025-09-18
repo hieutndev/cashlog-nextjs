@@ -7,6 +7,7 @@ import { Spinner } from "@heroui/spinner";
 
 import ICONS from "@/configs/icons";
 import { TForecastWithDetailAndCard } from "@/types/forecast";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 interface DetailBlockProps {
 	icon: React.ReactNode;
@@ -70,7 +71,7 @@ export default function ForecastDetails({
 						color={"secondary"}
 						icon={ICONS.DOLLAR.LG}
 						label={"Amount"}
-						value={`${forecastDetails?.amount.toLocaleString() ?? 0} VND`}
+						value={`${forecastDetails?.amount.toLocaleString() ?? 0}${SITE_CONFIG.CURRENCY_STRING}`}
 					/>
 					<DetailBlock
 						color={"warning"}
@@ -133,7 +134,7 @@ export default function ForecastDetails({
 											return (
 												<TableCell key={col.key}>
 													{value !== undefined && value !== null
-														? `${value.toLocaleString()} VND`
+														? `${value.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}`
 														: "-"}
 												</TableCell>
 											);
