@@ -36,11 +36,55 @@ export default function CustomForm({
 	resetButtonSize = "md",
 	children,
 }: CustomFormProps) {
-	const handleKeyDown = (event: KeyboardEvent) => {
-		if (event.key === "Enter" && !event.shiftKey) {
-			event.preventDefault();
-			onSubmit?.();
+	// Ref to avoid duplicate submits (works across renders)
+	const submittingRef = React.useRef(false);
+	// Timer ref to reset guard in case `isLoading` isn't updated
+	const guardTimerRef = React.useRef<number | null>(null);
+
+	const clearGuardTimer = () => {
+		if (guardTimerRef.current) {
+			window.clearTimeout(guardTimerRef.current);
+			guardTimerRef.current = null;
 		}
+	};
+
+	const guardedSubmit = () => {
+		if (submittingRef.current) return;
+		submittingRef.current = true;
+		onSubmit?.();
+		// Safety: clear guard after 3 seconds if isLoading isn't toggled
+		clearGuardTimer();
+		guardTimerRef.current = window.setTimeout(() => {
+			submittingRef.current = false;
+			guardTimerRef.current = null;
+		}, 3000);
+	};
+
+	useEffect(() => {
+		// When external loading state becomes false, allow future submits
+		if (!isLoading) {
+			submittingRef.current = false;
+			clearGuardTimer();
+		}
+	}, [isLoading]);
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		// ignore if modifier keys used
+		if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+
+		// don't intercept Enter in textarea or contenteditable elements
+		const target = event.target as HTMLElement | null;
+
+		if (target) {
+			const tag = target.tagName?.toLowerCase();
+
+			if (tag === "textarea" || target.isContentEditable) {
+				return;
+			}
+		}
+
+		event.preventDefault();
+		guardedSubmit();
 	};
 
 	useEffect(() => {
@@ -48,8 +92,9 @@ export default function CustomForm({
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
+			clearGuardTimer();
 		};
-	}, [onSubmit]);
+	}, [onSubmit, isLoading]);
 
 	return (
 		<div
@@ -58,14 +103,14 @@ export default function CustomForm({
 		>
 			{children}
 			<div className="flex gap-2">
-				<Button
+                <Button
 					fullWidth
 					color={"primary"}
 					isDisabled={isLoading || disableSubmitButton}
 					isLoading={isLoading}
 					size={submitButtonSize}
-					type={"submit"}
-					onPress={onSubmit}
+				type={"submit"}
+				onPress={guardedSubmit}
 				>
 					{isLoading ? loadingText : submitButtonText}
 				</Button>
