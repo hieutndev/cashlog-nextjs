@@ -15,6 +15,7 @@ import { Line } from "react-chartjs-2";
 import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import clsx from "clsx";
+import { SITE_CONFIG } from "@/configs/site-config";
 
 ChartJS.register(
     CategoryScale,
@@ -41,7 +42,7 @@ interface LineChartProps {
 
 export default function FinancialLineChart({ data, loading = false, className }: LineChartProps) {
     const formatCurrency = (value: number) => {
-        return `${value.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}`;
+        return `${value.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`;
     };
 
     const chartData = {
