@@ -19,23 +19,31 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 	return (
 		<div
 			className={clsx(
-				"h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br sm:w-96 md:w-88 lg:w-92 xl:w-full w-full",
+				"overflow-hidden p-8 h-56 rounded-2xl relative text-white transition-transform transform bg-gradient-to-br sm:max-w-96 md:max-w-88 lg:max-w-92 xl:max-w-full w-full",
 				`bankcard-${color}`,
 				className,
 			)}
 		>
-			<div className={"absolute top-8 right-8"}>
-				<Image
-					alt={"Bank Logo"}
-					className={"w-24 h-auto"}
-					height={1200}
-					src={getBankLogo(bankCode, 2)}
-					width={1200}
-				/>
-			</div>
-			<div className="w-full h-full p-8 flex flex-col justify-end gap-4">
-				<p className="text-xl font-medium tracking-widest">{cardName}</p>
-				<h1 className="font-semibold text-2xl">{cardBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</h1>
+			{/* background bank logo: variant 1, absolute right, scaled to 75% of container height */}
+			<Image
+				alt="Bank Logo"
+				aria-hidden="true"
+				className="absolute -right-1/4 top-1/2 -translate-y-1/2 h-[125%] w-auto opacity-10 pointer-events-none select-none"
+				height={1000}
+				priority={false}
+				src={getBankLogo(bankCode, 1)}
+				width={1000}
+			/>
+			<div className="relative w-full h-full flex items-end">
+				<div className="flex flex-col gap-2">
+					{/* large faded balance behind the name */}
+					
+					{/* card name above the faded balance */}
+					<p className="text-md uppercase font-semibold">{cardName}</p>
+					<h1 className="text-4xl font-bold text-white z-0 pointer-events-none">
+						{cardBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
+					</h1>
+				</div>
 			</div>
 		</div>
 	);

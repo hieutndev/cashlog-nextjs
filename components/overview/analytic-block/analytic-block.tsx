@@ -25,25 +25,24 @@ export interface AnalyticBlockProps {
 export default function AnalyticBlock({ label, value, timeRange }: AnalyticBlockProps) {
 	return (
 		<Card shadow={"sm"}>
-			<CardBody className={"flex flex-col gap-2 pt-2 pb-4"}>
+			<CardBody className={"flex flex-col lg:gap-2 gap-4 pt-2 pb-4"}>
 				<div className={"flex items-center justify-between"}>
-					<div className={"flex items-center gap-2"}>
-						<p>{label}</p>
+					<div className={"w-full flex items-center gap-2"}>
+						<p className={"w-full text-center lg:text-left"}>{label}</p>
 					</div>
-					<div>
+					{/* <div>
 						<Button
 							isIconOnly
 							variant={"light"}
 						>
 							{ICONS.ELLIPSIS.MD}
 						</Button>
-					</div>
+					</div> */}
 				</div>
-				<div className={"flex flex-col gap-2"}>
-					<p className={clsx("text-2xl font-bold")}>{value.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
+				<div className={"w-full flex flex-col lg:gap-2 gap-4"}>
+					<p className={clsx("w-full text-center lg:text-left text-2xl font-bold")}>{value.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
 					<Tooltip content={`Last ${timeRange}: ${value.last.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`} size={"sm"}>
-						<div className={"flex items-center gap-1"}>
-
+						<div className={"flex items-center justify-center lg:justify-start gap-1 xl:flex-wrap"}>
 							<Chip
 								className={"text-xs"}
 								color={value.cashFlowWarning === "neutral"
@@ -66,15 +65,6 @@ export default function AnalyticBlock({ label, value, timeRange }: AnalyticBlock
 						</div>
 					</Tooltip>
 				</div>
-				{/* <Divider />
-				<div className={"flex justify-end"}>
-					<Button
-						color={"default"}
-						variant={"light"}
-					>
-						View Details {ICONS.NEXT.MD}
-					</Button>
-				</div> */}
 			</CardBody>
 		</Card >
 	);

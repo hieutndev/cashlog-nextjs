@@ -139,7 +139,7 @@ export default function SettingCardsPage() {
 								key={card.card_id}
 								className={clsx(
 									"relative overflow-hidden group rounded-3xl sm:w-96 md:w-88 lg:w-92 w-full",
-									`bankcard-shadow-${card.card_color}`
+									// `bankcard-shadow-${card.card_color}`
 								)}
 							>
 								<BankCard
@@ -151,10 +151,16 @@ export default function SettingCardsPage() {
 								/>
 								<div
 									className={clsx(
+										"absolute rounded-xl flex items-center justify-center gap-4 left-0 top-0 w-full h-full bg-white/50",
+										"opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-linear"
+									)}
+								>
+								{/* <div
+									className={clsx(
 										"absolute rounded-xl flex items-center justify-center gap-4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/50",
 										"transition-all duration-300 ease-in-out -top-96 group-hover:top-1/2"
 									)}
-								>
+								> */}
 									<Button
 										color={"primary"}
 										variant={"solid"}
