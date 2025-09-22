@@ -210,9 +210,7 @@ export default function OverviewPage() {
 		isLoggedIn && (
 			<Container
 				shadow
-				className={clsx("bg-white border-2 border-gray-200 rounded-xl", {
-					"px-4": width <= BREAK_POINT.LG,
-				})}
+				className={clsx("bg-white border-2 border-gray-200 rounded-3xl lg:px-8 px-4")}
 				orientation={"vertical"}
 			>
 				<ContentHeader classNames={{
@@ -220,22 +218,15 @@ export default function OverviewPage() {
 				}} title={"Overview"} />
 				<div className={"w-full h-full grid grid-cols-12 gap-4"}>
 					<div
-						className={clsx("h-full flex flex-col gap-4", {
-							"col-span-8": width > BREAK_POINT.LG,
-							"col-span-7": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
-							"col-span-12": width <= BREAK_POINT.MD,
-						})}
+						className={clsx("h-full flex flex-col gap-4 lg:col-span-8 col-span-12 lg:order-1 order-2")}
 					>
 						<div className="h-full flex flex-col gap-4 bg-white border-2 p-4 rounded-3xl shadow-sm">
 							<header
-								className={clsx("flex justify-between items-center gap-4", {
-									"flex-col": width <= BREAK_POINT.LG,
-									"flex-row": width > BREAK_POINT.LG,
-								})}
+								className={clsx("flex justify-between items-center gap-4 lg:flex-row flex-col")}
 							>
 								<h3 className="text-lg font-semibold">Financial Analytics</h3>
 
-								<div className="flex items-center gap-4">
+								<div className="flex md:flex-row flex-col items-center gap-4">
 									<Select
 										classNames={{
 											mainWrapper: "min-w-28",
@@ -303,7 +294,7 @@ export default function OverviewPage() {
 							</main>
 
 							{/* Financial Trends Line Chart */}
-							<div className="w-full">
+							<div className="w-full hidden md:block min-h-[300px]">
 								<FinancialLineChart
 									data={monthlyAnalyticsResult?.results || null}
 									error={monthlyAnalyticsError ? JSON.parse(monthlyAnalyticsError).message : null}
@@ -314,16 +305,11 @@ export default function OverviewPage() {
 					</div>
 					<div
 						className={clsx(
-							"h-max flex flex-col gap-4 bg-white border-2 border-gray-200 p-4 rounded-3xl shadow-sm",
-							{
-								"col-span-4": width > BREAK_POINT.LG,
-								"col-span-5": width <= BREAK_POINT.LG && width > BREAK_POINT.MD,
-								"col-span-12": width <= BREAK_POINT.MD,
-							}
+							"h-max flex flex-col gap-4 bg-white border-2 border-gray-200 p-4 rounded-3xl shadow-sm lg:col-span-4 col-span-12 lg:order-2 order-1"
 						)}
 					>
-						<header className="flex justify-between items-center">
-							<h6 className="text-lg font-semibold">Total Balance</h6>
+						<header className="w-full flex justify-between items-center">
+							<h6 className="w-full lg:text-left text-center text-lg font-semibold">Total Balance</h6>
 						</header>
 						<main className={"flex flex-col gap-8"}>
 							{/* Total balance content goes here */}

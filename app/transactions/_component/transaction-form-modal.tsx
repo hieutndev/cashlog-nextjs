@@ -284,7 +284,7 @@ export default function CrudTransactionModal({
 			isOpen={isOpen}
 			placement={width < BREAK_POINT.SM ? "top" : "center"}
 			scrollBehavior="inside"
-			size={width < BREAK_POINT.SM ? "full" : "4xl"}
+			size={width < BREAK_POINT.LG ? "full" : "4xl"}
 			onOpenChange={onOpenChange}
 		>
 			<ModalContent>

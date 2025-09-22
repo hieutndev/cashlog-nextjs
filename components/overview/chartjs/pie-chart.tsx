@@ -106,11 +106,11 @@ export default function PieChart({ data }: PieChartProps) {
     const colors = generateColors(data);
 
     return (
-        <div className="flex flex-row items-start gap-8 w-full h-96">
-            <div className="w-1/4 h-full aspect-square">
+        <div className="flex lg:flex-row flex-col lg:items-start items-center gap-8 w-full lg:h-96 h-full">
+            <div className="lg:w-1/4 w-2/3 lg:h-full h-max aspect-square">
                 <Pie data={chartData} options={options} />
             </div>
-            <div className="w-3/4 h-full overflow-y-auto grid grid-cols-4">
+            <div className="lg:w-3/4 w-full h-full overflow-y-auto grid 2xl:grid-cols-4 md:grid-cols-3 grid-cols-1">
                 {data.map((item, index) => (
                     <div key={item.category} className="col-span-1 flex items-center gap-2">
                         <div
