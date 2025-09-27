@@ -9,6 +9,8 @@ import { Navbar, NavbarContent, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } f
 import Image from "next/image";
 import { useWindowSize } from "hieutndev-toolkit";
 
+import packageJson from "../../../package.json";
+
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
 import { SITE_CONFIG } from "@/configs/site-config";
@@ -67,7 +69,11 @@ export default function HorizontalNav() {
 								</Button>
 							</NavbarMenuItem>
 						))}
+						<p className="w-full text-center absolute left-0  bottom-8 text-xs text-gray-500">
+							v{packageJson.version}
+						</p>
 					</NavbarMenu>
+
 				</Navbar>
 			</div>
 			<div

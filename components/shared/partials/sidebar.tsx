@@ -6,9 +6,11 @@ import Image from "next/image";
 import { Tooltip } from "@heroui/tooltip";
 import { useEffect } from "react";
 import clsx from "clsx";
+import { useWindowSize } from "hieutndev-toolkit";
+
+import packageJson from "../../../package.json";
 
 import { SITE_CONFIG } from "@/configs/site-config";
-import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export const Sidebar = () => {
@@ -36,7 +38,7 @@ export const Sidebar = () => {
 
 	return (
 		<div
-			className={clsx("top-0 left-0 h-full px-4 py-8 flex flex-col gap-8 items-center shadow-lg", {
+			className={clsx("relative top-0 left-0 h-full px-4 py-8 flex flex-col gap-8 items-center shadow-lg", {
 				"w-full": width > BREAK_POINT.XL,
 				"w-max": width <= BREAK_POINT.XL,
 			})}
@@ -89,6 +91,9 @@ export const Sidebar = () => {
 					)
 				)}
 			</div>
+			<p className="absolute bottom-4 text-xs text-gray-500">
+				v{packageJson.version}
+			</p>
 		</div>
 	);
 };

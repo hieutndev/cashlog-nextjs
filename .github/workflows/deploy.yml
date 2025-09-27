@@ -1,78 +1,14 @@
-name: Auto deployment for Cashlog Next.js
+name: Build and Deploy Cashlog Next.js
 
 on:
     push:
         branches:
             - main
     workflow_dispatch:
-        inputs:
-            version_type:
-                description: "Version bump type"
-                required: false
-                default: "auto"
-                type: choice
-                options:
-                    - auto
-                    - major
-                    - minor
-                    - patch
-            custom_version_type:
-                description: "Custom version type (if not using dropdown)"
-                required: false
-                type: string
 
 jobs:
-    check_is_deploy_action:
-        runs-on: ubuntu-latest
-        outputs:
-            is_deploy: ${{ steps.check_deploy.outputs.is_deploy }}
-            commit_message: ${{ steps.check_deploy.outputs.commit_message }}
-            version_type: ${{ steps.check_deploy.outputs.version_type }}
-        steps:
-            - name: Check if the commit message contains "deploy"
-              id: check_deploy
-              run: |
-                  echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-                  echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
-                  echo "EOF" >> $GITHUB_OUTPUT
-
-                  # Check if this is a manual dispatch or push event
-                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-                      echo "is_deploy=true" >> $GITHUB_OUTPUT
-                      
-                      # Determine version type from inputs
-                      if [[ "${{ github.event.inputs.custom_version_type }}" != "" ]]; then
-                          version_type="${{ github.event.inputs.custom_version_type }}"
-                      elif [[ "${{ github.event.inputs.version_type }}" != "auto" ]]; then
-                          version_type="${{ github.event.inputs.version_type }}"
-                      else
-                          version_type="patch"
-                      fi
-                      
-                      echo "version_type=$version_type" >> $GITHUB_OUTPUT
-                  elif [[ "${{ github.event.head_commit.message }}" == *"deploy"* ]]; then
-                      echo "is_deploy=true" >> $GITHUB_OUTPUT
-                      
-                      # Determine version type from commit message
-                      msg="${{ github.event.head_commit.message }}"
-                      if echo "$msg" | grep -i "major" > /dev/null; then
-                          version_type="major"
-                      elif echo "$msg" | grep -i "minor" > /dev/null; then
-                          version_type="minor"
-                      else
-                          version_type="patch"
-                      fi
-                      
-                      echo "version_type=$version_type" >> $GITHUB_OUTPUT
-                  else
-                      echo "is_deploy=false" >> $GITHUB_OUTPUT
-                      echo "version_type=patch" >> $GITHUB_OUTPUT
-                  fi
-
     test_ssh:
         runs-on: ubuntu-latest
-        needs: check_is_deploy_action
-        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
@@ -89,10 +25,9 @@ jobs:
 
     build_and_deploy:
         runs-on: ubuntu-latest
-        needs: [test_ssh, check_is_deploy_action]
-        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
+        needs: [test_ssh]
         steps:
-            - name: Build new version (Install Yarn + PM2)
+            - name: Build and Deploy
               uses: appleboy/ssh-action@v1
               with:
                   host: ${{ secrets.VPS_HOST }}
@@ -115,7 +50,9 @@ jobs:
                       # Ensure PM2 is installed
                       if ! command -v pm2 >/dev/null 2>&1; then
                         npm install -g pm2
-                      fi                      # Build project
+                      fi
+
+                      # Build project
                       pm2 stop cashlog || exit 1
                       cd cashlog-nextjs
                       git checkout main
@@ -125,52 +62,3 @@ jobs:
                       pm2 restart cashlog
                       echo "Build completed successfully!"
                       exit 0
-
-    # update package.json version
-    update_version:
-        runs-on: ubuntu-latest
-        needs: [build_and_deploy, check_is_deploy_action]
-        if: needs.check_is_deploy_action.outputs.is_deploy == 'true'
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
-
-            - name: Update package.json version
-              id: update_version
-              uses: appleboy/ssh-action@v1
-              with:
-                  host: ${{ secrets.VPS_HOST }}
-                  username: ${{ secrets.VPS_USER }}
-                  password: ${{ secrets.VPS_PASSWORD }}
-                  script: |
-                      # Use the version type determined in the check step
-                      bump="${{ needs.check_is_deploy_action.outputs.version_type }}"
-
-                      # Validate version type
-                      if [[ "$bump" != "major" && "$bump" != "minor" && "$bump" != "patch" ]]; then
-                          echo "Invalid version type: $bump. Defaulting to patch."
-                          bump="patch"
-                      fi
-
-                      echo "Using version bump type: $bump"
-
-                      # Ensure Node.js and npm are available
-                      if ! command -v node >/dev/null 2>&1; then
-                        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                        sudo apt-get install -y nodejs
-                      fi
-
-                      # Ensure Yarn is installed
-                      if ! command -v yarn >/dev/null 2>&1; then
-                        npm install -g yarn
-                      fi
-
-                      echo "Updating package.json version..."
-                      cd cashlog-nextjs
-                      yarn config set version-git-message "Auto Bump version to v%s"
-                      yarn version --$bump 
-                      git config --global user.email "github-actions[bot]@users.noreply.github.com"
-                      git config --global user.name "github-actions[bot]"
-                      git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-                      git push origin main
-                      echo "Version updated successfully!"
