@@ -14,10 +14,10 @@ import { BREAK_POINT } from '../../../configs/break-point';
 import CategoryForm from "./_component/category-form";
 
 import { TCategory } from "@/types/category";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { sliceText } from "@/utils/string";
 
 const categoryColumns = [
@@ -26,7 +26,7 @@ const categoryColumns = [
 ];
 
 export default function CategoriesPage() {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const [formAction, setFormAction] = useState<"add" | "edit">("add");
 	const [selectedCategory, setSelectedCategory] = useState<TCategory | undefined>(undefined);

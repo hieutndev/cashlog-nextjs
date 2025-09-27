@@ -1,5 +1,3 @@
-// write for me a GET endpoint to get all categories
-
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { JSONSchemaType } from "ajv";
 

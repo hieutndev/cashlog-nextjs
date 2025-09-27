@@ -6,14 +6,14 @@ import { Button } from "@heroui/button";
 import clsx from "clsx";
 
 import { SETTING_MENU } from "@/configs/site-config";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SettingMenu() {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const isActive = (urls: string[]) => {
 		return urls.some((pattern) => {

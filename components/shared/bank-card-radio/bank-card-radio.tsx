@@ -6,7 +6,7 @@ import Image from "next/image";
 import { getBankLogo } from "@/configs/bank";
 import { cutString } from "@/utils/text-transform";
 import { TBankCode } from "@/types/bank";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 import { TCard } from "@/types/card";
 import { SITE_CONFIG } from "@/configs/site-config";
@@ -19,7 +19,7 @@ export interface AccountCardProps {
 }
 
 export default function BankCardRadio({ card_id, card_name, card_balance, bank_code }: AccountCardProps) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	return (
 		<Radio

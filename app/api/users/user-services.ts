@@ -1,11 +1,10 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { JSONSchemaType } from 'ajv';
+import { generateUniqueStringServer } from 'hieutndev-toolkit';
 
-import { TSignUp, TSignIn, TUser } from '../../../types/user';
-
+import { TSignUp, TSignIn, TUser } from '@/types/user';
 import { dbQuery } from '@/libs/mysql';
 import { QUERY_STRING } from '@/configs/query-string';
-import { randomUniqueString } from '@/utils/string';
 import { comparePassword, hashPassword } from '@/utils/hash-password';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '@/utils/jwt-utils';
 import { ApiError } from '@/types/api-error';
@@ -84,7 +83,7 @@ export const createNewUser = async ({ email, password, confirmPassword }: TSignU
     let newUser: ResultSetHeader | null = null;
 
     try {
-        newUser = await dbQuery<ResultSetHeader>(QUERY_STRING.CREATE_NEW_USER, [randomUniqueString(10), email, await hashPassword(password)]);
+        newUser = await dbQuery<ResultSetHeader>(QUERY_STRING.CREATE_NEW_USER, [generateUniqueStringServer(10), email, await hashPassword(password)]);
     } catch (error: unknown) {
         throw new ApiError((error as Error).message || "Error in createNewUser", 500);
     }

@@ -10,18 +10,18 @@ import { Chip } from "@heroui/chip";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { TForecastWithCard } from "@/types/forecast";
 import { IAPIResponse } from "@/types/global";
 import { getBankLogo } from "@/configs/bank";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { SITE_CONFIG } from "@/configs/site-config";
 
 export default function SettingForecastPage() {
 	const router = useRouter();
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const [listForecasts, setListForecasts] = useState<TForecastWithCard[]>([]);
 	const [selectedForecast, setSelectedForecast] = useState<TForecastWithCard | null>(null);

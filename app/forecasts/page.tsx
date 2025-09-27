@@ -9,15 +9,15 @@ import moment from "moment";
 import { Alert } from "@heroui/alert";
 import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
+import { useFetch } from "hieutndev-toolkit";
 
-import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
 import BankCardRadio from "@/components/shared/bank-card-radio/bank-card-radio";
 import { TForecastRowData } from "@/types/forecast";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 
 export default function ForecastsPage() {
 	const {
@@ -102,7 +102,7 @@ export default function ForecastsPage() {
 
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	return (
 		<section className={"flex flex-col gap-4"}>

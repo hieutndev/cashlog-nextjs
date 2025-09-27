@@ -54,6 +54,7 @@
 		"crypto": "^1.0.1",
 		"formidable": "^3.5.4",
 		"framer-motion": "11.13.1",
+		"hieutndev-toolkit": "^0.1.0",
 		"intl-messageformat": "^10.5.0",
 		"jose": "^6.0.11",
 		"jsonwebtoken": "^9.0.2",

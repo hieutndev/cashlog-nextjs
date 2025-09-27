@@ -8,7 +8,7 @@ import { clsx } from "clsx";
 import { RenderCompareData } from "./compare-data";
 
 import ICONS from "@/configs/icons";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 interface CompareCardProps {
@@ -27,7 +27,7 @@ export default function CompareCard({
 	isLoading = true,
 }: CompareCardProps) {
 
-	const {width} = useScreenSize();
+	const {width} = useWindowSize();
 
 	return (
 		<Card>

@@ -3,15 +3,6 @@ import { ResultSetHeader } from "mysql2";
 import { dbQuery } from "@/libs/mysql";
 import { ApiError } from "@/types/api-error";
 
-/**
- * Reset all user data from the database
- * This will delete:
- * - All transactions
- * - All cards (which cascades to forecasts and forecast_details)
- * - All transaction categories
- * 
- * @param userId - The ID of the user whose data should be reset
- */
 export const resetUserData = async (userId: string | number) => {
     try {
         // Start a transaction to ensure data consistency

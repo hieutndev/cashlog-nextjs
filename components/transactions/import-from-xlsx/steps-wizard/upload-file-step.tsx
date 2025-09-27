@@ -8,10 +8,10 @@ import { Alert } from "@heroui/alert";
 import FileUpload from "../../../shared/file-upload/file-upload";
 
 import Container from "@/components/shared/container/container";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import { TImportFileXLSXResponse } from "@/types/transaction";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function UploadFileStep({
@@ -22,7 +22,7 @@ export default function UploadFileStep({
 	onUploadSuccess?: () => void;
 	onUploadResult?: (result: TImportFileXLSXResponse) => void;
 }) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [currentUploadProgress, setCurrentUploadProgress] = useState<number | null>(null);
 	const [alertMessage, setAlertMessage] = useState<string | null>(null);

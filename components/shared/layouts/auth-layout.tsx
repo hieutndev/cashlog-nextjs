@@ -1,27 +1,18 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Spinner } from "@heroui/spinner";
 import clsx from "clsx";
+import { useWindowSize } from "hieutndev-toolkit";
+
+import { useAuth } from "../../providers/auth-provider";
 
 import { Sidebar } from "@/components/shared/partials/sidebar";
 import HorizontalNav from "@/components/shared/partials/horizontal-nav";
-import { useAuth } from "@/components/providers/auth-provider";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
-	const { isLoggedIn, detecting } = useAuth();
-
-	const router = useRouter();
-
-	useEffect(() => {
-		if (!isLoggedIn) {
-			router.push("/sign-in"); 
-		}
-	}, [isLoggedIn]);
+	const { detecting } = useAuth();
 
 	return (
 		<div className={"w-screen h-screen flex flex-col"}>

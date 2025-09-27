@@ -15,7 +15,7 @@ import { TCard, TUpdateCard } from "../../../../../types/card";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { ListBankCode } from "@/configs/bank";

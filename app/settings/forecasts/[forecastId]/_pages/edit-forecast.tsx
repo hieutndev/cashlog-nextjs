@@ -14,7 +14,7 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from 
 import CustomForm from "@/components/shared/form/custom-form";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import { TForecastWithDetailAndCard, TNewForecast, TUpdateForecast } from "@/types/forecast";
 import { makeListDate } from "@/utils/text-transform";

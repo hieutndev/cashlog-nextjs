@@ -18,7 +18,7 @@ import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";

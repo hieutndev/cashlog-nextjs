@@ -4365,6 +4365,13 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
+hieutndev-toolkit@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/hieutndev-toolkit/-/hieutndev-toolkit-0.1.0.tgz#240309ef1bd605982ddb0ae6f967bf3eeaef09c9"
+  integrity sha512-YbtxHK5ui/6x5xqsvMxUSflxDDmKQP1AXcIsigcvlZaf8gIe93CLUZpC8tMiSVxewPrcBAcdmshG//EqxCX2lw==
+  dependencies:
+    cookies-next "^6.0.0"
+
 humanize-ms@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/humanize-ms/-/humanize-ms-1.2.1.tgz#c46e3159a293f6b896da29316d8b6fe8bb79bbed"

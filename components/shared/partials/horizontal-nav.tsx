@@ -7,9 +7,9 @@ import clsx from "clsx";
 import { useState } from "react";
 import { Navbar, NavbarContent, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/navbar";
 import Image from "next/image";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import ICONS from "@/configs/icons";
-import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
 import { SITE_CONFIG } from "@/configs/site-config";
 
@@ -20,12 +20,13 @@ export default function HorizontalNav() {
 
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const handleLogout = () => {
 		deleteCookie("access_token", { path: "/" });
 		deleteCookie("refresh_token", { path: "/" });
 		deleteCookie("username", { path: "/" });
+		router.push("/sign-in");
 	};
 
 	return (

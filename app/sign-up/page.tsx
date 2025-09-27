@@ -10,18 +10,18 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 
 import CustomForm from "@/components/shared/form/custom-form";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { TSignUp } from "@/types/user";
 import { getFieldError } from "@/utils/get-field-error";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SignUpPage() {
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	// const { setCookie } = useReactiveCookiesNext();
 

@@ -8,20 +8,20 @@ import clsx from "clsx";
 
 import { getBankLogo } from "@/configs/bank";
 import ICONS from "@/configs/icons";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import { TFetchForecastDetailsResult, TForecastWithDetailAndCard } from "@/types/forecast";
 import ForecastDetails from "@/app/settings/forecasts/[forecastId]/_pages/forecast-details";
 import EditForecast from "@/app/settings/forecasts/[forecastId]/_pages/edit-forecast";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 
 interface ForecastDetailsContainerProps {
 	forecastId: string;
 }
 
 export default function ForecastDetailsWrapper({ forecastId }: ForecastDetailsContainerProps) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const [editMode, setEditMode] = useState<boolean>(false);
 	const [forecastDetails, setForecastDetails] = useState<TForecastWithDetailAndCard | null>(null);

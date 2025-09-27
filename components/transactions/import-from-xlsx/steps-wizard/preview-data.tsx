@@ -9,13 +9,13 @@ import clsx from "clsx";
 
 import Container from "@/components/shared/container/container";
 import { TCreateMultipleTransactionsResponse, TCrudTransaction, TImportFileXLSXResponse } from "@/types/transaction";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import { IAPIResponse } from "@/types/global";
 import { formatDate } from "@/utils/date";
 import ICONS from "@/configs/icons";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 interface PreviewDataProps {
@@ -25,7 +25,7 @@ interface PreviewDataProps {
 }
 
 export default function PreviewData({ uploadResult, onCancelImport, onSubmitSuccess }: PreviewDataProps) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	/* FETCH USER's CATEGORIES */
 

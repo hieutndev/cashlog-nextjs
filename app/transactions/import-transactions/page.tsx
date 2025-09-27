@@ -13,7 +13,7 @@ import PreviewData from "@/components/transactions/import-from-xlsx/steps-wizard
 import Container from "@/components/shared/container/container";
 import Stepper, { Step } from "@/components/transactions/import-from-xlsx/steps-wizard/stepper";
 import ICONS from "@/configs/icons";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 
 export default function ImportTransactionsPage() {
 	const router = useRouter();
@@ -89,7 +89,7 @@ export default function ImportTransactionsPage() {
 		},
 	]);
 
-	const {width} = useScreenSize();
+	const {width} = useWindowSize();
 
 
 	return (

@@ -23,27 +23,6 @@ export type TDailyAnalytics = {
     expense: number;
 };
 
-export type TWeeklyAnalytics = {
-    week: string;
-    year: number;
-    week_number: number;
-    income: number;
-    expense: number;
-};
-
-export type TMonthlyAnalytics = {
-    year: number;
-    month: number;
-    income: number;
-    expense: number;
-};
-
-export type TYearlyAnalytics = {
-    year: number;
-    income: number;
-    expense: number;
-};
-
 export const getCategoryStatsByUserId = async (userId: TUser["user_id"]): Promise<TCategoryStats[]> => {
     try {
         const categoryStats = await dbQuery<RowDataPacket[]>(

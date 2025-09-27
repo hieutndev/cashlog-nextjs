@@ -25,14 +25,14 @@ import TransactionType from "@/components/transactions/transaction-type";
 import BankCardRadio, { AccountCardProps } from "@/components/shared/bank-card-radio/bank-card-radio";
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { makeSuggestAmount } from "@/utils/make-suggest-amount";
 import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { SITE_CONFIG } from "@/configs/site-config";
 
 interface CrudTransactionModalProps {
@@ -51,7 +51,7 @@ export default function CrudTransactionModal({
 	mode = "create",
 }: CrudTransactionModalProps) {
 	const router = useRouter();
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	// HANDLE FETCH CARD
 	const [listCard, setListCard] = useState<AccountCardProps[]>([]);

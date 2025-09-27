@@ -8,20 +8,20 @@ import { useState, useEffect } from "react";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import CustomForm from "@/components/shared/form/custom-form";
-import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TSignIn, TSignInResponse } from "@/types/user";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
-import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SignInPage() {
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const { setCookie } = useReactiveCookiesNext();
 
@@ -53,7 +53,7 @@ export default function SignInPage() {
 		if (signInResponse && signInResponse.results) {
 			console.log("change router /");
 
-			router.push("/");
+			router.push("/overview");
 
 			setCookie("access_token", signInResponse.results.access_token, { maxAge: 10, path: "/" });
 			setCookie("refresh_token", signInResponse.results.refresh_token, { maxAge: 60 * 60 * 24, path: "/" });

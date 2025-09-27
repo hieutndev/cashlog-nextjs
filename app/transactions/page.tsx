@@ -17,13 +17,13 @@ import { Input } from "@heroui/input";
 import CrudTransactionModal from "./_component/transaction-form-modal";
 
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { useDebounce } from "@/hooks/useDebounce";
 import ICONS from "@/configs/icons";
 import { TCard } from "@/types/card";
 import { getBankLogo } from "@/configs/bank";
 import { BREAK_POINT } from "@/configs/break-point";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { TTransaction, TTransactionWithCardAndCategory } from "@/types/transaction";
 import { formatDate } from "@/utils/date";
 import { sliceText } from "@/utils/string";
@@ -36,7 +36,7 @@ type FilterAndSortItem = {
 };
 
 export default function TransactionsPage() {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 	const router = useRouter();
 	const searchParams = useSearchParams();
 

@@ -13,11 +13,11 @@ import CompareCard from "./compare-card";
 
 import Container from "@/components/shared/container/container";
 import { TImportFileXLSXResponse, TValidateCardsResponse, TValidateCategoriesResponse } from "@/types/transaction";
-import { useFetch } from "@/hooks/useFetch";
+import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import { ILLUSTRATION_PATH } from "@/configs/path-config";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export interface CompareDataProps {
@@ -34,7 +34,7 @@ export const NoExistingData = ({ message }: { message: string }) => {
 };
 
 export const RenderCompareData = ({ data, type }: { data: string[]; type: "success" | "danger" }) => {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	return (
 		<div className={"h-full flex flex-wrap item-start gap-2"}>
@@ -56,7 +56,7 @@ export const RenderCompareData = ({ data, type }: { data: string[]; type: "succe
 };
 
 export default function CompareData({ uploadResult, onCompareSuccess }: CompareDataProps) {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	/* Validate Categories */
 

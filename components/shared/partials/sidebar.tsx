@@ -8,11 +8,11 @@ import { useEffect } from "react";
 import clsx from "clsx";
 
 import { SITE_CONFIG } from "@/configs/site-config";
-import useScreenSize from "@/hooks/useScreenSize";
+import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export const Sidebar = () => {
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const pathname = usePathname();
 

@@ -3,8 +3,8 @@
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 import { Button, ButtonProps } from "@heroui/button";
 import { usePathname, useRouter } from "next/navigation";
+import { useWindowSize } from "hieutndev-toolkit";
 
-import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export type BreadcrumbsType = {
@@ -30,7 +30,7 @@ export default function ContentHeader({ title, breadcrumbs, classNames }: Conten
 
 	const router = useRouter();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	// const parseBreadcrumbs = breadcrumbs?.find((_v) => _v.key === pathname);
 	const parseBreadcrumbs = breadcrumbs?.find((_v) => {
@@ -39,7 +39,7 @@ export default function ContentHeader({ title, breadcrumbs, classNames }: Conten
 
 			return regex.test(pathname);
 		} catch {
-			return false; // in case _v.key is an invalid regex
+			return false;
 		}
 	});
 

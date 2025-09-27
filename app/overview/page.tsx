@@ -8,19 +8,18 @@ import { Spinner } from "@heroui/spinner";
 import { Image } from "@heroui/image";
 import clsx from "clsx";
 import moment from "moment";
+import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import ContentHeader from "@/components/shared/partials/content-header";
 import Container from "@/components/shared/container/container";
 import AnalyticBlock from "@/components/overview/analytic-block/analytic-block";
-import { useFetch } from "@/hooks/useFetch";
 import { IAPIResponse } from "@/types/global";
 import { TAnalyticsResponse, TMonthlyAnalyticsResponse } from "@/types/analytics";
 import PieChart from "@/components/overview/chartjs/pie-chart";
 import FinancialLineChart from "@/components/overview/chartjs/multi-line-chart";
 import { TCard } from "@/types/card";
-import { useAuth } from "@/components/providers/auth-provider";
 import { MAP_ICON } from "@/configs/map-icons";
-import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
 import { cutString } from "@/utils/text-transform";
 import { getBankLogo } from "@/configs/bank";
@@ -29,9 +28,8 @@ import { SITE_CONFIG } from "@/configs/site-config";
 const EST_YEAR = process.env.NEXT_PUBLIC_EST_YEAR ? parseInt(process.env.NEXT_PUBLIC_EST_YEAR) : 2025;
 
 export default function OverviewPage() {
-	const { isLoggedIn } = useAuth();
 
-	const { width } = useScreenSize();
+	const { width } = useWindowSize();
 
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("month");
 	const [selectedSpecificTime, setSelectedSpecificTime] = useState<string>(() => {
@@ -148,19 +146,17 @@ export default function OverviewPage() {
 	}, [monthlyAnalyticsResult, monthlyAnalyticsError]);
 
 	useEffect(() => {
-		if (isLoggedIn) {
-			fetchCards();
-			fetchCategoryStats();
-			fetchMonthlyAnalytics();
-		}
-	}, [isLoggedIn]);
+		fetchCards();
+		fetchCategoryStats();
+		fetchMonthlyAnalytics();
+	}, []);
 
 	// Fetch analytics when time period or specific time changes
 	useEffect(() => {
-		if (isLoggedIn) {
-			fetchAnalyticsData();
-		}
-	}, [isLoggedIn, selectedTimePeriod, selectedSpecificTime]);
+
+		fetchAnalyticsData();
+
+	}, [selectedTimePeriod, selectedSpecificTime]);
 
 	const timePeriodOptions = [
 		{ key: "day", label: "Day" },
@@ -207,148 +203,146 @@ export default function OverviewPage() {
 	};
 
 	return (
-		isLoggedIn && (
-			<Container
-				shadow
-				className={clsx("bg-white border-2 border-gray-200 rounded-3xl lg:px-8 px-4")}
-				orientation={"vertical"}
-			>
-				<ContentHeader classNames={{
-					title: "w-full sm:text-left text-center"
-				}} title={"Overview"} />
-				<div className={"w-full h-full grid grid-cols-12 gap-4"}>
-					<div
-						className={clsx("h-full flex flex-col gap-4 lg:col-span-8 col-span-12 lg:order-1 order-2")}
-					>
-						<div className="h-full flex flex-col gap-4 bg-white border-2 p-4 rounded-3xl shadow-sm">
-							<header
-								className={clsx("flex justify-between items-center gap-4 lg:flex-row flex-col")}
-							>
-								<h3 className="text-lg font-semibold">Financial Analytics</h3>
+		<Container
+			shadow
+			className={clsx("bg-white border-2 border-gray-200 rounded-3xl lg:px-8 px-4")}
+			orientation={"vertical"}
+		>
+			<ContentHeader classNames={{
+				title: "w-full sm:text-left text-center"
+			}} title={"Overview"} />
+			<div className={"w-full h-full grid grid-cols-12 gap-4"}>
+				<div
+					className={clsx("h-full flex flex-col gap-4 lg:col-span-8 col-span-12 lg:order-1 order-2")}
+				>
+					<div className="h-full flex flex-col gap-4 bg-white border-2 p-4 rounded-3xl shadow-sm">
+						<header
+							className={clsx("flex justify-between items-center gap-4 lg:flex-row flex-col")}
+						>
+							<h3 className="text-lg font-semibold">Financial Analytics</h3>
 
-								<div className="flex md:flex-row flex-col items-center gap-4">
-									<Select
-										classNames={{
-											mainWrapper: "min-w-28",
-										}}
-										items={timePeriodOptions}
-										label={"Time Period:"}
-										labelPlacement={"outside-left"}
-										selectedKeys={[selectedTimePeriod]}
-										size="md"
-										variant="bordered"
-										onChange={(e) => handleTimePeriodChange(e.target.value)}
-									>
-										{(option) => <SelectItem key={option.key}>{option.label}</SelectItem>}
-									</Select>
+							<div className="flex md:flex-row flex-col items-center gap-4">
+								<Select
+									classNames={{
+										mainWrapper: "min-w-28",
+									}}
+									items={timePeriodOptions}
+									label={"Time Period:"}
+									labelPlacement={"outside-left"}
+									selectedKeys={[selectedTimePeriod]}
+									size="md"
+									variant="bordered"
+									onChange={(e) => handleTimePeriodChange(e.target.value)}
+								>
+									{(option) => <SelectItem key={option.key}>{option.label}</SelectItem>}
+								</Select>
 
-									<Select
-										classNames={{
-											mainWrapper: "min-w-28",
-										}}
-										isDisabled={!isSpecificTimeEnabled}
-										items={getSpecificTimeOptions()}
-										label={"Specific Time:"}
-										labelPlacement={"outside-left"}
-										placeholder={isSpecificTimeEnabled ? "Select..." : "Not available"}
-										selectedKeys={selectedSpecificTime ? [selectedSpecificTime] : []}
-										size="md"
-										variant="bordered"
-										onChange={(e) => handleSpecificTimeChange(e.target.value)}
-									>
-										{(option) => <SelectItem key={option.key}>{option.label}</SelectItem>}
-									</Select>
-								</div>
-							</header>
-
-							<main
-								className={clsx("grid gap-4", {
-									"grid-cols-3": width > BREAK_POINT.XL,
-									"grid-cols-2": width < BREAK_POINT.XL && width > BREAK_POINT.LG,
-									"grid-cols-1": width <= BREAK_POINT.LG,
-								})}
-							>
-								{analyticsLoading ? (
-									<div className={"col-span-3 w-full min-h-56 flex justify-center items-center"}>
-										<Spinner>Retrieving data...</Spinner>
-									</div>
-								) : balanceFluctuationData.length > 0 ? (
-									balanceFluctuationData.map((item: any, index: number) => (
-										<AnalyticBlock
-											key={`${selectedTimePeriod}-${index}`}
-											color={item.color as ChipProps["color"]}
-											label={item.label}
-											labelIcon={MAP_ICON[item.labelIcon]}
-											timeRange={selectedTimePeriod}
-											value={{
-												...item.value,
-												icon: MAP_ICON[item.value.icon],
-											}}
-										/>
-									))
-								) : (
-									<div className={"col-span-3 w-full min-h-56 flex justify-center items-center"}>
-										<p className="text-gray-500">No analytics data available</p>
-									</div>
-								)}
-							</main>
-
-							{/* Financial Trends Line Chart */}
-							<div className="w-full hidden md:block min-h-[300px]">
-								<FinancialLineChart
-									data={monthlyAnalyticsResult?.results || null}
-									error={monthlyAnalyticsError ? JSON.parse(monthlyAnalyticsError).message : null}
-									loading={loadingMonthlyAnalytics}
-								/>
+								<Select
+									classNames={{
+										mainWrapper: "min-w-28",
+									}}
+									isDisabled={!isSpecificTimeEnabled}
+									items={getSpecificTimeOptions()}
+									label={"Specific Time:"}
+									labelPlacement={"outside-left"}
+									placeholder={isSpecificTimeEnabled ? "Select..." : "Not available"}
+									selectedKeys={selectedSpecificTime ? [selectedSpecificTime] : []}
+									size="md"
+									variant="bordered"
+									onChange={(e) => handleSpecificTimeChange(e.target.value)}
+								>
+									{(option) => <SelectItem key={option.key}>{option.label}</SelectItem>}
+								</Select>
 							</div>
+						</header>
+
+						<main
+							className={clsx("grid gap-4", {
+								"grid-cols-3": width > BREAK_POINT.XL,
+								"grid-cols-2": width < BREAK_POINT.XL && width > BREAK_POINT.LG,
+								"grid-cols-1": width <= BREAK_POINT.LG,
+							})}
+						>
+							{analyticsLoading ? (
+								<div className={"col-span-3 w-full min-h-56 flex justify-center items-center"}>
+									<Spinner>Retrieving data...</Spinner>
+								</div>
+							) : balanceFluctuationData.length > 0 ? (
+								balanceFluctuationData.map((item: any, index: number) => (
+									<AnalyticBlock
+										key={`${selectedTimePeriod}-${index}`}
+										color={item.color as ChipProps["color"]}
+										label={item.label}
+										labelIcon={MAP_ICON[item.labelIcon]}
+										timeRange={selectedTimePeriod}
+										value={{
+											...item.value,
+											icon: MAP_ICON[item.value.icon],
+										}}
+									/>
+								))
+							) : (
+								<div className={"col-span-3 w-full min-h-56 flex justify-center items-center"}>
+									<p className="text-gray-500">No analytics data available</p>
+								</div>
+							)}
+						</main>
+
+						{/* Financial Trends Line Chart */}
+						<div className="w-full hidden md:block min-h-[300px]">
+							<FinancialLineChart
+								data={monthlyAnalyticsResult?.results || null}
+								error={monthlyAnalyticsError ? JSON.parse(monthlyAnalyticsError).message : null}
+								loading={loadingMonthlyAnalytics}
+							/>
 						</div>
 					</div>
-					<div
-						className={clsx(
-							"h-max flex flex-col gap-4 bg-white border-2 border-gray-200 p-4 rounded-3xl shadow-sm lg:col-span-4 col-span-12 lg:order-2 order-1"
-						)}
-					>
-						<header className="w-full flex justify-between items-center">
-							<h6 className="w-full lg:text-left text-center text-lg font-semibold">Total Balance</h6>
-						</header>
-						<main className={"flex flex-col gap-8"}>
-							{/* Total balance content goes here */}
-							<h1 className={'w-full text-center text-5xl font-bold text-primary'}>{totalBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</h1>
-							<div className={"w-full flex flex-col gap-4"}>
-								{loadingCards &&
-									<div className={"w-full flex justify-center h-44"}>
-										<Spinner>Loading cards...</Spinner>
-									</div>
-								}
-								{fetchCardResult?.results &&
-									fetchCardResult.results.map(card => (
-										<div key={card.card_id} className={"flex w-full justify-start gap-2 items-center"}>
-											<Image
-												isBlurred
-												alt={card.card_name}
-												className={"w-10 p-1"}
-												radius={"none"}
-												src={getBankLogo(card.bank_code, 1)}
-											/>
-											<div className={"w-full flex justify-between items-center gap-2"}>
-												<p className={"text-base min-w-max"}>{cutString(card.card_name, 12)}</p>
-												<p className={"font-semibold text-base"}>{card.card_balance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
-											</div>
-										</div>
-									))}
-							</div>
-						</main>
-					</div>
 				</div>
-				<div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border-2"}>
-					<header>
-						<h6 className="text-lg font-semibold text-center">Category Breakdown</h6>
+				<div
+					className={clsx(
+						"h-max flex flex-col gap-4 bg-white border-2 border-gray-200 p-4 rounded-3xl shadow-sm lg:col-span-4 col-span-12 lg:order-2 order-1"
+					)}
+				>
+					<header className="w-full flex justify-between items-center">
+						<h6 className="w-full lg:text-left text-center text-lg font-semibold">Total Balance</h6>
 					</header>
-					<main>
-						<PieChart data={categoryStatsResult?.results ?? []} />
+					<main className={"flex flex-col gap-8"}>
+						{/* Total balance content goes here */}
+						<h1 className={'w-full text-center text-5xl font-bold text-primary'}>{totalBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</h1>
+						<div className={"w-full flex flex-col gap-4"}>
+							{loadingCards &&
+								<div className={"w-full flex justify-center h-44"}>
+									<Spinner>Loading cards...</Spinner>
+								</div>
+							}
+							{fetchCardResult?.results &&
+								fetchCardResult.results.map(card => (
+									<div key={card.card_id} className={"flex w-full justify-start gap-2 items-center"}>
+										<Image
+											isBlurred
+											alt={card.card_name}
+											className={"w-10 p-1"}
+											radius={"none"}
+											src={getBankLogo(card.bank_code, 1)}
+										/>
+										<div className={"w-full flex justify-between items-center gap-2"}>
+											<p className={"text-base min-w-max"}>{cutString(card.card_name, 12)}</p>
+											<p className={"font-semibold text-base"}>{card.card_balance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>
+										</div>
+									</div>
+								))}
+						</div>
 					</main>
 				</div>
-			</Container>
-		)
+			</div>
+			<div className={"flex flex-col gap-4 bg-white shadow-sm rounded-3xl p-4 border-2"}>
+				<header>
+					<h6 className="text-lg font-semibold text-center">Category Breakdown</h6>
+				</header>
+				<main>
+					<PieChart data={categoryStatsResult?.results ?? []} />
+				</main>
+			</div>
+		</Container>
 	);
 }
