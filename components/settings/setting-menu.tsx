@@ -4,9 +4,9 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import clsx from "clsx";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import { SETTING_MENU } from "@/configs/site-config";
-import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SettingMenu() {

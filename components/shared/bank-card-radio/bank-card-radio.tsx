@@ -2,11 +2,11 @@ import clsx from "clsx";
 import React from "react";
 import { Radio } from "@heroui/radio";
 import Image from "next/image";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import { getBankLogo } from "@/configs/bank";
 import { cutString } from "@/utils/text-transform";
 import { TBankCode } from "@/types/bank";
-import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 import { TCard } from "@/types/card";
 import { SITE_CONFIG } from "@/configs/site-config";

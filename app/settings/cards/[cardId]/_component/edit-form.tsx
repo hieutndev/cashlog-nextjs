@@ -10,18 +10,17 @@ import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-
-import { TCard, TUpdateCard } from "../../../../../types/card";
+import { useFetch } from "hieutndev-toolkit";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse, ListColors, TColor } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
+import { TCard, TUpdateCard } from "@/types/card";
 
 interface EditCardFormProps {
 	cardId: string;

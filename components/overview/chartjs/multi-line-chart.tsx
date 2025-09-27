@@ -15,6 +15,7 @@ import { Line } from "react-chartjs-2";
 import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import clsx from "clsx";
+
 import { SITE_CONFIG } from "@/configs/site-config";
 
 ChartJS.register(

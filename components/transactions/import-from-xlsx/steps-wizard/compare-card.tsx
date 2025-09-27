@@ -4,11 +4,11 @@ import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Spinner } from "@heroui/spinner";
 import { clsx } from "clsx";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import { RenderCompareData } from "./compare-data";
 
 import ICONS from "@/configs/icons";
-import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
 
 interface CompareCardProps {

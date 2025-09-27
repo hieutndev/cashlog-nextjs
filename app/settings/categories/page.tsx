@@ -8,17 +8,16 @@ import { Button } from "@heroui/button";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/modal";
-
-import { BREAK_POINT } from '../../../configs/break-point';
+import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import CategoryForm from "./_component/category-form";
 
 import { TCategory } from "@/types/category";
-import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
-import { useWindowSize } from "hieutndev-toolkit";
 import { sliceText } from "@/utils/string";
+import { BREAK_POINT } from "@/configs/break-point";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },

@@ -6,13 +6,13 @@ import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
 import { ErrorObject } from "ajv";
 import { addToast } from "@heroui/toast";
+import { useFetch } from "hieutndev-toolkit";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse, ListColors } from "@/types/global";
 import { TCategory, TNewCategory } from "@/types/category";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
-import { useFetch } from "hieutndev-toolkit";
 
 interface NewCategoryProps {
 	categoryInfo?: TCategory;

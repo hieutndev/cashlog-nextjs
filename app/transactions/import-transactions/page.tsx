@@ -5,6 +5,7 @@ import { Divider } from "@heroui/divider";
 import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import UploadFileStep from "@/components/transactions/import-from-xlsx/steps-wizard/upload-file-step";
 import { TImportFileXLSXResponse } from "@/types/transaction";
@@ -13,7 +14,6 @@ import PreviewData from "@/components/transactions/import-from-xlsx/steps-wizard
 import Container from "@/components/shared/container/container";
 import Stepper, { Step } from "@/components/transactions/import-from-xlsx/steps-wizard/stepper";
 import ICONS from "@/configs/icons";
-import { useWindowSize } from "hieutndev-toolkit";
 
 export default function ImportTransactionsPage() {
 	const router = useRouter();

@@ -10,6 +10,7 @@ import { Alert } from "@heroui/alert";
 import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
 import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
@@ -17,7 +18,6 @@ import BankCardRadio from "@/components/shared/bank-card-radio/bank-card-radio";
 import { TForecastRowData } from "@/types/forecast";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import { useWindowSize } from "hieutndev-toolkit";
 
 export default function ForecastsPage() {
 	const {

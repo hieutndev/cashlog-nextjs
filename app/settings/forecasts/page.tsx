@@ -9,14 +9,14 @@ import { useRouter } from "next/navigation";
 import { Chip } from "@heroui/chip";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
-
 import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
+
 import { TForecastWithCard } from "@/types/forecast";
 import { IAPIResponse } from "@/types/global";
 import { getBankLogo } from "@/configs/bank";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import { useWindowSize } from "hieutndev-toolkit";
 import { SITE_CONFIG } from "@/configs/site-config";
 
 export default function SettingForecastPage() {

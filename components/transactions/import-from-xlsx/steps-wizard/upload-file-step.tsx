@@ -4,15 +4,16 @@ import { LuFileSpreadsheet } from "react-icons/lu";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { Chip } from "@heroui/chip";
 import { Alert } from "@heroui/alert";
+import { useFetch } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
-import FileUpload from "../../../shared/file-upload/file-upload";
+
 
 import Container from "@/components/shared/container/container";
-import { useFetch } from "hieutndev-toolkit";
 import { IAPIResponse } from "@/types/global";
 import { TImportFileXLSXResponse } from "@/types/transaction";
-import { useWindowSize } from "hieutndev-toolkit";
 import { BREAK_POINT } from "@/configs/break-point";
+import FileUpload from "@/components/shared/file-upload/file-upload";
 
 export default function UploadFileStep({
 	onUploadSuccess,

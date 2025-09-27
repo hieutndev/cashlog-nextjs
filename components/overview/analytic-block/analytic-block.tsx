@@ -1,10 +1,8 @@
-import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Chip, ChipProps } from "@heroui/chip";
 import clsx from "clsx";
 import { Tooltip } from "@heroui/tooltip";
 
-import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
 export interface AnalyticBlockProps {
 	labelIcon: React.ReactNode;
