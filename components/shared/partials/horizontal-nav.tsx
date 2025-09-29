@@ -8,6 +8,8 @@ import { useState } from "react";
 import { Navbar, NavbarContent, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/navbar";
 import Image from "next/image";
 
+import packageJson from "../../../package.json";
+
 import ICONS from "@/configs/icons";
 import useScreenSize from "@/hooks/useScreenSize";
 import { BREAK_POINT } from "@/configs/break-point";
@@ -66,6 +68,9 @@ export default function HorizontalNav() {
 								</Button>
 							</NavbarMenuItem>
 						))}
+						<p className="w-full text-center absolute left-0 bottom-8 text-xs text-gray-500">
+							v{packageJson.version}
+						</p>
 					</NavbarMenu>
 				</Navbar>
 			</div>

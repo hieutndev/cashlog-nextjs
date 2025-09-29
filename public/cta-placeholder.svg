@@ -1,0 +1,32 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CTA placeholder">
++  <rect width="1200" height="800" rx="24" fill="#EEF2FF"/>
++  <rect x="72" y="72" width="1056" height="656" rx="20" fill="white"/>
++  <!-- small header -->
++  <rect x="112" y="112" width="400" height="28" rx="6" fill="#EEF2FF"/>
++  <rect x="112" y="156" width="160" height="160" rx="12" fill="#E6EEFF"/>
++  <!-- chart blocks -->
++  <g transform="translate(320,160)">
++    <rect x="0" y="20" width="48" height="120" rx="8" fill="#C7D2FE"/>
++    <rect x="64" y="0" width="48" height="140" rx="8" fill="#A78BFA"/>
++    <rect x="128" y="40" width="48" height="100" rx="8" fill="#7C3AED"/>
++    <rect x="192" y="10" width="48" height="130" rx="8" fill="#60A5FA"/>
++    <rect x="256" y="60" width="48" height="80" rx="8" fill="#A5B4FC"/>
++  </g>
++  <!-- small card -->
++  <rect x="112" y="340" width="320" height="120" rx="12" fill="#F8FAFF"/>
++  <circle cx="160" cy="400" r="28" fill="#C7D2FE"/>
++  <rect x="200" y="380" width="160" height="12" rx="6" fill="#E6EEFF"/>
++  <rect x="200" y="404" width="120" height="10" rx="5" fill="#EEF2FF"/>
++
++  <!-- floating small preview to mimic the design in the attachment -->
++  <g transform="translate(520,360) rotate(-6)">
++    <rect x="0" y="0" width="360" height="220" rx="16" fill="#fff" stroke="#F1F5F9"/>
++    <rect x="20" y="20" width="320" height="8" rx="4" fill="#EEF2FF"/>
++    <rect x="20" y="44" width="180" height="22" rx="6" fill="#EEF2FF"/>
++    <rect x="20" y="80" width="300" height="12" rx="6" fill="#F8FAFF"/>
++    <g transform="translate(40,110)">
++      <rect x="0" y="0" width="28" height="28" rx="6" fill="#C7D2FE"/>
++      <rect x="40" y="2" width="220" height="22" rx="6" fill="#EEF2FF"/>
++    </g>
++  </g>
++</svg>

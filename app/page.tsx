@@ -1,36 +1,23 @@
 "use client";
 
-import { Spinner } from "@heroui/spinner";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
-import Container from "@/components/shared/container/container";
-import { useAuth } from "@/components/providers/auth-provider";
+import CTASection from "@/components/landing/cta-section";
+import LandingFooter from "@/components/landing/landing-footer";
+import HeroSection from "@/components/landing/hero-section";
+import LandingNavbar from "@/components/landing/landing-navbar";
+import ReviewsSection from "@/components/landing/reviews-section";
+import StatisticsSection from "@/components/landing/statistics-section";
+import WhyChooseSection from "@/components/landing/why-choose-section";
 
 export default function AppIndexPage() {
-	const { isLoggedIn, detecting } = useAuth();
-
-	const router = useRouter();
-
-	useEffect(() => {
-		if (!detecting) {
-			if (isLoggedIn) {
-				router.push("/overview");
-			} else {
-				router.push("/sign-in");
-			}
-		}
-	}, [isLoggedIn, detecting]);
-
 	return (
-		isLoggedIn && (
-			<Container
-				shadow
-				className={"w-full h-full flex justify-center items-center rounded-2xl"}
-				orientation={"vertical"}
-			>
-				<Spinner />
-			</Container>
-		)
+		<div className="min-h-screen bg-white">
+			<LandingNavbar />
+			<HeroSection />
+			<StatisticsSection />
+			<WhyChooseSection />
+			<ReviewsSection />
+			<CTASection />
+			<LandingFooter />
+		</div>
 	);
 }

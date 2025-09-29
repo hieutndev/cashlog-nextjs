@@ -18,11 +18,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 	useEffect(() => {
 		if (!detecting && !isLoggedIn) {
-			if (!SITE_CONFIG.nonAuthUrls.includes(pathname)) {
+			if (!SITE_CONFIG.NON_AUTH_URLS.includes(pathname)) {
 				return router.push("/sign-in");
 			}
 		} else if (!detecting && isLoggedIn) {
-			if (SITE_CONFIG.nonAuthUrls.includes(pathname)) {
+			if (SITE_CONFIG.NON_AUTH_URLS.includes(pathname)) {
 				return router.push("/");
 			}
 		}
@@ -31,6 +31,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 	if (!isLoggedIn) {
 		return <NonAuthLayout>{children}</NonAuthLayout>;
 	} else {
+		if (SITE_CONFIG.NON_AUTH_URLS.includes(pathname)) {
+			return <NonAuthLayout>{children}</NonAuthLayout>;
+		}
+
 		return <AuthLayout>{children}</AuthLayout>;
 	}
 }

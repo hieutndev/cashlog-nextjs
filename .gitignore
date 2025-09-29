@@ -41,3 +41,5 @@ next-env.d.ts
 
 # image ignore
 public/8f61bb173063783.6489de1f9e67a.png
+.vscode
+WARP.md

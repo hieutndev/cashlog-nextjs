@@ -32,7 +32,7 @@ export const SITE_CONFIG = {
 			icon: ICONS.SETTING.LG,
 		},
 	],
-	nonAuthUrls: ["/sign-in", "/sign-up", "/forgot-password"],
+	NON_AUTH_URLS: ["/sign-in", "/sign-up", "/forgot-password", "/"],
 	CURRENCY_STRING: "đ"
 };
 
