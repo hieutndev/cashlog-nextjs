@@ -69,7 +69,7 @@ export default function HorizontalNav() {
 								</Button>
 							</NavbarMenuItem>
 						))}
-						<p className="w-full text-center absolute left-0  bottom-8 text-xs text-gray-500">
+						<p className="w-full text-center absolute left-0 bottom-8 text-xs text-gray-500">
 							v{packageJson.version}
 						</p>
 					</NavbarMenu>

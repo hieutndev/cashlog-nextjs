@@ -1,42 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { hasCookie } from "cookies-next";
+import { usePathname } from "next/navigation";
 
 import NonAuthLayout from "./nonauth-layout";
 import AuthLayout from "./auth-layout";
 
 import { SITE_CONFIG } from "@/configs/site-config";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-	const router = useRouter();
 	const pathname = usePathname();
 
-	const isNonAuthRoute = SITE_CONFIG.NON_AUTH_URLS.includes(pathname);
+	const { isLoggedIn } = useAuth();
 
-	useEffect(() => {
-		const checkAuthAndRedirect = async () => {
-			const hasRefreshToken = await hasCookie("refresh_token");
-
-			if (isNonAuthRoute) {
-				if (pathname === "/sign-in" && hasRefreshToken) {
-					router.push("/overview");
-				}
-			} else {
-				if (!hasRefreshToken) {
-					router.push("/sign-in");
-				}
-			}
-		};
-
-		checkAuthAndRedirect();
-	}, [pathname, isNonAuthRoute, router]);
-
-	// Choose layout based on route type
-	if (isNonAuthRoute) {
+	if (!isLoggedIn) {
 		return <NonAuthLayout>{children}</NonAuthLayout>;
 	} else {
+		if (SITE_CONFIG.NON_AUTH_URLS.includes(pathname)) {
+			return <NonAuthLayout>{children}</NonAuthLayout>;
+		}
+
 		return <AuthLayout>{children}</AuthLayout>;
 	}
 }
