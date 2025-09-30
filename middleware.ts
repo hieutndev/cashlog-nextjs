@@ -16,34 +16,23 @@ const getCorsHeaders = (): Headers => {
     headers.set('Access-Control-Max-Age', '86400');
     headers.set('Access-Control-Allow-Credentials', 'false');
 
-
     return headers;
 };
 
 export const middleware = async (request: NextRequest) => {
     const corsHeaders = getCorsHeaders();
 
-    // --- 1. Xử lý OPTIONS (Preflight Request) ---
-    // Đây là bước quan trọng nhất đối với lỗi bạn đang gặp.
+    // Handle preflight OPTIONS requests
     if (request.method === 'OPTIONS') {
-        // Chỉ trả về 204 nếu origin được phép (nghĩa là corsHeaders có Access-Control-Allow-Origin)
-        if (corsHeaders.has('Access-Control-Allow-Origin')) {
-            return new Response(null, {
-                status: 204, // 204 No Content là phản hồi thành công cho Preflight
-                headers: corsHeaders,
-            });
-        }
-
-        // Nếu không được phép, trả về lỗi 403 để trình duyệt không gọi request chính
-        return new Response(JSON.stringify({ message: "Origin not allowed by CORS policy" }), {
-            status: 403,
+        return new Response(null, {
+            status: 204,
             headers: corsHeaders,
         });
     }
 
-    // --- 2. Logic Xác thực (Chỉ chạy sau khi OPTIONS đã được xử lý) ---
+    // --- Authentication Logic (Only runs after OPTIONS is handled) ---
 
-    // Hàm helper để tạo phản hồi lỗi kèm theo header CORS
+    // Helper function to create error response with CORS headers
     const createErrorResponse = (message: string, status: number) => {
         const errorResponse = NextResponse.json(
             {
@@ -53,18 +42,13 @@ export const middleware = async (request: NextRequest) => {
             { status: status }
         );
 
-        // Áp dụng CORS headers vào response lỗi
+        // Apply CORS headers to error response
         corsHeaders.forEach((value, key) => {
             errorResponse.headers.set(key, value);
         });
 
         return errorResponse;
     };
-
-    // Nếu request không phải OPTIONS và origin không được phép, chặn ngay
-    if (!corsHeaders.has('Access-Control-Allow-Origin')) {
-        return createErrorResponse("Origin not allowed by CORS policy", 403);
-    }
 
     const authHeader = request.headers.get("Authorization");
 
@@ -83,15 +67,15 @@ export const middleware = async (request: NextRequest) => {
     let user: JWTPayload & { user_id?: string | number };
 
     try {
-        // Lưu ý: Trong production, bạn NÊN sử dụng `jwtVerify` để kiểm tra chữ ký token.
+        // Note: In production, you should use `jwtVerify` to verify the token signature.
         user = decodeJwt(token);
     } catch {
         return createErrorResponse("Invalid or malformed token", 401);
     }
 
-    // --- 3. Thành công: Gắn thông tin người dùng và áp dụng CORS headers ---
+    // --- Success: Attach user information and apply CORS headers ---
 
-    // Gắn user ID vào header của request để các Route Handler có thể truy cập
+    // Attach user ID to request headers so Route Handlers can access it
     const modifiedRequestHeaders = new Headers(request.headers);
 
     if (user.user_id) {
@@ -104,7 +88,7 @@ export const middleware = async (request: NextRequest) => {
         },
     });
 
-    // Áp dụng CORS headers vào phản hồi thành công trước khi gửi về client
+    // Apply CORS headers to successful response before sending to client
     corsHeaders.forEach((value, key) => {
         finalResponse.headers.set(key, value);
     });
@@ -113,7 +97,7 @@ export const middleware = async (request: NextRequest) => {
 };
 
 export const config = {
-    // Đảm bảo chỉ áp dụng cho các API Routes cần xác thực
+    // Apply only to API Routes that need authentication
     matcher: [
         "/api/cards/:path*",
         "/api/transactions/:path*",
