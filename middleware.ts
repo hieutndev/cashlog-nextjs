@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decodeJwt, type JWTPayload } from "jose";
 
+// CẬP NHẬT: Danh sách Origin phải bao gồm subdomain 'cashlog' như bạn đang sử dụng.
 const ALLOWED_ORIGINS = [
-    'https://hieutndev.com',
-    'https://hieutn.info.vn',
-    // Thêm http://localhost:3000 để dễ dàng phát triển (tùy chọn)
+    'https://cashlog.hieutndev.com', 
+    'https://cashlog.hieutn.info.vn',
 ];
 
 /**
@@ -14,11 +14,13 @@ const ALLOWED_ORIGINS = [
  */
 const getCorsHeaders = (origin: string): Headers => {
     const headers = new Headers();
+    // Kiểm tra chính xác origin, hoặc cho phép nếu là môi trường phát triển
     const isAllowed = ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === 'development';
 
-    if (isAllowed) {
+    if (isAllowed && origin) {
         // Chỉ cho phép Origin cụ thể để đảm bảo Access-Control-Allow-Credentials hoạt động
-        headers.set('Access-Control-Allow-Origin', origin || '*');
+        // KHÔNG sử dụng '*' nếu Access-Control-Allow-Credentials là 'true'
+        headers.set('Access-Control-Allow-Origin', origin); 
         headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
         headers.set('Access-Control-Max-Age', '86400'); // Cache Preflight response trong 24 giờ
@@ -33,12 +35,21 @@ export const middleware = async (request: NextRequest) => {
     const corsHeaders = getCorsHeaders(origin);
 
     // --- 1. Xử lý OPTIONS (Preflight Request) ---
-    // Trả về 204 No Content kèm theo header CORS, bỏ qua logic xác thực
+    // Đây là bước quan trọng nhất đối với lỗi bạn đang gặp.
     if (request.method === 'OPTIONS') {
-        return new Response(null, {
-            status: 204,
-            headers: corsHeaders,
-        });
+        // Chỉ trả về 204 nếu origin được phép (nghĩa là corsHeaders có Access-Control-Allow-Origin)
+        if (corsHeaders.has('Access-Control-Allow-Origin')) {
+            return new Response(null, {
+                status: 204, // 204 No Content là phản hồi thành công cho Preflight
+                headers: corsHeaders,
+            });
+        }
+        
+        // Nếu không được phép, trả về lỗi 403 để trình duyệt không gọi request chính
+         return new Response(JSON.stringify({ message: "Origin not allowed by CORS policy" }), {
+             status: 403,
+             headers: corsHeaders,
+         });
     }
 
     // --- 2. Logic Xác thực (Chỉ chạy sau khi OPTIONS đã được xử lý) ---
@@ -60,6 +71,11 @@ export const middleware = async (request: NextRequest) => {
 
         return errorResponse;
     };
+
+    // Nếu request không phải OPTIONS và origin không được phép, chặn ngay
+    if (!corsHeaders.has('Access-Control-Allow-Origin')) {
+         return createErrorResponse("Origin not allowed by CORS policy", 403);
+    }
 
     const authHeader = request.headers.get("Authorization");
 
