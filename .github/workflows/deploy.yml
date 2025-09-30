@@ -53,12 +53,12 @@ jobs:
                       fi
 
                       # Build project
-                      pm2 stop cashlog || exit 1
+                      pm2 stop 0 || exit 1
                       cd cashlog-nextjs
                       git checkout main
                       git pull origin main
                       yarn install || exit 1
                       yarn build || exit 1
-                      pm2 restart cashlog
+                      pm2 restart 0
                       echo "Build completed successfully!"
                       exit 0
