@@ -15,8 +15,8 @@ export async function GET() {
         // total transactions (transactions_new table)
         const transactions = await dbQuery<any[]>(`SELECT COUNT(*) as total FROM transactions_new;`);
 
-        // total forecasts (main forecasts table)
-        const forecasts = await dbQuery<any[]>(`SELECT COUNT(*) as total FROM forecasts;`);
+        // total forecasts (main recurrings table)
+        const forecasts = await dbQuery<any[]>(`SELECT COUNT(*) as total FROM recurrings;`);
 
         return Response.json({
             total_users: users && users[0] ? Number(users[0].total) : 0,

@@ -34,11 +34,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 			key: "^/settings/categories",
 		},
 		{
-			label: ["Settings", "Forecasts"],
+			label: ["Settings", "Recurring"],
 			key: "^/settings/forecasts",
 		},
 		{
-			label: ["Settings", "Forecasts", "New Forecast"],
+			label: ["Settings", "Recurring", "New Recurring"],
 			key: "^/settings/forecasts/new",
 			customButton: [
 				{
@@ -52,7 +52,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 			],
 		},
 		{
-			label: ["Settings", "Forecasts", "Forecast Details"],
+			label: ["Settings", "Recurring", "Recurring Details"],
 			key: "^/settings/forecasts/[^[/]+",
 			customButton: [
 				{

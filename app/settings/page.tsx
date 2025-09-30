@@ -131,7 +131,7 @@ export default function SettingsPage() {
 											</li>
 											<li className="flex items-center gap-2">
 												<span className="w-1 h-1 bg-danger-600 rounded-full" />
-												All forecasts and forecast details
+												All recurrings and recurring details
 											</li>
 										</ul>
 									</div>

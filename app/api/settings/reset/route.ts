@@ -22,17 +22,17 @@ const resetUserData = async (userId: string | number) => {
             WHERE c.user_id = ?
         `, [userId]);
 
-        // Delete all forecast details (through forecasts and cards)
+        // Delete all recurring details (through recurrings and cards)
         await dbQuery<ResultSetHeader>(`
-            DELETE fd FROM forecast_details fd
-            INNER JOIN forecasts f ON fd.forecast_id = f.forecast_id
+            DELETE fd FROM recurring_details fd
+            INNER JOIN recurrings f ON fd.forecast_id = f.forecast_id
             INNER JOIN cards c ON f.card_id = c.card_id
             WHERE c.user_id = ?
         `, [userId]);
 
-        // Delete all forecasts for the user (through cards)
+        // Delete all recurrings for the user (through cards)
         await dbQuery<ResultSetHeader>(`
-            DELETE f FROM forecasts f
+            DELETE f FROM recurrings f
             INNER JOIN cards c ON f.card_id = c.card_id
             WHERE c.user_id = ?
         `, [userId]);

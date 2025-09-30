@@ -20,15 +20,15 @@ export const QUERY_STRING = {
                            bank_code  = ?
                        WHERE card_id = ?;`,
 
-	CREATE_NEW_FORECAST: `INSERT INTO forecasts(forecast_name, amount, direction, card_id, forecast_date, repeat_times,
+	CREATE_NEW_FORECAST: `INSERT INTO recurrings(forecast_name, amount, direction, card_id, forecast_date, repeat_times,
                                                 repeat_type)
                           VALUES (?, ?, ?, ?, ?, ?, ?);`,
-	CREATE_NEW_FORECAST_DETAIL: `INSERT INTO forecast_details(transaction_amount, description,
+	CREATE_NEW_FORECAST_DETAIL: `INSERT INTO recurring_details(transaction_amount, description,
                                                               forecast_id, transaction_date)
                                  VALUES (?, ?, ?, ?);`,
-	GET_ALL_FORECASTS: `SELECT forecasts.*, cards.card_name, cards.bank_code
-                        FROM forecasts
-                                 INNER JOIN cards ON forecasts.card_id = cards.card_id;`,
+	GET_ALL_FORECASTS: `SELECT recurrings.*, cards.card_name, cards.bank_code
+                        FROM recurrings
+                                 INNER JOIN cards ON recurrings.card_id = cards.card_id;`,
 	GET_ALL_FORECASTS_OF_USER: `
         SELECT f.forecast_id,
                f.forecast_name,
@@ -45,77 +45,77 @@ export const QUERY_STRING = {
                c.card_color,
                c.bank_code
 
-        FROM forecasts f
+        FROM recurrings f
                  JOIN
              cards c ON f.card_id = c.card_id
         WHERE c.user_id = ?;
     `,
-	GET_FORECAST_BY_ID: `SELECT forecasts.*, cards.card_name, cards.bank_code
-                         FROM forecasts
-                                  INNER JOIN cards ON forecasts.card_id = cards.card_id
-                         WHERE forecasts.forecast_id = ?;`,
-	GET_FULL_FORECAST_DETAILS: `SELECT forecasts.forecast_id,
-                                       forecasts.forecast_name,
-                                       forecasts.amount,
-                                       forecasts.direction,
-                                       forecasts.forecast_date,
-                                       forecast_details.transaction_id,
-                                       forecast_details.transaction_amount,
-                                       forecast_details.description,
-                                       forecast_details.transaction_date,
+	GET_FORECAST_BY_ID: `SELECT recurrings.*, cards.card_name, cards.bank_code
+                         FROM recurrings
+                                  INNER JOIN cards ON recurrings.card_id = cards.card_id
+                         WHERE recurrings.forecast_id = ?;`,
+	GET_FULL_FORECAST_DETAILS: `SELECT recurrings.forecast_id,
+                                       recurrings.forecast_name,
+                                       recurrings.amount,
+                                       recurrings.direction,
+                                       recurrings.forecast_date,
+                                       recurring_details.transaction_id,
+                                       recurring_details.transaction_amount,
+                                       recurring_details.description,
+                                       recurring_details.transaction_date,
                                        cards.card_name,
                                        cards.card_balance,
                                        cards.card_color,
                                        cards.bank_code,
                                        cards.card_id
-                                FROM forecasts
+                                FROM recurrings
                                          INNER JOIN
-                                     forecast_details
+                                     recurring_details
                                      ON
-                                         forecasts.forecast_id = forecast_details.forecast_id
+                                         recurrings.forecast_id = recurring_details.forecast_id
                                          INNER JOIN
                                      cards
                                      ON
-                                         forecasts.card_id = cards.card_id;`,
+                                         recurrings.card_id = cards.card_id;`,
 	GET_FULL_FORECAST_DETAILS_BY_FORECAST_ID: `SELECT *
-                                               FROM forecast_details
+                                               FROM recurring_details
                                                WHERE forecast_id = ?;`,
-	GET_FULL_FORECAST_DETAILS_BY_CARD_ID: `SELECT forecasts.forecast_id,
-                                                  forecasts.forecast_name,
-                                                  forecasts.amount,
-                                                  forecasts.direction,
-                                                  forecasts.forecast_date,
-                                                  forecasts.repeat_times,
-                                                  forecasts.repeat_type,
-                                                  forecast_details.transaction_id,
-                                                  forecast_details.transaction_amount,
-                                                  forecast_details.description,
-                                                  forecast_details.transaction_date,
+	GET_FULL_FORECAST_DETAILS_BY_CARD_ID: `SELECT recurrings.forecast_id,
+                                                  recurrings.forecast_name,
+                                                  recurrings.amount,
+                                                  recurrings.direction,
+                                                  recurrings.forecast_date,
+                                                  recurrings.repeat_times,
+                                                  recurrings.repeat_type,
+                                                  recurring_details.transaction_id,
+                                                  recurring_details.transaction_amount,
+                                                  recurring_details.description,
+                                                  recurring_details.transaction_date,
                                                   cards.card_id,
                                                   cards.card_name,
                                                   cards.card_balance,
                                                   cards.card_color,
                                                   cards.bank_code
-                                           FROM forecasts
+                                           FROM recurrings
                                                     INNER JOIN
-                                                forecast_details
+                                                recurring_details
                                                 ON
-                                                    forecasts.forecast_id = forecast_details.forecast_id
+                                                    recurrings.forecast_id = recurring_details.forecast_id
                                                     INNER JOIN
                                                 cards
                                                 ON
-                                                    forecasts.card_id = cards.card_id
+                                                    recurrings.card_id = cards.card_id
                                            WHERE cards.card_id = ?;`,
 	DELETE_FORECAST: `DELETE
-                      FROM forecast_details
-                      where forecast_details.forecast_id = ?;
+                      FROM recurring_details
+                      where recurring_details.forecast_id = ?;
     DELETE
-    from forecasts
+    from recurrings
     where forecast_id = ?;`,
 	DELETE_FORECAST_TRANSACTION: `DELETE
-                                  FROM forecast_details
-                                  where forecast_details.forecast_id = ?`,
-	UPDATE_FORECAST: `UPDATE forecasts
+                                  FROM recurring_details
+                                  where recurring_details.forecast_id = ?`,
+	UPDATE_FORECAST: `UPDATE recurrings
                       SET forecast_name = ?,
                           amount        = ?,
                           direction     = ?,
