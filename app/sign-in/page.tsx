@@ -53,12 +53,14 @@ export default function SignInPage() {
 		if (signInResponse && signInResponse.results) {
 			console.log("change router /");
 
-			router.push("/overview");
-
+			// set auth cookies first so server and other code can read them
 			setCookie("access_token", signInResponse.results.access_token, { maxAge: 10, path: "/" });
 			setCookie("refresh_token", signInResponse.results.refresh_token, { maxAge: 60 * 60 * 24, path: "/" });
 			setCookie("email", signInResponse.results.email, { maxAge: 60 * 60 * 24, path: "/" });
 			setCookie("username", signInResponse.results.username, { maxAge: 60 * 60 * 24, path: "/" });
+
+			// navigate after provider updated
+			router.push("/overview");
 		}
 
 		if (signInError) {

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { hasCookie } from 'cookies-next';
+import { useReactiveCookiesNext } from 'cookies-next';
+
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -10,23 +11,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
     isLoggedIn: false,
-    detecting: true,
+    detecting: true
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [detecting, setDetecting] = useState(true);
 
-    useEffect(() => {
-        const checkAuthStatus = async () => {
-            const hasRefreshToken = await hasCookie('refresh_token');
+    // useReactiveCookiesNext provides reactive cookie helpers (getCookie, setCookie)
+    const { getCookie } = useReactiveCookiesNext();
 
-            setIsLoggedIn(hasRefreshToken);
+    useEffect(() => {
+        const check = () => {
+            const refresh = getCookie('refresh_token');
+
+            setIsLoggedIn(!!refresh);
             setDetecting(false);
         };
 
-        checkAuthStatus();
-    }, []);
+        // initial check
+        check();
+
+        // poll as a fallback to detect cookie changes (CookiesNextProvider also polls by default)
+        const interval = setInterval(check, 500);
+
+        return () => clearInterval(interval);
+    }, [getCookie]);
+
 
     return (
         <AuthContext.Provider value={{ isLoggedIn, detecting }}>
