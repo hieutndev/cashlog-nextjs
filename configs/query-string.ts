@@ -122,7 +122,7 @@ export const QUERY_STRING = {
                           card_id       = ?,
                           forecast_date = ?,
                           repeat_times  = ?,
-                          repeat_type   = ?,
+                          repeat_type   = ?
                           WHERE forecast_id = ?;`,
 	GET_TOTAL_BALANCE_OF_USER: `select sum(card_balance) as total_balance
                                 from cards
