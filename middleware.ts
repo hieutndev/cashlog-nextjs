@@ -1,63 +1,114 @@
-// write middleware to check access_token in Authorization header
-"use server";
-
 import { NextRequest, NextResponse } from "next/server";
-import { decodeJwt } from "jose";
+import { decodeJwt, type JWTPayload } from "jose";
+
+const ALLOWED_ORIGINS = [
+    'https://hieutndev.com',
+    'https://hieutn.info.vn',
+    // Thêm http://localhost:3000 để dễ dàng phát triển (tùy chọn)
+];
+
+/**
+ * Hàm tạo và thiết lập các header CORS cần thiết.
+ * @param origin Origin của request.
+ * @returns Đối tượng Headers đã được cấu hình CORS.
+ */
+const getCorsHeaders = (origin: string): Headers => {
+    const headers = new Headers();
+    const isAllowed = ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === 'development';
+
+    if (isAllowed) {
+        // Chỉ cho phép Origin cụ thể để đảm bảo Access-Control-Allow-Credentials hoạt động
+        headers.set('Access-Control-Allow-Origin', origin || '*');
+        headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        headers.set('Access-Control-Max-Age', '86400'); // Cache Preflight response trong 24 giờ
+        headers.set('Access-Control-Allow-Credentials', 'true');
+    }
+
+    return headers;
+};
 
 export const middleware = async (request: NextRequest) => {
+    const origin = request.headers.get('origin') || '';
+    const corsHeaders = getCorsHeaders(origin);
+
+    // --- 1. Xử lý OPTIONS (Preflight Request) ---
+    // Trả về 204 No Content kèm theo header CORS, bỏ qua logic xác thực
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 204,
+            headers: corsHeaders,
+        });
+    }
+
+    // --- 2. Logic Xác thực (Chỉ chạy sau khi OPTIONS đã được xử lý) ---
+
+    // Hàm helper để tạo phản hồi lỗi kèm theo header CORS
+    const createErrorResponse = (message: string, status: number) => {
+        const errorResponse = NextResponse.json(
+            {
+                status: "failure",
+                message: message,
+            },
+            { status: status }
+        );
+
+        // Áp dụng CORS headers vào response lỗi
+        corsHeaders.forEach((value, key) => {
+            errorResponse.headers.set(key, value);
+        });
+
+        return errorResponse;
+    };
+
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader) {
-        return NextResponse.json(
-            {
-                status: "failure",
-                message: "Missing Authorization header",
-            },
-            { status: 401 }
-        );
+        return createErrorResponse("Missing Authorization header", 401);
     }
 
-    const token = authHeader.split(" ")[1];
+    const parts = authHeader.split(" ");
 
-    if (!token) {
-        return NextResponse.json(
-            {
-                status: "failure",
-                message: "Missing token",
-            },
-            { status: 401 }
-        );
+    // Kiểm tra định dạng Bearer Token
+    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+        return createErrorResponse("Invalid Authorization header format", 401);
     }
 
-    // Verify token using jose library
-
-    let user;
+    const token = parts[1];
+    let user: JWTPayload & { user_id?: string | number };
 
     try {
+        // Lưu ý: Trong production, bạn NÊN sử dụng `jwtVerify` để kiểm tra chữ ký token.
         user = decodeJwt(token);
     } catch {
-        return NextResponse.json(
-            {
-                status: "failure",
-                message: "Invalid token",
-            },
-            { status: 401 }
-        );
+        return createErrorResponse("Invalid or malformed token", 401);
     }
 
-    const responseHeaders = new Headers(request.headers);
+    // --- 3. Thành công: Gắn thông tin người dùng và áp dụng CORS headers ---
 
-    responseHeaders.set("x-user-id", String(user.user_id));
+    // Gắn user ID vào header của request để các Route Handler có thể truy cập
+    const modifiedRequestHeaders = new Headers(request.headers);
 
-    return NextResponse.next({
+    if (user.user_id) {
+        modifiedRequestHeaders.set("x-user-id", String(user.user_id));
+    }
+
+    const finalResponse = NextResponse.next({
         request: {
-            // New request headers
-            headers: responseHeaders,
+            headers: modifiedRequestHeaders,
         },
     });
+
+    // Áp dụng CORS headers vào phản hồi thành công trước khi gửi về client
+    corsHeaders.forEach((value, key) => {
+        finalResponse.headers.set(key, value);
+    });
+
+    return finalResponse;
 };
 
 export const config = {
+    // Đảm bảo chỉ áp dụng cho các API Routes cần xác thực
     matcher: [
         "/api/cards/:path*",
         "/api/transactions/:path*",
