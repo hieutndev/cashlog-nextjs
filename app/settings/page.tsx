@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
-import { useDisclosure } from "@heroui/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 import { Spinner } from "@heroui/spinner";
 import { clsx } from "clsx";
@@ -66,7 +65,6 @@ export default function SettingsPage() {
 				</CardBody>
 			</Card>
 
-			{/* Reset Account Data Card */}
 			<Alert
 				classNames={{
 					mainWrapper: "gap-2",
@@ -89,7 +87,6 @@ export default function SettingsPage() {
 				</Button>
 			</Alert>
 
-			{/* Confirmation Modal */}
 			<Modal
 				backdrop="blur"
 				isOpen={isOpen}
@@ -123,15 +120,15 @@ export default function SettingsPage() {
 											</li>
 											<li className="flex items-center gap-2">
 												<span className="w-1 h-1 bg-danger-600 rounded-full" />
-												All cards and their associated data
+												All cards
 											</li>
 											<li className="flex items-center gap-2">
 												<span className="w-1 h-1 bg-danger-600 rounded-full" />
-												All transaction categories
+												All categories
 											</li>
 											<li className="flex items-center gap-2">
 												<span className="w-1 h-1 bg-danger-600 rounded-full" />
-												All recurrings and recurring details
+												All recurrings
 											</li>
 										</ul>
 									</div>
@@ -157,13 +154,7 @@ export default function SettingsPage() {
 									onPress={handleResetAccount}
 								>
 									{resettingData ? (
-										<>
-											<Spinner
-												color="current"
-												size="sm"
-											/>
-											Resetting...
-										</>
+										"Resetting..."
 									) : (
 										"Yes, Reset All Data"
 									)}

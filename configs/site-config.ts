@@ -22,8 +22,8 @@ export const SITE_CONFIG = {
 			icon: ICONS.TRANSACTIONS.LG,
 		},
 		{
-			label: "Recurring",
-			href: "/recurring",
+			label: "Recurrings",
+			href: "/recurrings",
 			icon: ICONS.FORECAST.XL,
 		},
 		{
@@ -66,8 +66,8 @@ export const SETTING_MENU: TSettingMenu[] = [
 	},
 	{
 		label: ["Settings", "Recurring"],
-		key: "/settings/forecasts",
-		urls: ["^/settings/forecasts", "^/settings/forecasts/new", "^/settings/forecasts/[^/]+"],
+		key: "/settings/recurrings",
+		urls: ["^/settings/recurrings", "^/settings/recurrings/new", "^/settings/recurrings/[^/]+"],
 		icon: ICONS.FORECAST.MD,
 	},
 ];

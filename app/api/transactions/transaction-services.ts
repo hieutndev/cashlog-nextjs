@@ -1,102 +1,82 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { JSONSchemaType } from "ajv";
+import { z } from "zod";
 
 import { REQUIRED_HEADERS, TCrudTransaction, TTransaction } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
-import { validateCardOwnership } from "@/app/api/cards/card-services";
+import { syncAllCardsBalance, validateCardOwnership } from "@/app/api/cards/card-services";
 import { TUser } from "@/types/user";
 import { parseExcelFile, ParseExcelResult } from "@/libs/parseExcelFile";
+import { VALIDATE_MESSAGE } from "@/utils/api/zod-validate-message";
 
 // @ts-ignore
-export const newTransactionSchema: JSONSchemaType<TCrudTransaction> = {
-	type: "object",
-	properties: {
-		amount: { type: "number", minimum: 1 },
-		date: { type: "string", format: "date-time" }, // or just "date" if that's what you expect
-		description: { type: "string" },
-		direction: { type: "string", enum: ["in", "out"] },
-		card_id: { type: "number", minimum: 1 },
-		category_id: { type: "number", nullable: true },
-	},
-	required: ["amount", "date", "direction", "card_id"],
-	additionalProperties: false,
-};
+export const addTransactionPayload = z.object({
+	amount: z.number().int({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO }).min(1),
+	date: z.iso.datetime({ message: VALIDATE_MESSAGE.REQUIRE_ISO_DATE }),
+	description: z.string().nullable().optional(),
+	direction: z.enum(["in", "out"], { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
+	card_id: z.coerce
+		.number({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO })
+		.positive({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO }),
+	category_id: z.coerce
+		.number({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO })
+		.positive({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO })
+		.nullable()
+		.optional()
+});
 
-export const validateNewMultipleTransactionSchema: JSONSchemaType<{ list_transactions: TCrudTransaction[] }> = {
-	type: "object",
-	properties: {
-		list_transactions: {
-			type: "array",
-			items: newTransactionSchema,
-		},
-	},
-	required: ["list_transactions"],
-	additionalProperties: false,
-};
+export const addMultipleTransactionsPayload = z.object({
+	list_transactions: z.array(addTransactionPayload)
+});
 
-export const createNewTransaction = async (
+export const addNewTransaction = async (
 	{ card_id, direction, amount, date, description, category_id }: TCrudTransaction,
 	user_id: TUser["user_id"]
 ) => {
-	// Validate card ownership if userId is provided
-	if (user_id) {
-		await validateCardOwnership(card_id, user_id);
-	}
 
-	let createTransaction: ResultSetHeader | null = null;
+	await validateCardOwnership(card_id, user_id);
 
-	try {
-		createTransaction = await dbQuery<ResultSetHeader>(QUERY_STRING.ADD_TRANSACTION, [
-			amount,
-			formatMYSQLDate(date),
-			description,
-			direction,
-			card_id,
-			category_id ?? null,
-		]);
-	} catch (error: unknown) {
-		throw new ApiError((error as Error).message || "Error in createNewTransaction", 500);
-	}
 
-	if (!createTransaction || createTransaction.affectedRows === 0) {
-		throw new ApiError("Failed to create new transaction", 500);
-	}
+	const new_transaction = await dbQuery<ResultSetHeader>(QUERY_STRING.ADD_TRANSACTION, [
+		amount,
+		formatMYSQLDate(date),
+		description,
+		direction,
+		card_id,
+		category_id ?? null,
+	]);
 
 	await updateCardBalance(card_id, user_id);
 
-	return createTransaction.insertId;
+	return new_transaction.insertId;
+
 };
 
 export const createMultipleTransaction = async (list_transactions: TCrudTransaction[], user_id: TUser["user_id"]) => {
-	try {
-		let successCount = 0;
-		const errors: any[] = [];
-		const promises = list_transactions.map(async (transaction) => {
-			try {
-				await createNewTransaction(transaction, user_id);
-				successCount++;
-			} catch (error: unknown) {
-				errors.push({
-					transaction,
-					error: (error as Error).message || "Error in createMultipleTransaction",
-				});
-			}
-		});
+	let success_count = 0;
+	const errors: any[] = [];
 
-		await Promise.all(promises);
+	const promises = list_transactions.map(async (transaction) => {
+		try {
+			await addNewTransaction(transaction, user_id);
+			success_count++;
+		} catch (error: unknown) {
+			errors.push({
+				transaction,
+				error: (error as Error).message || "Error in createMultipleTransaction",
+			});
+		}
+	});
 
-		return {
-			success_count: successCount,
-			error_count: errors.length,
-			errors,
-		};
-	} catch (error: unknown) {
-		console.log("error in createMultipleTransaction", error);
-		throw error;
-	}
+	await Promise.all(promises);
+
+	return {
+		success_count,
+		error_count: errors.length,
+		errors,
+	};
 };
 
 const getAllTransactionOfCard = async (card_id: number): Promise<TTransaction[]> => {
@@ -140,9 +120,9 @@ export const updateCardBalance = async (card_id: number, user_id: number) => {
 };
 
 export const getAllTransactions = async (
-	userId: string | number, 
-	page: number = 1, 
-	limit: number = 10, 
+	userId: string | number,
+	page: number = 1,
+	limit: number = 10,
 	search: string = '',
 	cardId: string = '',
 	transactionType: string = '',
@@ -174,7 +154,7 @@ export const getAllTransactions = async (
 			)`);
 			const searchTerm = `%${search.trim().toLowerCase()}%`;
 			const searchParams = [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
-			
+
 			queryParams.push(...searchParams);
 			countParams.push(...searchParams);
 		}
@@ -195,7 +175,7 @@ export const getAllTransactions = async (
 
 		// Build ORDER BY clause
 		let orderBy = 'ORDER BY tn.date DESC';
-		
+
 		switch (sortBy) {
 			case 'date_asc':
 				orderBy = 'ORDER BY tn.date ASC';
@@ -270,16 +250,12 @@ export const getAllTransactions = async (
 export const getTransactionById = async (transactionId: TTransaction["transaction_id"], userId: TUser["user_id"]) => {
 	let transactionInfo: TTransaction[] | null = null;
 
-	try {
-		transactionInfo = (await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_TRANSACTION_BY_ID, [
-			transactionId,
-		])) as TTransaction[];
-	} catch (error: unknown) {
-		throw new ApiError((error as Error).message || "Error in getTransactionById", 500);
-	}
+	transactionInfo = (await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_TRANSACTION_BY_ID, [
+		transactionId,
+	])) as TTransaction[];
 
 	if (transactionInfo.length === 0) {
-		return null;
+		throw new ApiError("Transaction not found", 404);
 	}
 
 	if (!(await validateCardOwnership(transactionInfo[0].card_id, userId))) {
@@ -290,33 +266,42 @@ export const getTransactionById = async (transactionId: TTransaction["transactio
 };
 
 export const deleteTransaction = async (transactionId: TTransaction["transaction_id"], userId: TUser["user_id"]) => {
-	let deleteStatus: ResultSetHeader | null = null;
 
-	try {
-		const transactionInfo = await getTransactionById(transactionId, userId);
-
-		if (transactionInfo) {
-			deleteStatus = await dbQuery<ResultSetHeader>(QUERY_STRING.DELETE_TRANSACTION, [transactionId]);
-			await updateCardBalance(transactionInfo?.card_id, userId);
-		}
-	} catch (error: unknown) {
-		console.log("error in deleteTransaction", error);
-		throw new ApiError((error as Error).message || "Error in deleteTransaction", 500);
-	}
-
-	if (!deleteStatus || deleteStatus.affectedRows === 0) {
-		throw new ApiError("Failed to delete transaction", 500);
-	}
-
-	return Response.json(
-		{
-			status: "success",
-			message: "Delete transaction successfully",
-		},
-		{
-			status: 202,
-		}
+	const transactionInfo = await getTransactionById(transactionId, userId);
+	const recurringInstanceCheck = await dbQuery<RowDataPacket[]>(
+		`SELECT instance_id, recurring_id 
+				 FROM recurring_instances 
+				 WHERE transaction_id = ?`,
+		[transactionId]
 	);
+
+	if (recurringInstanceCheck && recurringInstanceCheck.length > 0) {
+		const instance = recurringInstanceCheck[0];
+
+		await dbQuery(
+			`UPDATE recurring_instances
+					 SET status = 'pending', 
+					     transaction_id = NULL, 
+					     actual_date = NULL, 
+					     actual_amount = NULL,
+					     completed_at = NULL,
+					     updated_at = NOW()
+					 WHERE instance_id = ?`,
+			[instance.instance_id]
+		);
+
+		await dbQuery(
+			`INSERT INTO recurring_history (
+						recurring_id, user_id, instance_id, action, reason
+					 ) VALUES (?, ?, ?, 'instance_reset', 'Transaction deleted')`,
+			[instance.recurring_id, userId, instance.instance_id]
+		);
+	}
+
+	await dbQuery<ResultSetHeader>(QUERY_STRING.DELETE_TRANSACTION, [transactionId]);
+	await updateCardBalance(transactionInfo?.card_id, userId);
+
+	return true;
 };
 
 export const updateTransaction = async (
@@ -324,33 +309,38 @@ export const updateTransaction = async (
 	{ date, description, category_id, card_id, direction, amount }: TCrudTransaction,
 	user_id: TUser["user_id"]
 ) => {
-	let updateTransactionStatus: ResultSetHeader | null = null;
 
-	try {
-		updateTransactionStatus = await dbQuery<ResultSetHeader>(QUERY_STRING.UPDATE_TRANSACTION, [
-			amount,
-			formatMYSQLDate(date),
-			description,
-			direction,
-			card_id,
-			category_id,
-			transaction_id,
-		]);
-	} catch (error: unknown) {
-		console.log("🚀 ~ updateTransaction ~ error: ", error);
+	await validateCardOwnership(card_id, user_id);
 
-		throw new ApiError("Error while update transaction", 500);
+	await validateTransactionOwnership(transaction_id, user_id);
+
+	await dbQuery<ResultSetHeader>(QUERY_STRING.UPDATE_TRANSACTION, [
+		amount,
+		formatMYSQLDate(date),
+		description,
+		direction,
+		card_id,
+		category_id,
+		transaction_id,
+	]);
+
+	await syncAllCardsBalance(user_id);
+
+	return true;
+};
+
+export const validateTransactionOwnership = async (
+	transactionId: TTransaction["transaction_id"],
+	userId: TUser["user_id"]
+) => {
+	const transactionInfo = await getTransactionById(transactionId, userId);
+
+	if (!transactionInfo) {
+		throw new ApiError("Transaction not found", 404);
 	}
 
-	if (!updateTransactionStatus || updateTransactionStatus.affectedRows === 0) {
-		console.log("🚀 ~ updateTransaction ~ updateTransactionStatus: ", updateTransactionStatus);
-		throw new ApiError("Failed to update transaction", 500);
-	}
-
-	try {
-		await updateCardBalance(card_id, user_id);
-	} catch (error: unknown) {
-		throw error;
+	if (!(await validateCardOwnership(transactionInfo.card_id, userId))) {
+		throw new ApiError("You do not have permission to access this transaction", 403);
 	}
 
 	return true;
@@ -366,7 +356,7 @@ const getMissingHeaders = (headers: string[]) => {
 	return [];
 };
 
-export const processFile = async (file: File) => {
+export const readXlsxFile = async (file: File) => {
 	// Parse Excel file
 	const result = await parseExcelFile(file, {
 		useFirstRowAsHeader: true,
@@ -379,6 +369,13 @@ export const processFile = async (file: File) => {
 	if (!result.headers || missingHeaders.length > 0) {
 		throw new ApiError(
 			`Missing required headers: ${missingHeaders.join(", ")}. Please ensure the file contains the following headers: ${REQUIRED_HEADERS.join(", ")}.`,
+			404
+		);
+	}
+
+	if (result.headers.length > 6) {
+		throw new ApiError(
+			`Too many columns in the file. Expected ${REQUIRED_HEADERS.length} columns but found ${result.headers.length}. Please ensure the file contains only the required headers: \`${REQUIRED_HEADERS.join("`, `")}\`.`,
 			404
 		);
 	}
@@ -428,8 +425,8 @@ export const processFile = async (file: File) => {
 			});
 		} else if (col === "direction") {
 			console.log(getDataByColumnName(result.data, index).filter((item) => item !== "in" && item !== "out"));
-			
-	
+
+
 			mappedData[col] = getDataByColumnName(result.data, index);
 		} else {
 			mappedData[col] = getDataByColumnName(result.data, index);

@@ -28,7 +28,7 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 			<Image
 				alt="Bank Logo"
 				aria-hidden="true"
-				className="absolute -right-1/4 top-1/2 -translate-y-1/2 h-[125%] w-auto opacity-10 pointer-events-none select-none"
+				className="absolute -right-1/4 top-1/2 -translate-y-1/2 h-[125%] w-auto opacity-25 pointer-events-none select-none"
 				height={1000}
 				priority={false}
 				src={getBankLogo(bankCode, 1)}

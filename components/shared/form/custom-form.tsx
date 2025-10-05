@@ -103,14 +103,14 @@ export default function CustomForm({
 		>
 			{children}
 			<div className="flex gap-2">
-                <Button
+				<Button
 					fullWidth
 					color={"primary"}
 					isDisabled={isLoading || disableSubmitButton}
 					isLoading={isLoading}
 					size={submitButtonSize}
-				type={"submit"}
-				onPress={guardedSubmit}
+					type={"submit"}
+					onPress={guardedSubmit}
 				>
 					{isLoading ? loadingText : submitButtonText}
 				</Button>

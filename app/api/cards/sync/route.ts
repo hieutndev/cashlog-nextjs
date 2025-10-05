@@ -6,19 +6,14 @@ import { TUser } from "@/types/user";
 
 export const GET = async (request: Request) => {
 	try {
-		const userId = getFromHeaders<TUser["user_id"]>(request, "x-user-id", -1);
+		const userId = getFromHeaders<TUser["user_id"]>(request, "x-user-id", 0);
 
 		await syncAllCardsBalance(userId);
 
-		return Response.json(
-			{
-				status: "success",
-				message: "Sync card balance successfully",
-			},
-			{
-				status: 200,
-			}
-		);
+		return Response.json({
+			status: "success",
+			message: "Sync card balance successfully",
+		});
 	} catch (error: unknown) {
 		return handleError(error);
 	}

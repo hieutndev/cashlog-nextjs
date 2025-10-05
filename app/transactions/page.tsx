@@ -13,11 +13,12 @@ import { useDisclosure } from "@heroui/modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
 import { Input } from "@heroui/input";
-import { useFetch } from "hieutndev-toolkit";
-import { useWindowSize } from "hieutndev-toolkit";
+import { useFetch, useWindowSize } from "hieutndev-toolkit";
+import moment from "moment";
 
 import CrudTransactionModal from "./_component/transaction-form-modal";
 
+import { API_ENDPOINT } from "@/configs/api-endpoint";
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
 import { useDebounce } from "@/hooks/useDebounce";
 import ICONS from "@/configs/icons";
@@ -25,7 +26,6 @@ import { TCard } from "@/types/card";
 import { getBankLogo } from "@/configs/bank";
 import { BREAK_POINT } from "@/configs/break-point";
 import { TTransaction, TTransactionWithCardAndCategory } from "@/types/transaction";
-import { formatDate } from "@/utils/date";
 import { sliceText } from "@/utils/string";
 import { SITE_CONFIG } from "@/configs/site-config";
 
@@ -109,7 +109,7 @@ export default function TransactionsPage() {
 			params.set("sortBy", sortSelected);
 		}
 
-		return `/transactions?${params.toString()}`;
+		return `${API_ENDPOINT.TRANSACTIONS.BASE}?${params.toString()}`;
 	}, [currentPage, limit, debouncedSearchQuery, cardSelected, transactionTypeSelected, sortSelected]);
 
 	const {
@@ -166,7 +166,7 @@ export default function TransactionsPage() {
 
 		// Update URL to preserve current state
 		const params = new URLSearchParams(searchParams.toString());
-		
+
 		params.set("page", page.toString());
 
 		if (debouncedSearchQuery.trim()) {
@@ -212,7 +212,7 @@ export default function TransactionsPage() {
 
 	const [listCards, setListCards] = useState<FilterAndSortItem[]>([]);
 
-	const { data: fetchCardResults } = useFetch<IAPIResponse<TCard[]>>("/cards");
+	const { data: fetchCardResults } = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE);
 
 	useEffect(() => {
 		setListCards(
@@ -239,7 +239,7 @@ export default function TransactionsPage() {
 		data: deleteTransactionResults,
 		error: errorDeleteTransaction,
 		fetch: deleteTransaction,
-	} = useFetch<IAPIResponse>(`/transactions?transactionId=${selectedTransaction?.transaction_id ?? -1}`, {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_QUERY(selectedTransaction?.transaction_id ?? ''), {
 		method: "DELETE",
 		skip: true,
 	});
@@ -402,19 +402,17 @@ export default function TransactionsPage() {
 						labelPlacement={"outside"}
 						placeholder={"All Type"}
 						renderValue={(items) => (
-							<div className="flex items-center gap-2">
-								{items.map((item) => (
-									<Chip
-										key={item.key}
-										className={"px-1 capitalize"}
-										color={item.key === "in" ? "success" : "danger"}
-										size={"sm"}
-										variant={"flat"}
-									>
-										{item.rendered}
-									</Chip>
-								))}
-							</div>
+							items.map((item) => (
+								<Chip
+									key={item.key}
+									className={"capitalize"}
+									color={item.key === "in" ? "success" : "danger"}
+									size={"sm"}
+									variant={"flat"}
+								>
+									{item.rendered}
+								</Chip>
+							))
 						)}
 						selectedKeys={[transactionTypeSelected]}
 						variant={"faded"}
@@ -555,7 +553,7 @@ export default function TransactionsPage() {
 											case "date":
 												return (
 													<TableCell className={"min-w-max capitalize text-center"}>
-														{formatDate(getKeyValue(item, columnKey), "onlyDate")}
+														{moment(getKeyValue(item, columnKey)).format("DD/MM/YYYY")}
 													</TableCell>
 												);
 

@@ -1,4 +1,4 @@
-import { ErrorObject } from "ajv";
+import { ZodCustomError } from "@/types/zod";
 
 export type TSizeBase =
   | "sm"
@@ -41,7 +41,7 @@ export type TColor =
   | "neutral"
   | "stone";
 
-export const ListColors: TColor[] = [
+export const LIST_COLORS: TColor[] = [
   "red",
   "orange",
   "amber",
@@ -71,7 +71,7 @@ export interface IAPIResponse<TResponse = any, TError = any> {
   message: string;
   results?: TResponse;
   errors?: TError;
-  validateErrors?: ErrorObject[];
+  validateErrors?: ZodCustomError[];
   pagination?: IPagination;
 }
 

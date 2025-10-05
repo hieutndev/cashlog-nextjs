@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
-import { ErrorObject } from "ajv";
 import { addToast } from "@heroui/toast";
 import { useFetch } from "hieutndev-toolkit";
 
+import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
-import { IAPIResponse, ListColors } from "@/types/global";
-import { TCategory, TNewCategory } from "@/types/category";
+import { IAPIResponse, LIST_COLORS } from "@/types/global";
+import { TCategory, TAddCategoryPayload } from "@/types/category";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 
@@ -21,12 +21,12 @@ interface NewCategoryProps {
 }
 
 export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }: NewCategoryProps) {
-	const [categoryForm, setCategoryForm] = useState<TNewCategory>({
+	const [categoryForm, setCategoryForm] = useState<TAddCategoryPayload>({
 		category_name: "",
 		color: "red",
 	});
 
-	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 
 	const resetForm = () => {
 		setCategoryForm({
@@ -47,7 +47,7 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 
 	const {
 		data: formActionResult,
-		// loading: formActionLoading,
+		loading: formActionLoading,
 		error: formActionError,
 		fetch: formAction,
 	} = useFetch<IAPIResponse>(getActionRoute(action), {
@@ -107,8 +107,9 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 		<CustomForm
 			className={"flex flex-col gap-4"}
 			formId={"addNewCategory"}
-			submitButtonSize={"lg"}
-			submitButtonText={action === "add" ? "Create new Category" : "Update Category"}
+			isLoading={formActionLoading}
+			loadingText={action === "add" ? "Adding..." : "Updating..."}
+			submitButtonText={action === "add" ? "Add new Category" : "Update Category"}
 			onSubmit={formAction}
 		>
 			<Input
@@ -123,7 +124,7 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 				value={categoryForm.category_name}
 				variant={"bordered"}
 				onValueChange={(e) =>
-					setForm<TNewCategory>("category_name", e, validateErrors, setValidateErrors, setCategoryForm)
+					setForm<TAddCategoryPayload>("category_name", e, validateErrors, setValidateErrors, setCategoryForm)
 				}
 			/>
 			<RadioGroup
@@ -133,11 +134,11 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 				name={"color"}
 				value={categoryForm.color}
 				onValueChange={(e) =>
-					setForm<TNewCategory>("color", e, validateErrors, setValidateErrors, setCategoryForm)
+					setForm<TAddCategoryPayload>("color", e, validateErrors, setValidateErrors, setCategoryForm)
 				}
 			>
 				<div className={"flex flex-wrap gap-2"}>
-					{ListColors.map((color) => (
+					{LIST_COLORS.map((color) => (
 						<Radio
 							key={color}
 							className={"capitalize"}

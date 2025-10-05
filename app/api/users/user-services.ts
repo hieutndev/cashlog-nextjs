@@ -1,7 +1,7 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import { JSONSchemaType } from 'ajv';
-import { generateUniqueStringServer } from 'hieutndev-toolkit';
+import { z } from 'zod';
 
+import { generateUniqueStringServer } from '@/utils/generate-unique-string';
 import { TSignUp, TSignIn, TUser } from '@/types/user';
 import { dbQuery } from '@/libs/mysql';
 import { QUERY_STRING } from '@/configs/query-string';
@@ -9,27 +9,22 @@ import { comparePassword, hashPassword } from '@/utils/hash-password';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '@/utils/jwt-utils';
 import { ApiError } from '@/types/api-error';
 import { REGEX } from '@/configs/regex';
+import { VALIDATE_MESSAGE } from '@/utils/api/zod-validate-message';
 
-export const signInSchema: JSONSchemaType<TSignIn> = {
-    type: "object",
-    properties: {
-        email: { type: "string", format: "email", minLength: 1 },
-        password: { type: "string", minLength: 1 },
-    },
-    required: ["email", "password"],
-    additionalProperties: false,
-};
+export const signInSchema = z.object({
+    email: z.email({ message: VALIDATE_MESSAGE.INVALID_EMAIL }),
+    password: z.string().min(8, { message: VALIDATE_MESSAGE.WRONG_PASSWORD_LENGTH })
+});
 
-export const signUpSchema: JSONSchemaType<TSignUp> = {
-    type: "object",
-    properties: {
-        email: { type: "string", format: "email", minLength: 1 },
-        password: { type: "string", minLength: 1, pattern: REGEX.PASSWORD },
-        confirmPassword: { type: "string", minLength: 6 },
-    },
-    required: ["email", "password", "confirmPassword"],
-    additionalProperties: false,
-};
+export const signUpSchema = z.object({
+    email: z.email({ message: VALIDATE_MESSAGE.INVALID_EMAIL }),
+    password: z.string({ message: VALIDATE_MESSAGE.MISSING_PASSWORD })
+        .min(8, { message: VALIDATE_MESSAGE.WRONG_PASSWORD_LENGTH })
+        .regex(new RegExp(REGEX.PASSWORD), { message: VALIDATE_MESSAGE.INVALID_PASSWORD }),
+    confirm_password: z.string({ message: VALIDATE_MESSAGE.MISSING_CONFIRM_PASSWORD })
+        .min(8, { message: VALIDATE_MESSAGE.WRONG_PASSWORD_LENGTH })
+        .regex(new RegExp(REGEX.PASSWORD), { message: VALIDATE_MESSAGE.INVALID_PASSWORD })
+});
 
 export const getUserByEmail = async (email: string): Promise<TUser | null> => {
 
@@ -62,7 +57,7 @@ export const getUserById = async (userId: string | number): Promise<TUser | null
 
 };
 
-export const createNewUser = async ({ email, password, confirmPassword }: TSignUp) => {
+export const createNewUser = async ({ email, password, confirm_password }: TSignUp) => {
 
     let existingUser: TUser | null;
 
@@ -76,7 +71,7 @@ export const createNewUser = async ({ email, password, confirmPassword }: TSignU
         throw new ApiError("User already exists", 400);
     }
 
-    if (password !== confirmPassword) {
+    if (password !== confirm_password) {
         throw new ApiError("Passwords do not match", 404);
     }
 
@@ -111,7 +106,7 @@ export const signIn = async ({ email, password }: TSignIn) => {
     }
 
     if (!userInfo) {
-        throw new ApiError("User not found", 404);
+        throw new ApiError("Cannot found any user with email " + email, 404);
     }
 
     if (!await comparePassword(password, userInfo.password)) {

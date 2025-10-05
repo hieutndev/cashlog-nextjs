@@ -1,8 +1,8 @@
-import { ErrorObject } from "ajv";
+import { ZodCustomError } from "@/types/zod";
 
 export const getFieldError = (
-  validateErrors: ErrorObject[],
+  validateErrors: ZodCustomError[],
   fieldName: string
 ) => {
-  return validateErrors.find((error) => error.instancePath === `/${fieldName}`);
+  return validateErrors.find((error) => error.instancePath === `${fieldName}`);
 };

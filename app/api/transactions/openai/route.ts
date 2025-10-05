@@ -1,5 +1,9 @@
 import OpenAI from "openai";
 
+import { handleError } from "../../_helpers/handle-error";
+
+import { ApiError } from "@/types/api-error";
+
 const openAI = new OpenAI({
   baseURL: "https://api.deepseek.com",
   apiKey: process.env.DEEPSEEK_API_KEY
@@ -12,15 +16,7 @@ export const POST = async (request: Request) => {
 
 
     if (!requestBody || !requestBody.message) {
-      return Response.json(
-        {
-          status: "error",
-          message: "Please provide a valid message."
-        },
-        {
-          status: 400
-        }
-      );
+      throw new ApiError("Please provide a valid message.", 400);
     }
 
 
@@ -53,18 +49,9 @@ Now process this text: ${requestBody.message}
       results: completion.choices[0].message.content ? JSON.parse(completion.choices[0].message.content) : null
     });
 
-  } catch (error: any) {
-    console.error("Error processing file upload:", error);
+  } catch (error: unknown) {
+    console.error("Error processing OpenAI request:", error);
 
-    return Response.json(
-      {
-        status: "error",
-        message: "An error occurred while processing your request.",
-        errors: error
-      },
-      {
-        status: 500
-      }
-    );
+    return handleError(error);
   }
 };

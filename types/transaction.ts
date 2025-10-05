@@ -48,7 +48,7 @@ export type TValidateCardsResponse = {
 	exists_cards: string[];
 };
 
-export type TCreateMultipleTransactionsResponse = {
+export type TAddMultipleTransactionsResponse = {
 	success_count: number;
 	error_count: number;
 	errors: {

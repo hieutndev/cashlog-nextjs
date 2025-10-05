@@ -2,25 +2,21 @@
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { createNewCard, deleteCard, getAllCardsOfUser, newCardSchema } from "@/app/api/cards/card-services";
-import { validateRequest } from "@/utils/ajv";
+import { addNewCard, deleteCard, getAllCardsOfUser, newCardPayload } from "@/app/api/cards/card-services";
+import { zodValidate } from "@/utils/zod-validate";
 import { ApiError } from "@/types/api-error";
+import { TUser } from "@/types/user";
 
 export const GET = async (request: Request) => {
   try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
 
-    return Response.json(
-      {
-        status: "success",
-        message: "Retrieved all cards successfully",
-        results: await getAllCardsOfUser(userId)
-      },
-      {
-        status: 200
-      }
-    );
+    return Response.json({
+      status: "success",
+      message: "Retrieved all cards successfully",
+      results: await getAllCardsOfUser(userId)
+    });
   } catch (error: unknown) {
     return handleError(error);
   }
@@ -29,15 +25,13 @@ export const GET = async (request: Request) => {
 export const POST = async (request: Request) => {
   try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
 
     const requestBody = await request.json();
 
+    const { is_valid, errors } = zodValidate(newCardPayload, requestBody);
 
-
-    const { isValid, errors } = validateRequest(newCardSchema, requestBody);
-
-    if (!isValid) {
+    if (!is_valid) {
       return handleValidateError(errors);
     }
 
@@ -45,7 +39,7 @@ export const POST = async (request: Request) => {
       {
         status: "success",
         message: "Created new card successfully",
-        results: await createNewCard(requestBody, userId)
+        results: await addNewCard(requestBody, userId)
       },
       {
         status: 201
@@ -59,26 +53,30 @@ export const POST = async (request: Request) => {
 export const DELETE = async (request: Request) => {
   try {
 
-    const userId = getFromHeaders(request, "x-user-id", '');
+    const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
 
     const url = new URL(request.url);
-    const cardId = url.searchParams.get("cardId");
+    const cardId = url.searchParams.get("card_id");
 
     if (!cardId) {
       return handleError(new ApiError("Card ID is required", 404));
     }
 
-    if (await deleteCard(Number(cardId), userId)) {
+    const deleteStatus = await deleteCard(Number(cardId), userId);
+
+    console.log("🚀 ~ DELETE ~ deleteStatus:", deleteStatus)
+
+    if (deleteStatus) {
       return Response.json(
         {
           status: "success",
           message: "Deleted card successfully"
-        },
-        {
-          status: 200
         }
       );
+    } else {
+      return handleError(new ApiError("Something wrong when deleting the card", 500));
     }
+    
   } catch (error: unknown) {
     return handleError(error);
   }

@@ -1,5 +1,5 @@
-import { ListColors } from "@/types/global";
+import { LIST_COLORS } from "@/types/global";
 
 export const randomCardColor = () => {
-	return ListColors[Math.floor(Math.random() * ListColors.length)];
+	return LIST_COLORS[Math.floor(Math.random() * LIST_COLORS.length)];
 };

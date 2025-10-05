@@ -35,7 +35,7 @@ export default function UploadFileStep({
 		error: uploadFileError,
 		loading: uploadFileLoading,
 		fetch: uploadFile,
-	} = useFetch<IAPIResponse<TImportFileXLSXResponse>>("/transactions/import-from-xlsx", {
+	} = useFetch<IAPIResponse<TImportFileXLSXResponse>>("/transactions/read-xlsx-file", {
 		method: "POST",
 		skip: true,
 		options: {

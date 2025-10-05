@@ -16,11 +16,11 @@ This is a template for creating applications using Next.js 14 (app directory) an
 
 ## How to Use
 
-### Recurring (formerly Forecasts)
+### Recurring Transactions
 
-- Main page: `/recurring` (old `/forecasts` now redirects)
-- Settings: `/settings/forecasts` (management UI unchanged)
-- API: `GET /api/cards/[cardId]/recurring` to fetch upcoming recurring transactions for a card.
+- Main page: `/recurring` - View and manage all recurring transactions
+- Settings: `/settings/recurrings` - Full CRUD interface for recurring transactions
+- API: `/api/recurrings` - RESTful API for recurring transaction management
 
 ### Install dependencies
 

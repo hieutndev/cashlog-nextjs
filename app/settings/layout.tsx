@@ -35,11 +35,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 		},
 		{
 			label: ["Settings", "Recurring"],
-			key: "^/settings/forecasts",
+			key: "^/settings/recurrings",
 		},
 		{
 			label: ["Settings", "Recurring", "New Recurring"],
-			key: "^/settings/forecasts/new",
+			key: "^/settings/recurrings/new",
 			customButton: [
 				{
 					children: "Back",
@@ -47,13 +47,13 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					variant: "solid",
 					size: "lg",
 					startContent: ICONS.BACK.LG,
-					href: "/settings/forecasts",
+					href: "/settings/recurrings",
 				},
 			],
 		},
 		{
 			label: ["Settings", "Recurring", "Recurring Details"],
-			key: "^/settings/forecasts/[^[/]+",
+			key: "^/settings/recurrings/[^[/]+",
 			customButton: [
 				{
 					children: "Back",
@@ -61,7 +61,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					variant: "solid",
 					size: "lg",
 					startContent: ICONS.BACK.LG,
-					href: "/settings/forecasts",
+					href: "/settings/recurrings",
 				},
 			],
 		},

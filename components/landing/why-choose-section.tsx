@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import "chart.js/auto";
 import { Bar } from "react-chartjs-2";
-import { Progress } from "@heroui/react";
+import { Progress } from "@heroui/progress";
 
 import LandingSectionHeader from "./landing-section-header";
 

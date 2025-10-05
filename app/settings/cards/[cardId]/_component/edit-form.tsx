@@ -3,7 +3,6 @@
 import { Input } from "@heroui/input";
 import { useEffect, useState } from "react";
 import { addToast } from "@heroui/toast";
-import { ErrorObject } from "ajv";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { Select, SelectItem } from "@heroui/select";
 import clsx from "clsx";
@@ -14,13 +13,15 @@ import { useFetch } from "hieutndev-toolkit";
 
 import CustomForm from "@/components/shared/form/custom-form";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { IAPIResponse, ListColors, TColor } from "@/types/global";
+import { IAPIResponse, LIST_COLORS, TColor } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
 import { TCard, TUpdateCard } from "@/types/card";
+import { ZodCustomError } from "@/types/zod";
+import RetrievingBlock from "@/components/shared/retrieving-block/retrieving-block";
 
 interface EditCardFormProps {
 	cardId: string;
@@ -35,7 +36,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 		card_color: "red",
 	});
 
-	const [validationErrors, setValidationErrors] = useState<ErrorObject[]>([]);
+	const [validationErrors, setValidationErrors] = useState<ZodCustomError[]>([]);
 
 	const {
 		data: fetchCardInfoResult,
@@ -126,7 +127,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 	return (
 		<div className={"flex flex-col gap-4 lg:col-span-10 col-span-12"}>
 			<div className={"flex items-center justify-between"}>
-				<h3 className={"text-2xl font-semibold"}>Edit Card</h3>
+				<h3 className={"text-2xl font-semibold"}>Update Card</h3>
 				<Button
 					color={"primary"}
 					startContent={ICONS.BACK.MD}
@@ -137,9 +138,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 			</div>
 			<div>
 				{loadingCardInfo || !fetchCardInfoResult ? (
-					<div className={clsx("w-full flex justify-center p-8")}>
-						<Spinner size={"lg"}>Fetching...</Spinner>
-					</div>
+					<RetrievingBlock />
 				) : (
 					<div className={"w-full flex flex-wrap-reverse items-start gap-4 md:flex-nowrap"}>
 						<div
@@ -220,7 +219,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 										)
 									}
 								>
-									{ListColors.map((color) => (
+									{LIST_COLORS.map((color) => (
 										<Radio
 											key={color}
 											className={"capitalize"}

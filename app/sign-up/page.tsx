@@ -1,22 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { Input } from "@heroui/input";
-import { ErrorObject } from "ajv";
 import { useState, useEffect } from "react";
 import { Divider } from "@heroui/divider";
+import { Input } from "@heroui/input";
 import { addToast } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { useFetch } from "hieutndev-toolkit";
-import { useWindowSize } from "hieutndev-toolkit";
+import { useFetch, useWindowSize } from "hieutndev-toolkit";
 
+import { API_ENDPOINT } from "@/configs/api-endpoint";
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { TSignUp } from "@/types/user";
 import { getFieldError } from "@/utils/get-field-error";
 import { BREAK_POINT } from "@/configs/break-point";
+import { ZodCustomError } from "@/types/zod";
 
 export default function SignUpPage() {
 	const router = useRouter();
@@ -28,14 +28,14 @@ export default function SignUpPage() {
 	const [signUpForm, setSignUpForm] = useState<TSignUp>({
 		email: "",
 		password: "",
-		confirmPassword: "",
+		confirm_password: "",
 	});
 	const {
 		data: signUpResponse,
 		error: signUpError,
 		loading: signingUp,
 		fetch: signUp,
-	} = useFetch<IAPIResponse>(`/users/sign-up`, {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.USERS.SIGN_UP, {
 		method: "POST",
 		body: signUpForm,
 		headers: {
@@ -44,7 +44,7 @@ export default function SignUpPage() {
 		skip: true,
 	});
 
-	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const handleSubmit = () => {
@@ -138,17 +138,17 @@ export default function SignUpPage() {
 						/>
 						<Input
 							isRequired
-							errorMessage={getFieldError(validateErrors, "confirmPassword")?.message}
-							isInvalid={!!getFieldError(validateErrors, "confirmPassword")}
+							errorMessage={getFieldError(validateErrors, "confirm_password")?.message}
+							isInvalid={!!getFieldError(validateErrors, "confirm_password")}
 							label={"Confirm Password"}
 							labelPlacement={"outside"}
 							placeholder={"Re-enter your password"}
 							size={"lg"}
 							type={"password"}
-							value={signUpForm.confirmPassword}
+							value={signUpForm.confirm_password}
 							variant={"bordered"}
 							onValueChange={(e) =>
-								setForm("confirmPassword", e, validateErrors, setValidateErrors, setSignUpForm)
+								setForm("confirm_password", e, validateErrors, setValidateErrors, setSignUpForm)
 							}
 						/>
 						{errorMessage && <p className={"text-danger text-sm"}>{errorMessage}</p>}

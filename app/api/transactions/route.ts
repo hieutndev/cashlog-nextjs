@@ -3,24 +3,25 @@ import { NextRequest } from "next/server";
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { validateRequest } from "@/utils/ajv";
+import { zodValidate } from "@/utils/zod-validate";
 import {
-    createNewTransaction,
+    addNewTransaction,
     deleteTransaction,
     getAllTransactions,
-    newTransactionSchema
+    addTransactionPayload
 } from "@/app/api/transactions/transaction-services";
 import { ApiError } from "@/types/api-error";
+import { TUser } from "@/types/user";
 
 export const GET = async (request: NextRequest) => {
     try {
         const userId = getFromHeaders(request, "x-user-id", '');
         const { searchParams } = new URL(request.url);
-        
+
         // Parse pagination parameters with defaults
         const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
         const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '10', 10))); // Cap at 100
-        
+
         // Parse filter parameters
         const search = searchParams.get('search') || '';
         const cardId = searchParams.get('cardId') || '';
@@ -55,17 +56,16 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: Request) => {
     try {
-        const userId = Number(getFromHeaders(request, "x-user-id", -1));
-        const requestBody = await request.json();
+        const user_id = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
+        const body = await request.json();
 
+        const { is_valid, errors } = zodValidate(addTransactionPayload, body);
 
-        const { isValid, errors } = validateRequest(newTransactionSchema, requestBody);
-
-        if (!isValid) {
+        if (!is_valid) {
             return handleValidateError(errors);
         }
 
-        await createNewTransaction(requestBody, userId);
+        await addNewTransaction(body, user_id);
 
         return Response.json({
             status: "success",
@@ -80,9 +80,9 @@ export const POST = async (request: Request) => {
 export const DELETE = async (request: Request) => {
     try {
 
-        const userId = Number(getFromHeaders(request, "x-user-id", 0));
+        const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
         const searchParams = new URL(request.url).searchParams;
-        const transactionId = searchParams.get("transactionId");
+        const transactionId = searchParams.get("transaction_id");
 
         if (!transactionId) {
             return handleError(new ApiError("Transaction ID is required", 404));

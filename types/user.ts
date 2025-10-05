@@ -13,11 +13,11 @@ export type TUser = {
 export type TSignIn = Pick<TUser, "email" | "password">;
 
 export type TSignUp = Pick<TUser, "email" | "password"> & {
-    confirmPassword: string;
+    confirm_password: string;
 };
 
 export type TSignInResponse = {
-    user_id: string;
+    user_id: TUser['user_id'];
     username: string;
     email: string;
     access_token: string;

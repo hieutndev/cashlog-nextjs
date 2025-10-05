@@ -10,7 +10,7 @@ import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 
 import Container from "@/components/shared/container/container";
-import { TCreateMultipleTransactionsResponse, TCrudTransaction, TImportFileXLSXResponse } from "@/types/transaction";
+import { TAddMultipleTransactionsResponse, TCrudTransaction, TImportFileXLSXResponse } from "@/types/transaction";
 import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import { IAPIResponse } from "@/types/global";
@@ -104,8 +104,9 @@ export default function PreviewData({ uploadResult, onCancelImport, onSubmitSucc
 	const {
 		data: createMultipleResult,
 		error: createMultipleError,
+		loading: creatingMultiple,
 		fetch: createMultiple,
-	} = useFetch<IAPIResponse<TCreateMultipleTransactionsResponse>>(`/transactions/create-multiple`, {
+	} = useFetch<IAPIResponse<TAddMultipleTransactionsResponse>>(`/transactions/creates`, {
 		method: "POST",
 		body: {
 			list_transactions: mappedData,
@@ -221,7 +222,7 @@ export default function PreviewData({ uploadResult, onCancelImport, onSubmitSucc
 				<Button
 					className={"min-w-max"}
 					disabled={mappedData.length === 0}
-					isIconOnly={ width < BREAK_POINT.LG}
+					isIconOnly={width < BREAK_POINT.LG}
 					size={"lg"}
 					startContent={ICONS.XMARK.LG}
 					variant={"flat"}
@@ -233,6 +234,7 @@ export default function PreviewData({ uploadResult, onCancelImport, onSubmitSucc
 				<Button
 					fullWidth
 					color={"primary"}
+					isLoading={creatingMultiple}
 					size={"lg"}
 					startContent={ICONS.IMPORT.LG}
 					onPress={() => createMultiple()}

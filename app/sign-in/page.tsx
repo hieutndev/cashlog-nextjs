@@ -2,15 +2,15 @@
 
 import Image from "next/image";
 import { Input } from "@heroui/input";
-import { ErrorObject } from "ajv";
 import { useReactiveCookiesNext } from "cookies-next";
 import { useState, useEffect } from "react";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { useFetch } from "hieutndev-toolkit";
-import { useWindowSize } from "hieutndev-toolkit";
+import { useFetch, useWindowSize } from "hieutndev-toolkit";
 
+import { ZodCustomError } from "@/types/zod";
+import { API_ENDPOINT } from "@/configs/api-endpoint";
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse } from "@/types/global";
 import { TSignIn, TSignInResponse } from "@/types/user";
@@ -32,14 +32,14 @@ export default function SignInPage() {
 
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 
 	const {
 		data: signInResponse,
 		loading: signingIn,
 		error: signInError,
 		fetch: signIn,
-	} = useFetch<IAPIResponse<TSignInResponse>>(`/users/sign-in`, {
+	} = useFetch<IAPIResponse<TSignInResponse>>(API_ENDPOINT.USERS.SIGN_IN, {
 		method: "POST",
 		body: signInForm,
 		skip: true,

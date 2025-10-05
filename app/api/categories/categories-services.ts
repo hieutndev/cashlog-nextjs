@@ -1,38 +1,29 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { JSONSchemaType } from "ajv";
+import { z } from "zod";
 
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
-import { TCategory, TNewCategory } from "@/types/category";
+import { TCategory, TAddCategoryPayload, TUpdateCategoryPayload } from "@/types/category";
 import { ApiError } from "@/types/api-error";
 import { TUser } from "@/types/user";
 import { randomCardColor } from "@/utils/random-color";
+import { VALIDATE_MESSAGE } from "@/utils/api/zod-validate-message";
+import { LIST_COLORS } from "@/types/global";
 
-export const categorySchema: JSONSchemaType<{
-	category_name: string;
-	color: string;
-}> = {
-	type: "object",
-	properties: {
-		category_name: { type: "string", minLength: 3 },
-		color: { type: "string" },
-	},
-	required: ["category_name", "color"],
-	additionalProperties: false,
-};
+export const addCategoryPayload = z.object({
+	category_name: z.string().min(1, { message: VALIDATE_MESSAGE.REQUIRED_VALUE }),
+	color: z.enum(LIST_COLORS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE })
+});
 
-export const createMultiCategoriesSchema: JSONSchemaType<{ category_names: string[] }> = {
-	type: "object",
-	properties: {
-		category_names: {
-			type: "array",
-			items: { type: "string", minLength: 1 },
-			minItems: 1,
-		},
-	},
-	required: ["category_names"],
-	additionalProperties: false,
-};
+export const updateCategoryPayload = addCategoryPayload;
+
+export const createMultipleCategoriesPayload = z.object({
+	category_names: z.array(z.string().min(1)).min(1)
+});
+
+export const categorizeCategoriesPayload = z.object({
+	category_names: z.array(z.string().min(1)).min(1)
+});
 
 export const getAllCategoriesOfUser = async (userId: TUser["user_id"]): Promise<TCategory[]> => {
 	try {
@@ -49,84 +40,68 @@ export const getAllCategoriesOfUser = async (userId: TUser["user_id"]): Promise<
 };
 
 // handle get category by Id
-export const getCategoryById = async (categoryId: string | number, userId?: string | number) => {
-	let categoryInfo: TCategory[] | null = null;
+export const getCategoryById = async (categoryId: TCategory['category_id'], userId: TUser['user_id']) => {
 
-	try {
-		categoryInfo = (await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_CATEGORY_BY_ID, [categoryId])) as TCategory[];
+	const categoryInfo = (await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_CATEGORY_BY_ID, [categoryId])) as TCategory[];
 
-		if (!categoryInfo || categoryInfo.length === 0) {
-			return null;
-		}
-	} catch (error) {
-		throw new ApiError((error as Error).message || "Error in getCategoryById", 500);
+	if (!categoryInfo || categoryInfo.length === 0) {
+		throw new ApiError("Category not found", 404);
 	}
 
-	if (categoryInfo[0].user_id !== userId) {
-		throw new ApiError("You do not have permission to retrieve this category info", 403);
-	}
+	await validateCategoryOwnership(categoryId, userId);
 
 	return categoryInfo[0];
 };
 
-export const createNewCategory = async ({ category_name, color }: TNewCategory, userId: string | number) => {
-	let createStatus: ResultSetHeader | null = null;
+export const validateCategoryOwnership = async (categoryId: TCategory['category_id'], userId: TUser['user_id']) => {
 
-	try {
-		createStatus = await dbQuery(QUERY_STRING.CREATE_NEW_CATEGORY, [category_name, color, userId]);
-	} catch (error: unknown) {
-		throw new ApiError(error instanceof Error ? error.message : "Error in createNewCategory", 500);
+	const categoryInfo = (await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_CATEGORY_BY_ID, [categoryId])) as TCategory[];
+
+	if (!categoryInfo || categoryInfo.length === 0) {
+		throw new ApiError("Category not found", 404);
 	}
 
-	if (!createStatus || createStatus.affectedRows === 0) {
-		throw new ApiError("Failed to create new category", 500);
+	if (Number(categoryInfo[0].user_id) !== Number(userId)) {
+		throw new ApiError("You do not have permission to access this category", 403);
 	}
+
+	return true;
+
+}
+
+export const addNewCategory = async ({ category_name, color }: TAddCategoryPayload, userId: string | number) => {
+	const createStatus = await dbQuery(QUERY_STRING.CREATE_NEW_CATEGORY, [category_name, color, userId]);
 
 	return createStatus.insertId;
 };
 
 export const updateCategory = async (
-	categoryId: string | number,
-	{ category_name, color }: TNewCategory,
-	userId: string | number
+	category_id: TCategory['category_id'],
+	{ category_name, color }: TUpdateCategoryPayload,
+	user_id: TUser['user_id']
 ) => {
-	let updateResult: ResultSetHeader | null = null;
+	await validateCategoryOwnership(category_id, user_id);
 
-	try {
-		updateResult = await dbQuery<ResultSetHeader>(QUERY_STRING.UPDATE_CATEGORY, [
-			category_name,
-			color,
-			categoryId,
-			userId,
-		]);
-	} catch (error: unknown) {
-		throw new ApiError(error instanceof Error ? error.message : "Error in updateCategory", 500);
-	}
-
-	if (!updateResult || updateResult.affectedRows === 0) {
-		throw new ApiError("Failed to update category or category not found", 404);
-	}
+	await dbQuery<ResultSetHeader>(QUERY_STRING.UPDATE_CATEGORY, [
+		category_name,
+		color,
+		category_id,
+		user_id,
+	]);
 
 	return true;
 };
 
-export const deleteCategory = async (categoryId: string | number, userId: string | number) => {
-	let deleteStatus: ResultSetHeader | null = null;
+export const deleteCategory = async (category_id: TCategory['category_id'], user_id: TUser['user_id']) => {
 
-	try {
-		deleteStatus = await dbQuery(QUERY_STRING.REMOVE_CATEGORY, [categoryId, userId]);
-	} catch (error: unknown) {
-		throw new ApiError(error instanceof Error ? error.message : "Error in deleteCategory", 500);
-	}
+	await validateCategoryOwnership(category_id, user_id);
 
-	if (!deleteStatus || deleteStatus.affectedRows === 0) {
-		throw new ApiError("Failed to remove category or category not found", 404);
-	}
+	await dbQuery(QUERY_STRING.REMOVE_CATEGORY, [category_id, user_id]);
 
 	return true;
 };
 
-export const validateCategories = async (category_names: string[], user_id: TUser["user_id"]) => {
+export const categorizeUserCategories = async (category_names: string[], user_id: TUser["user_id"]) => {
 	try {
 		const list_categories_of_user = (await getAllCategoriesOfUser(user_id)).map(
 			({ category_name }) => category_name
@@ -152,41 +127,59 @@ export const validateCategories = async (category_names: string[], user_id: TUse
 	}
 };
 
-const validateCategoryName = async (categoryName: string, userId: TUser["user_id"]): Promise<boolean> => {
+const hasCategory = async (categoryName: string, userId: TUser["user_id"]): Promise<boolean> => {
 	const query = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_CATEGORY_BY_NAME, [categoryName, userId]);
 
-	return query.length === 0;
+	return query.length > 0;
 };
 
 export const createMultipleCategories = async (category_names: string[], user_id: TUser["user_id"]) => {
 	try {
-		let baseQuery: string = "";
-		let baseValues: any[] = [];
-		let createdNew: number = 0;
+		let base_query: string = "";
+		let base_values: any[] = [];
+		let was_created_count: number = 0;
 
-		const willCreate = await Promise.all(
+		const creation_logs: {
+			category_name: string;
+			message: string;
+		}[] = [];
+
+		const should_create = await Promise.all(
 			category_names.map(async (category) => {
-				if (await validateCategoryName(category, user_id)) {
+				if (!await hasCategory(category, user_id)) {
 					return category;
+				} else {
+					creation_logs.push({
+						category_name: category,
+						message: "Already Exists",
+					});
+
+					return null;
 				}
 			})
 		);
 
-		willCreate
+		should_create
 			.filter((_v) => _v)
 			.forEach(async (category) => {
-				baseQuery += QUERY_STRING.CREATE_NEW_CATEGORY;
-				baseValues.push([category, randomCardColor(), user_id]);
-				createdNew++;
+				base_query += QUERY_STRING.CREATE_NEW_CATEGORY;
+				base_values.push([category, randomCardColor(), user_id]);
+				was_created_count++;
+
+				creation_logs.push({
+					category_name: category as string,
+					message: "New",
+				});
 			});
 
-		if (baseQuery) {
-			await dbQuery<ResultSetHeader>(baseQuery, baseValues.flat());
+		if (base_query) {
+			await dbQuery<ResultSetHeader>(base_query, base_values.flat());
 		}
 
 		return {
-			created_new: createdNew,
+			was_created_count,
 			user_categories: await getAllCategoriesOfUser(user_id),
+			creation_logs
 		};
 	} catch (error: unknown) {
 		throw new ApiError(error instanceof Error ? error.message : "Error in createMultipleCategories", 500);

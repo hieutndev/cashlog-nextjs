@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Divider } from "@heroui/react";
+import { Divider } from "@heroui/divider";
 
 import packageJson from "../../package.json";
 

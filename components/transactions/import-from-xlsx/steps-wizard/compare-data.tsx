@@ -65,7 +65,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 		error: validateCategoriesError,
 		loading: validatingCategories,
 		fetch: validateCategories,
-	} = useFetch<IAPIResponse<TValidateCategoriesResponse>>("/categories/validate", {
+	} = useFetch<IAPIResponse<TValidateCategoriesResponse>>("/categories/categorize", {
 		method: "POST",
 		body: {
 			category_names: uploadResult.set_data.set_categories,
@@ -114,7 +114,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 		data: initCardsResult,
 		error: initCardsError,
 		fetch: initCards,
-	} = useFetch<IAPIResponse>("/cards/create-multiple", {
+	} = useFetch<IAPIResponse>("/cards/creates", {
 		method: "POST",
 		body: {
 			card_names: uploadResult.set_data.set_cards,
@@ -128,7 +128,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 		data: initCategoriesResult,
 		error: initCategoriesError,
 		fetch: initCategories,
-	} = useFetch<IAPIResponse>("/categories/create-multiple", {
+	} = useFetch<IAPIResponse>("/categories/creates", {
 		method: "POST",
 		body: {
 			category_names: uploadResult.set_data.set_categories,
@@ -194,7 +194,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 					src={ILLUSTRATION_PATH + "/verified.png"}
 					width={300}
 				/>
-				<div className={"w-full flex flex-col gap-4 justify-center items-center"}>
+				<div className={"w-full flex flex-col gap-8 justify-center items-center"}>
 					<h2 className={"text-2xl font-semibold text-primary"}>Good job!</h2>
 					<div className={"w-full flex flex-col items-center gap-1"}>
 						<p
@@ -212,7 +212,7 @@ export default function CompareData({ uploadResult, onCompareSuccess }: CompareD
 							You can proceed to the next step now.
 						</p>
 					</div>
-					<div className={"w-full flex items-center gap-4"}>
+					<div className={"w-full flex justify-center items-center gap-4"}>
 						<Button
 							isIconOnly={width < BREAK_POINT.LG}
 							size={"lg"}

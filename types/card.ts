@@ -1,3 +1,5 @@
+import { TUser } from "./user";
+
 import { TColor } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 
@@ -7,7 +9,7 @@ export type TCard = {
   card_balance: number;
   bank_code: TBankCode;
   card_color: TColor;
-  user_id: number;
+  user_id: TUser['user_id'];
   created_at: string;
   updated_at: string;
 };

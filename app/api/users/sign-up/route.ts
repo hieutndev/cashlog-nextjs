@@ -3,21 +3,17 @@ import { NextResponse } from "next/server";
 import { createNewUser, signUpSchema } from "../user-services";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
 
-import { validateRequest } from "@/utils/ajv";
+import { zodValidate } from "@/utils/zod-validate";
 
 export const POST = async (request: Request) => {
     try {
         const requestBody = await request.json();
 
+        const { is_valid, errors } = zodValidate(signUpSchema, requestBody);
 
-
-        const { isValid, errors } = validateRequest(signUpSchema, requestBody);
-
-        if (!isValid) {
+        if (!is_valid) {
             return handleValidateError(errors);
         }
-
-
 
         return NextResponse.json({
             status: "success",

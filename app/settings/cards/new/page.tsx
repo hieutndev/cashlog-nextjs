@@ -5,7 +5,6 @@ import { Input } from "@heroui/input";
 import { Radio, RadioGroup } from "@heroui/radio";
 import clsx from "clsx";
 import { Select, SelectItem } from "@heroui/select";
-import { ErrorObject } from "ajv";
 import { addToast } from "@heroui/toast";
 import { Checkbox } from "@heroui/checkbox";
 import { Divider } from "@heroui/divider";
@@ -13,15 +12,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { useFetch } from "hieutndev-toolkit";
 
+import { ZodCustomError } from "@/types/zod";
 import { TCreateNewCard } from "@/types/card";
 import CustomForm from "@/components/shared/form/custom-form";
-import { IAPIResponse, ListColors, TColor } from "@/types/global";
+import { IAPIResponse, LIST_COLORS, TColor } from "@/types/global";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { ListBankCode } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
+import { API_ENDPOINT } from "@/configs/api-endpoint";
 
 export default function NewCardPage() {
 	const router = useRouter();
@@ -33,7 +34,7 @@ export default function NewCardPage() {
 		card_color: "red",
 	});
 
-	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [createMoreCard, setCreateMoreCard] = useState<boolean>(false);
 
 	const {
@@ -41,7 +42,7 @@ export default function NewCardPage() {
 		// loading,
 		error,
 		fetch: createCard,
-	} = useFetch<IAPIResponse>("/cards", {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.CARDS.CREATE_NEW_CARD, {
 		method: "POST",
 		body: newCard,
 		headers: {
@@ -154,7 +155,7 @@ export default function NewCardPage() {
 						<Select
 							isRequired
 							disallowEmptySelection={true}
-							label={"Select Bank"}
+							label={"Bank"}
 							labelPlacement={"outside"}
 							selectedKeys={[newCard.bank_code]}
 							size={"lg"}
@@ -177,7 +178,7 @@ export default function NewCardPage() {
 							value={newCard.card_color}
 							onValueChange={(value) => onChangeValue("card_color", value as TColor)}
 						>
-							{ListColors.map((color) => (
+							{LIST_COLORS.map((color) => (
 								<Radio
 									key={color}
 									className={"capitalize"}

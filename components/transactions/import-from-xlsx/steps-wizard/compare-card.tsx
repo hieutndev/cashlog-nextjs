@@ -27,7 +27,7 @@ export default function CompareCard({
 	isLoading = true,
 }: CompareCardProps) {
 
-	const {width} = useWindowSize();
+	const { width } = useWindowSize();
 
 	return (
 		<Card>
@@ -35,9 +35,9 @@ export default function CompareCard({
 				<h2 className={"w-full text-center text-2xl font-medium text-default-200"}>{title}</h2>
 			</CardHeader>
 			<CardBody className={clsx("", {
-                "p-6 py-12": isLoading,
-                "p-6 pt-0": !isLoading
-            })}>
+				"p-6 py-12": isLoading,
+				"p-6 pt-0": !isLoading
+			})}>
 				{isLoading ? (
 					<Spinner>Validating...</Spinner>
 				) : Array.isArray(missingData) && missingData.length > 0 ? (
@@ -47,7 +47,7 @@ export default function CompareCard({
 						<div className={"w-full lg:w-1/2 flex flex-col gap-4"}>
 							<div className={"flex items-center gap-2 text-success"}>
 								{ICONS.CHECK_CIRCLE.LG}
-								<h4 className={"text-lg font-medium"}>Existing Data</h4>
+								<h4 className={"text-lg font-medium"}>Existed</h4>
 							</div>
 
 							<RenderCompareData
@@ -55,11 +55,11 @@ export default function CompareCard({
 								type="success"
 							/>
 						</div>
-						<Divider orientation={width > BREAK_POINT.LG ? "vertical": "horizontal"} />
+						<Divider orientation={width > BREAK_POINT.LG ? "vertical" : "horizontal"} />
 						<div className={"w-full lg:w-1/2 flex flex-col gap-4"}>
 							<div className={"flex items-center gap-2 text-danger"}>
 								{ICONS.ALERT_CIRCLE.LG}
-								<h4 className={"text-lg font-medium"}>Missing Data</h4>
+								<h4 className={"text-lg font-medium"}>Not Existed</h4>
 							</div>
 							<RenderCompareData
 								data={missingData}

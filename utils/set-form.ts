@@ -1,18 +1,18 @@
-import { ErrorObject } from "ajv";
 import { Dispatch, SetStateAction } from "react";
 
+import { ZodCustomError } from "@/types/zod";
 import { getFieldError } from "@/utils/get-field-error";
 
 export const setForm = <I>(
   key: keyof I,
   value: I[keyof I],
-  validateErrors: ErrorObject[],
-  setValidateErrors: Dispatch<SetStateAction<ErrorObject[]>>,
+  validateErrors: ZodCustomError[],
+  setValidateErrors: Dispatch<SetStateAction<ZodCustomError[]>>,
   setState: Dispatch<SetStateAction<I>>
 ) => {
   if (getFieldError(validateErrors, key as string)) {
     setValidateErrors((prev) =>
-      prev.filter((error) => error.instancePath !== `/${key as string}`)
+      prev.filter((error) => error.instancePath !== `${key as string}`)
     );
   }
 

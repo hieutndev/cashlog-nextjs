@@ -3,13 +3,14 @@ import { NextResponse } from "next/server";
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { categorySchema, createNewCategory, getAllCategoriesOfUser } from "./categories-services";
+import { addCategoryPayload, addNewCategory, getAllCategoriesOfUser } from "./categories-services";
 
-import { validateRequest } from "@/utils/ajv";
+import { zodValidate } from "@/utils/zod-validate";
+import { TUser } from "@/types/user";
 
 export async function GET(request: Request) {
 	try {
-		const userId = getFromHeaders<number>(request, "x-user-id", -1);
+		const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
 
 		return NextResponse.json({
 			status: "success",
@@ -26,9 +27,9 @@ export async function POST(request: Request) {
 		const userId = getFromHeaders(request, "x-user-id", "");
 		const requestBody = await request.json();
 
-		const { isValid, errors } = validateRequest(categorySchema, requestBody);
+		const { is_valid, errors } = zodValidate(addCategoryPayload, requestBody);
 
-		if (!isValid) {
+		if (!is_valid) {
 			return handleValidateError(errors);
 		}
 
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
 			{
 				status: "success",
 				message: "Created new category successfully",
-				results: await createNewCategory(requestBody, userId),
+				results: await addNewCategory(requestBody, userId),
 			},
 			{ status: 201 }
 		);

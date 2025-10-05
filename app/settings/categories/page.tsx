@@ -7,7 +7,7 @@ import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
-import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/modal";
+import { useDisclosure } from "@heroui/modal";
 import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 
@@ -18,6 +18,7 @@ import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import { sliceText } from "@/utils/string";
 import { BREAK_POINT } from "@/configs/break-point";
+import CustomModal from "@/components/shared/custom-modal/custom-modal";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },
@@ -179,7 +180,8 @@ export default function CategoriesPage() {
 															<Button
 																isIconOnly
 																color={"warning"}
-																variant={"ghost"}
+																size={"sm"}
+																variant={"light"}
 																onPress={() => onEdit(item)}
 															>
 																{ICONS.EDIT.MD}
@@ -187,7 +189,8 @@ export default function CategoriesPage() {
 															<Button
 																isIconOnly
 																color={"danger"}
-																variant={"ghost"}
+																size={"sm"}
+																variant={"light"}
 																onPress={() =>
 																	setSelectedDeleteCategory(item.category_id)
 																}
@@ -207,29 +210,14 @@ export default function CategoriesPage() {
 					</div>
 				</>
 			)}
-			<Modal
-				// hideCloseButton
-				isOpen={isOpen}
-				placement={width >= BREAK_POINT.LG ? "center" : "top"}
-				size={width >= BREAK_POINT.SM ? "2xl" : "full"}
-				onOpenChange={onOpenChange}
-			>
-				<ModalContent>
-					<ModalHeader>
-						<h3 className={"text-2xl font-semibold"}>
-							{formAction === "add" ? "Add new" : "Edit"} Category
-						</h3>
-					</ModalHeader>
-					
-					<ModalBody className={"mb-4"}>
-						<CategoryForm
-							action={formAction}
-							categoryInfo={selectedCategory}
-							onSuccess={onSuccess}
-						/>
-					</ModalBody>
-				</ModalContent>
-			</Modal>
+
+			<CustomModal isOpen={isOpen} title={`${formAction === "add" ? "Add new" : "Edit"} Category`} onOpenChange={onOpenChange}>
+				<CategoryForm
+					action={formAction}
+					categoryInfo={selectedCategory}
+					onSuccess={onSuccess}
+				/>
+			</CustomModal>
 		</div>
 	);
 }

@@ -1,8 +1,11 @@
-import { ErrorObject } from "ajv";
+
 
 import { ApiError } from "@/types/api-error";
+import { ZodCustomError } from "@/types/zod";
 
 export const handleError = (error: unknown) => {
+
+    console.log('Error Catched:', error);
 
     let message = '';
     let statusCode = 500;
@@ -24,7 +27,7 @@ export const handleError = (error: unknown) => {
     });
 }
 
-export const handleValidateError = (errors: ErrorObject[]) => {
+export const handleValidateError = (errors: ZodCustomError[] | null) => {
     return Response.json({
         status: "error",
         message: "Validation errors",

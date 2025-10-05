@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
 import { Input, Textarea } from "@heroui/input";
 import { RadioGroup } from "@heroui/radio";
 import { Skeleton } from "@heroui/skeleton";
 import { Alert } from "@heroui/alert";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { DatePicker } from "@heroui/date-picker";
-import { ErrorObject } from "ajv";
 import { parseDate } from '@internationalized/date';
 import { addToast } from "@heroui/toast";
 import { Chip } from "@heroui/chip";
@@ -18,9 +16,11 @@ import { Select, SelectItem } from "@heroui/select";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import moment from "moment";
-import { useFetch } from "hieutndev-toolkit";
-import { useWindowSize } from "hieutndev-toolkit";
+import { useFetch, useWindowSize } from "hieutndev-toolkit";
 
+import CustomModal from "@/components/shared/custom-modal/custom-modal";
+import { API_ENDPOINT } from "@/configs/api-endpoint";
+import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
 import { TCrudTransaction as TCrudTransaction, TTransaction } from "@/types/transaction";
 import TransactionType from "@/components/transactions/transaction-type";
@@ -61,7 +61,7 @@ export default function CrudTransactionModal({
 		loading: loadingCards,
 		error: fetchCardsError,
 		fetch: fetchCards,
-	} = useFetch<IAPIResponse<TCard[]>>("/cards", {
+	} = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE, {
 		skip: true,
 	});
 
@@ -69,11 +69,11 @@ export default function CrudTransactionModal({
 		if (fetchCardsResult) {
 			setListCard(fetchCardsResult.results ?? []);
 
-			if (transactionInfo.card_id === 0 && fetchCardsResult.results ) {
-			setTransactionInfo({
-				...transactionInfo,
-				card_id: fetchCardsResult?.results[0] ? fetchCardsResult.results[0].card_id : 0,
-			});
+			if (transactionInfo.card_id === 0 && fetchCardsResult.results) {
+				setTransactionInfo({
+					...transactionInfo,
+					card_id: fetchCardsResult?.results[0] ? fetchCardsResult.results[0].card_id : 0,
+				});
 			}
 		}
 	}, [fetchCardsResult, fetchCardsError]);
@@ -88,14 +88,14 @@ export default function CrudTransactionModal({
 		description: "",
 	});
 
-	const [validateErrors, setValidateErrors] = useState<ErrorObject[]>([]);
+	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 
 	const {
 		data: createTransactionResult,
 		loading: creatingTransaction,
 		error: createTransactionError,
 		fetch: createTransaction,
-	} = useFetch<IAPIResponse>("/transactions", {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BASE, {
 		method: "POST",
 		body: transactionInfo,
 		skip: true,
@@ -106,7 +106,7 @@ export default function CrudTransactionModal({
 		loading: updatingTransaction,
 		error: updateTransactionError,
 		fetch: updateTransaction,
-	} = useFetch<IAPIResponse>(`/transactions/${defaultData?.transaction_id ?? ""}`, {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_ID(defaultData?.transaction_id ?? ""), {
 		method: "PUT",
 		body: transactionInfo,
 		skip: true,
@@ -209,7 +209,7 @@ export default function CrudTransactionModal({
 		error: fetchCategoriesError,
 		fetch: fetchCategories,
 		// loading: fetchingCategories,
-	} = useFetch<IAPIResponse<TCategory[]>>("/categories", {
+	} = useFetch<IAPIResponse<TCategory[]>>(API_ENDPOINT.CATEGORIES.BASE, {
 		skip: true,
 	});
 
@@ -266,7 +266,7 @@ export default function CrudTransactionModal({
 	useEffect(() => {
 		if (defaultData) {
 			console.log("🚀 ~ useEffect ~ defaultData:", defaultData)
-			
+
 			setTransactionInfo({
 				card_id: defaultData.card_id,
 				direction: defaultData.direction,
@@ -279,251 +279,229 @@ export default function CrudTransactionModal({
 	}, [defaultData]);
 
 	return (
-		<Modal
-			isDismissable={false}
-			isOpen={isOpen}
-			placement={width < BREAK_POINT.SM ? "top" : "center"}
-			scrollBehavior="inside"
-			size={width < BREAK_POINT.LG ? "full" : "4xl"}
-			onOpenChange={onOpenChange}
-		>
-			<ModalContent>
-				{() => (
-					<>
-						<ModalHeader className="flex items-center justify-between">
-							<h6 className="text-xl font-semibold">Add New Transaction</h6>
-						</ModalHeader>
-						<ModalBody>
-							<section className={"flex flex-col gap-4"}>
-								<div className={clsx("w-full flex justify-center gap-2")}>
-									{loadingCards ? (
-										<Spinner>Fetching...</Spinner>
-									) : listCard.length > 0 ? (
-										<CustomForm
-											resetButtonIcon
-											className={"w-full flex h-max gap-4 flex-col"}
-											formId={"newTransaction"}
-											isLoading={mode === "create" ? creatingTransaction : updatingTransaction}
-											submitButtonText={`${mode === "create" ? "Create" : "Update"} Transaction`}
-											onReset={resetTransactionForm}
-											onSubmit={
-												mode === "create" ? handleCreateTransaction : handleUpdateTransaction
-											}
-										>
-											<div className={"w-max flex flex-col gap-4"}>
-												<RadioGroup
-													classNames={{
-														wrapper: "w-full flex gap-2",
-													}}
-													label={"From Account"}
-													value={transactionInfo.card_id?.toString()}
-													onValueChange={(e) =>
-														setForm<TCrudTransaction>(
-															"card_id",
-															+e,
-															validateErrors,
-															setValidateErrors,
-															setTransactionInfo
-														)
-													}
-												>
-													<ScrollShadow
-														hideScrollBar
-														className={"flex flex-col gap-2 max-h-84"}
-													>
-														{loadingCards ? (
-															<Skeleton
-																className={
-																	"w-96 h-14 rounded-2xl flex justify-start items-center"
-																}
-															/>
-														) : (
-															listCard.map((card) => (
-																<BankCardRadio
-																	key={card.card_id}
-																	{...card}
-																/>
-															))
-														)}
-													</ScrollShadow>
-												</RadioGroup>
-											</div>
-											<div className={"w-full flex flex-col gap-4"}>
-												<RadioGroup
-													isRequired
-													classNames={{
-														wrapper: "flex flex-row items-center gap-2",
-													}}
-													label={"Transaction Type"}
-													value={transactionInfo.direction}
-													onValueChange={(e) => {
-														setForm<TCrudTransaction>(
-															"direction",
-															e,
-															validateErrors,
-															setValidateErrors,
-															setTransactionInfo
-														);
-													}}
-												>
-													<TransactionType
-														key={"in"}
-														type={"in"}
-													/>
-													<TransactionType
-														key={"out"}
-														type={"out"}
-													/>
-												</RadioGroup>
-												<div
-													className={clsx("flex items-center gap-4", {
-														"flex-wrap": width <= BREAK_POINT.SM,
-													})}
-												>
-													<DatePicker
-														disableAnimation
-														hideTimeZone
-														isRequired
-														showMonthAndYearPickers
-														aria-label={"Date"}
-														className={"w-max"}
-														label={"Transaction Date"}
-														labelPlacement={"outside"}
-														// value={parseAbsoluteToLocal(transactionInfo.date)}
-														value={parseDate(moment(transactionInfo.date).format("YYYY-MM-DD"))}
-														variant={"bordered"}
-														onChange={(e) =>
-														{	
-															setForm(
-																"date",
-																new Date(e?.toString()!).toISOString() ?? new Date().toISOString(),
-																validateErrors,
-																setValidateErrors,
-																setTransactionInfo
-															)
-														}}
-													/>
-													<Select
-														classNames={{
-															mainWrapper: "w-64",
-														}}
-														items={listCategories}
-														label={"Select category"}
-														labelPlacement={"outside"}
-														placeholder={"Select category"}
-														selectedKeys={[transactionInfo.category_id?.toString() ?? "-1"]}
-														variant={"bordered"}
-														onChange={(e) =>
-															setForm(
-																"category_id",
-																+e.target.value,
-																validateErrors,
-																setValidateErrors,
-																setTransactionInfo
-															)
-														}
-													>
-														{(category) => (
-															<SelectItem
-																key={category.category_id}
-																textValue={category.category_name}
-															>
-																{category.category_name}
-															</SelectItem>
-														)}
-													</Select>
-												</div>
-												<div className={"flex flex-col gap-2"}>
-													<Input
-														isRequired
-														endContent={SITE_CONFIG.CURRENCY_STRING}
-														errorMessage={getFieldError(validateErrors, "amount")?.message}
-														isInvalid={!!getFieldError(validateErrors, "amount")}
-														label={"Amount"}
-														labelPlacement={"outside"}
-														placeholder={"Enter amount"}
-														type={"number"}
-														value={transactionInfo.amount?.toString() ?? 0}
-														variant={"bordered"}
-														onValueChange={(e) =>
-															setForm<TCrudTransaction>(
-																"amount",
-																+e,
-																validateErrors,
-																setValidateErrors,
-																setTransactionInfo
-															)
-														}
-													/>
-													<div className={"flex items-center gap-1"}>
-														{makeSuggestAmount(transactionInfo.amount).map((val, index) => (
-															<Chip
-																key={index}
-																classNames={{
-																	content: index === 0 && "font-semibold",
-																}}
-																color={index === 0 ? "primary" : "default"}
-																size={"sm"}
-																variant={"flat"}
-																onClick={() =>
-																	setForm(
-																		"amount",
-																		val,
-																		validateErrors,
-																		setValidateErrors,
-																		setTransactionInfo
-																	)
-																}
-															>
-																{index === 0 && "Current: "}
-																{val.toLocaleString()}
-															</Chip>
-														))}
-													</div>
-												</div>
-												<Textarea
-													endContent={SITE_CONFIG.CURRENCY_STRING}
-													label={"Description"}
-													labelPlacement={"outside"}
-													placeholder={"Enter description"}
-													value={transactionInfo.description?.toString()}
-													variant={"bordered"}
-													onValueChange={(e) =>
-														setForm<TCrudTransaction>(
-															"description",
-															e,
-															validateErrors,
-															setValidateErrors,
-															setTransactionInfo
-														)
-													}
-												/>
-											</div>
-										</CustomForm>
-									) : (
-										<div className={"flex flex-col items-center gap-4"}>
-											<Alert
-												color={"danger"}
-												title={"Please add at least one card before create new transaction"}
+		<CustomModal isOpen={isOpen} title={mode === "create" ? "Add New Transaction" : "Edit Transaction"} onOpenChange={onOpenChange}>
+			<section className={"flex flex-col gap-4"}>
+				<div className={clsx("w-full flex justify-center gap-2")}>
+					{loadingCards ? (
+						<Spinner>Fetching...</Spinner>
+					) : listCard.length > 0 ? (
+						<CustomForm
+							resetButtonIcon
+							className={"w-full flex h-max gap-4 flex-col"}
+							formId={"newTransaction"}
+							isLoading={mode === "create" ? creatingTransaction : updatingTransaction}
+							submitButtonText={`${mode === "create" ? "Create" : "Update"} Transaction`}
+							onReset={resetTransactionForm}
+							onSubmit={mode === "create" ? handleCreateTransaction : handleUpdateTransaction}
+						>
+							<div className={"w-max flex flex-col gap-4"}>
+								<RadioGroup
+									classNames={{
+										wrapper: "w-full flex gap-2",
+									}}
+									label={"From Account"}
+									value={transactionInfo.card_id?.toString()}
+									onValueChange={(e) =>
+										setForm<TCrudTransaction>(
+											"card_id",
+											+e,
+											validateErrors,
+											setValidateErrors,
+											setTransactionInfo
+										)
+									}
+								>
+									<ScrollShadow
+										hideScrollBar
+										className={"flex flex-col gap-2 max-h-84"}
+									>
+										{loadingCards ? (
+											<Skeleton
+												className={
+													"w-96 h-14 rounded-2xl flex justify-start items-center"
+												}
 											/>
-											<Button
-												color={"primary"}
-												startContent={ICONS.NEW.SM}
-												onPress={() => {
-													router.push("/settings/cards/new");
-												}}
+										) : (
+											listCard.map((card) => (
+												<BankCardRadio
+													key={card.card_id}
+													{...card}
+												/>
+											))
+										)}
+									</ScrollShadow>
+								</RadioGroup>
+							</div>
+							<div className={"w-full flex flex-col gap-4"}>
+								<RadioGroup
+									isRequired
+									classNames={{
+										wrapper: "flex flex-row items-center gap-2",
+									}}
+									label={"Transaction Type"}
+									value={transactionInfo.direction}
+									onValueChange={(e) => {
+										setForm<TCrudTransaction>(
+											"direction",
+											e,
+											validateErrors,
+											setValidateErrors,
+											setTransactionInfo
+										);
+									}}
+								>
+									<TransactionType
+										key={"in"}
+										type={"in"}
+									/>
+									<TransactionType
+										key={"out"}
+										type={"out"}
+									/>
+								</RadioGroup>
+								<div
+									className={clsx("flex items-center gap-4", {
+										"flex-wrap": width <= BREAK_POINT.SM,
+									})}
+								>
+									<DatePicker
+										disableAnimation
+										hideTimeZone
+										isRequired
+										showMonthAndYearPickers
+										aria-label={"Date"}
+										className={"w-max"}
+										label={"Transaction Date"}
+										labelPlacement={"outside"}
+										// value={parseAbsoluteToLocal(transactionInfo.date)}
+										value={parseDate(moment(transactionInfo.date).format("YYYY-MM-DD"))}
+										variant={"bordered"}
+										onChange={(e) => {
+											setForm(
+												"date",
+												new Date(e?.toString()!).toISOString() ?? new Date().toISOString(),
+												validateErrors,
+												setValidateErrors,
+												setTransactionInfo
+											)
+										}}
+									/>
+									<Select
+										classNames={{
+											mainWrapper: "w-64",
+										}}
+										items={listCategories}
+										label={"Select category"}
+										labelPlacement={"outside"}
+										placeholder={"Select category"}
+										selectedKeys={[transactionInfo.category_id?.toString() ?? "-1"]}
+										variant={"bordered"}
+										onChange={(e) =>
+											setForm(
+												"category_id",
+												+e.target.value,
+												validateErrors,
+												setValidateErrors,
+												setTransactionInfo
+											)
+										}
+									>
+										{(category) => (
+											<SelectItem
+												key={category.category_id}
+												textValue={category.category_name}
 											>
-												Create new card
-											</Button>
-										</div>
-									)}
+												{category.category_name}
+											</SelectItem>
+										)}
+									</Select>
 								</div>
-							</section>
-						</ModalBody>
-						<ModalFooter />
-					</>
-				)}
-			</ModalContent>
-		</Modal>
+								<div className={"flex flex-col gap-2"}>
+									<Input
+										isRequired
+										endContent={SITE_CONFIG.CURRENCY_STRING}
+										errorMessage={getFieldError(validateErrors, "amount")?.message}
+										isInvalid={!!getFieldError(validateErrors, "amount")}
+										label={"Amount"}
+										labelPlacement={"outside"}
+										placeholder={"Enter amount"}
+										type={"number"}
+										value={transactionInfo.amount?.toString() ?? 0}
+										variant={"bordered"}
+										onValueChange={(e) =>
+											setForm<TCrudTransaction>(
+												"amount",
+												+e,
+												validateErrors,
+												setValidateErrors,
+												setTransactionInfo
+											)
+										}
+									/>
+									<div className={"flex items-center gap-1"}>
+										{makeSuggestAmount(transactionInfo.amount).map((val, index) => (
+											<Chip
+												key={index}
+												classNames={{
+													content: index === 0 && "font-semibold",
+												}}
+												color={index === 0 ? "primary" : "default"}
+												size={"sm"}
+												variant={"flat"}
+												onClick={() =>
+													setForm(
+														"amount",
+														val,
+														validateErrors,
+														setValidateErrors,
+														setTransactionInfo
+													)
+												}
+											>
+												{index === 0 && "Current: "}
+												{val.toLocaleString()}
+											</Chip>
+										))}
+									</div>
+								</div>
+								<Textarea
+									endContent={SITE_CONFIG.CURRENCY_STRING}
+									label={"Description"}
+									labelPlacement={"outside"}
+									placeholder={"Enter description"}
+									value={transactionInfo.description?.toString()}
+									variant={"bordered"}
+									onValueChange={(e) =>
+										setForm<TCrudTransaction>(
+											"description",
+											e,
+											validateErrors,
+											setValidateErrors,
+											setTransactionInfo
+										)
+									}
+								/>
+							</div>
+						</CustomForm>
+					) : (
+						<div className={"flex flex-col items-center gap-4"}>
+							<Alert
+								color={"danger"}
+								title={"Please add at least one card before create new transaction"}
+							/>
+							<Button
+								color={"primary"}
+								startContent={ICONS.NEW.SM}
+								onPress={() => {
+									router.push("/settings/cards/new");
+								}}
+							>
+								Create new card
+							</Button>
+						</div>
+					)}
+				</div>
+			</section>
+		</CustomModal>
 	);
 }
