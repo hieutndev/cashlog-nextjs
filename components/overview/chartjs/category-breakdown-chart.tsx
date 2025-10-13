@@ -98,20 +98,13 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
         loading ? <LoadingBlock /> :
             data.length > 0 ? (
                 <div className="flex flex-col items-center gap-8 w-full h-full">
-                    <div className="w-1/2 h-max aspect-square">
+                    <div className="w-1/2 h-max">
                         <Pie data={chartData} options={options} />
                     </div>
-                    <div className="w-full h-full overflow-y-auto grid 2xl:grid-cols-2 grid-cols-1 items-center">
+                    <div className="px-8 w-full h-full overflow-y-auto flex flex-row flex-wrap gap-4 items-center">
                         {data.map((item, index) => {
-                            const isLast = index === data.length - 1;
-                            const isOdd = data.length % 2 === 1;
-                            const itemClass =
-                                isLast && isOdd
-                                    ? "w-full col-span-2 flex justify-center items-center gap-2"
-                                    : "w-full col-span-1 flex items-center gap-2";
-
                             return (
-                                <div key={item.category} className={itemClass}>
+                                <div key={item.category} className="flex items-center gap-2">
                                     <div className="w-max flex items-center gap-2">
                                         <div
                                             className="w-3 h-3 rounded-full flex-shrink-0"
