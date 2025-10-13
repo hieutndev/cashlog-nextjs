@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import clsx from "clsx";
 import moment from "moment";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
 import { useFetch } from "hieutndev-toolkit";
 import { addToast } from "@heroui/toast";
 import { Select, SelectItem } from "@heroui/select";
@@ -10,10 +10,10 @@ import { Button } from "@heroui/button";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
 import { Chip } from "@heroui/chip";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
+import { EffectCards } from "swiper/modules";
+
 import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
+import "swiper/css/effect-cards";
 
 import { Card, CardBody } from "@heroui/card";
 
@@ -145,24 +145,23 @@ export default function OverviewPage() {
 		<Container className={"!p-0"}
 			orientation={"vertical"}
 		>
-			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
 				<div className="lg:col-span-4 flex flex-col gap-4 lg:order-1 order-2">
 					<div className="bg-white rounded-3xl">
 						{dashboardLoading ? (
 
 							<LoadingBlock className="min-h-72" type="card" />
 						) : cards && cards.length > 0 ? (
-							<div className="h-72">
+							<div className="h-72 scale-90">
 								<Swiper
 									className="w-full h-full"
+									effect="cards"
+									grabCursor={true}
 									loop={true}
-									modules={[Pagination]}
-									pagination={{ clickable: true }}
-									slidesPerView={1}
-									spaceBetween={16}
+									modules={[EffectCards]}
 								>
 									{cards.map((card) => (
-										<SwiperSlide key={card.card_id} className="h-full">
+										<SwiperSlide key={card.card_id} className="h-full overflow-hidden bg-transparent rounded-2xl">
 											<div className="h-full flex w-full">
 												<BankCard
 													bankCode={card.bank_code}

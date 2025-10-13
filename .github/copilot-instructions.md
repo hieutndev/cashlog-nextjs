@@ -208,6 +208,11 @@ yarn start        # Production server
 yarn lint         # ESLint with auto-fix
 ```
 
+## Environment & Local Conventions
+
+- Do not create test files or `.md` summary files.
+- The user uses **Yarn** and **PowerShell 7** commands.
+
 ### Common Tasks
 - **Add SQL query**: Update `QUERY_STRING` in `configs/query-string.ts`
 - **New API endpoint**: Create route handler → service function → add types → add SQL
