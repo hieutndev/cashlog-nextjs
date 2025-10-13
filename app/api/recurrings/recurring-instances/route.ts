@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getRecurringInstancesOfUser, updateOverdueInstances } from '../recurring-services';
+import { getRecurringAnalysis, getRecurringInstancesWithBalances, updateOverdueInstances } from '../recurring-services';
 import { getFromHeaders } from '../../_helpers/get-from-headers';
 import { handleError } from '../../_helpers/handle-error';
 
@@ -43,7 +43,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: "success",
       message: "Retrieved recurring instances successfully",
-      results: await getRecurringInstancesOfUser(user_id, filters),
+      results: {
+        instances: await getRecurringInstancesWithBalances(user_id, filters),
+        analysis: await getRecurringAnalysis(user_id, filters.card_id),
+      }
     });
   } catch (error) {
     return handleError(error);

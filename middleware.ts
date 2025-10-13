@@ -66,6 +66,7 @@ export const config = {
         "/api/analytics/:path*",
         "/api/settings/:path*",
         "/api/recurrings/:path*",
+        "/api/dashboard/:path*",
         // "/api/users/x-rftk"
     ],
 };

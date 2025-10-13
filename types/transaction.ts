@@ -3,7 +3,7 @@ import { TCategory } from "./category";
 import { TCard } from "@/types/card";
 
 export type TTransaction = {
-	transaction_id: string;
+	transaction_id: number;
 	direction: "in" | "out";
 	amount: number;
 	date: string;

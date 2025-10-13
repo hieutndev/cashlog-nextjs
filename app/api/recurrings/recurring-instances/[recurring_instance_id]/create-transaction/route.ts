@@ -28,7 +28,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      data: await createTransactionFromInstance(Number(recurring_instance_id), Number(user_id), {
+      message: "Transaction created successfully",
+      results: await createTransactionFromInstance(Number(recurring_instance_id), Number(user_id), {
         amount: body.amount,
         transaction_date: body.transaction_date,
         category_id: body.category_id,

@@ -1,6 +1,8 @@
-import { TTransaction } from "@/types/transaction";
 
 export const API_ENDPOINT = {
+    DASHBOARD: {
+        BASE: '/dashboard',
+    },
     CARDS: {
         BASE: '/cards',
         CREATE_NEW_CARD: '/cards',
@@ -20,6 +22,11 @@ export const API_ENDPOINT = {
     },
     RECURRINGS: {
         BASE: '/recurrings',
-        BY_ID: (id: any) => `/recurrings/${id}`,
+        BY_ID: (recurringId: string | number) => `/recurrings/${recurringId}`,
+        INSTANCES: '/recurrings/recurring-instances',
+        INSTANCES_BY_ID: (instanceId: string | number) => `/recurrings/recurring-instances/${instanceId}`,
+        INSTANCE_SKIP: (instanceId: string | number) => `/recurrings/recurring-instances/${instanceId}/skip`,
+        INSTANCE_CREATE_TRANSACTION: (instanceId: string | number) => `/recurrings/recurring-instances/${instanceId}/create-transaction`,
+        PROJECTED_BALANCE: '/recurrings/recurring-instances/projected-balance',
     },
 };

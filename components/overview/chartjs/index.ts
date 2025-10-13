@@ -1,1 +1,1 @@
-export { default } from "./multi-line-chart";
+export { default } from "./financial-analysis-chart";

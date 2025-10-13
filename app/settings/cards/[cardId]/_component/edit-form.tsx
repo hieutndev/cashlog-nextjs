@@ -6,7 +6,6 @@ import { addToast } from "@heroui/toast";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { Select, SelectItem } from "@heroui/select";
 import clsx from "clsx";
-import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { useFetch } from "hieutndev-toolkit";
@@ -21,7 +20,7 @@ import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
 import { TCard, TUpdateCard } from "@/types/card";
 import { ZodCustomError } from "@/types/zod";
-import RetrievingBlock from "@/components/shared/retrieving-block/retrieving-block";
+import LoadingBlock from "@/components/shared/loading-block/loading-block";
 
 interface EditCardFormProps {
 	cardId: string;
@@ -138,7 +137,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 			</div>
 			<div>
 				{loadingCardInfo || !fetchCardInfoResult ? (
-					<RetrievingBlock />
+					<LoadingBlock />
 				) : (
 					<div className={"w-full flex flex-wrap-reverse items-start gap-4 md:flex-nowrap"}>
 						<div

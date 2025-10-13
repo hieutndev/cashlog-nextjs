@@ -1,5 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
+import moment from "moment";
 
 import { REQUIRED_HEADERS, TCrudTransaction, TTransaction } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
@@ -38,10 +39,9 @@ export const addNewTransaction = async (
 
 	await validateCardOwnership(card_id, user_id);
 
-
 	const new_transaction = await dbQuery<ResultSetHeader>(QUERY_STRING.ADD_TRANSACTION, [
 		amount,
-		formatMYSQLDate(date),
+		formatMYSQLDate(moment(date).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).toISOString()),
 		description,
 		direction,
 		card_id,
@@ -191,6 +191,8 @@ export const getAllTransactions = async (
 				break;
 		}
 
+		orderBy += ', tn.created_at DESC'; // Secondary sort by created_at
+
 		const whereClause = whereConditions.join(' AND ');
 
 		// Build count query
@@ -229,10 +231,8 @@ export const getAllTransactions = async (
 			LIMIT ? OFFSET ?
 		`;
 
-		// Get total count for pagination
 		totalCount = await dbQuery<RowDataPacket[]>(countQuery, countParams);
 
-		// Get paginated transactions
 		queryParams.push(limit, offset);
 		listTransaction = await dbQuery<RowDataPacket[]>(dataQuery, queryParams);
 

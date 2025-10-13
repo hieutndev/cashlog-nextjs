@@ -4,20 +4,21 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 
 import { SITE_CONFIG } from "@/configs/site-config";
+import LoadingBlock from "@/components/shared/loading-block/loading-block";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-interface PieChartProps {
+interface CategoryBreakdownChartProps {
     data: {
         category: string;
         color: string;
         total: number;
     }[];
+    loading?: boolean;
 }
 
-export default function PieChart({ data }: PieChartProps) {
-    // Generate colors based on category colors or use default colors
-    const generateColors = (categories: PieChartProps["data"]) => {
+export default function CategoryBreakdownChart({ data, loading = false }: CategoryBreakdownChartProps) {
+    const generateColors = (categories: CategoryBreakdownChartProps["data"]) => {
         const colorMap: Record<string, string> = {
             red: "#ef4444",
             orange: "#f97316",
@@ -91,43 +92,51 @@ export default function PieChart({ data }: PieChartProps) {
         },
     };
 
-    // Show empty state if no data
-    if (!data || data.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-                <div className="text-center">
-                    <p className="text-lg font-medium">No category data available</p>
-                    <p className="text-sm">Start adding transactions with categories to see the breakdown</p>
-                </div>
-            </div>
-        );
-    }
-
     const colors = generateColors(data);
 
     return (
-        <div className="flex lg:flex-row flex-col lg:items-start items-center gap-8 w-full lg:h-96 h-full">
-            <div className="lg:w-1/4 w-2/3 lg:h-full h-max aspect-square">
-                <Pie data={chartData} options={options} />
-            </div>
-            <div className="lg:w-3/4 w-full h-full overflow-y-auto grid 2xl:grid-cols-4 md:grid-cols-3 grid-cols-1">
-                {data.map((item, index) => (
-                    <div key={item.category} className="col-span-1 flex items-center gap-2">
-                        <div
-                            className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: colors[index] }}
-                        />
-                        <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                {item.category}
-                            </span>
-                            <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
-                                ({Number(item.total).toLocaleString()}{SITE_CONFIG.CURRENCY_STRING})
-                            </span>
-                        </div>
+        loading ? <LoadingBlock /> :
+            data.length > 0 ? (
+                <div className="flex flex-col items-center gap-8 w-full h-full">
+                    <div className="w-1/2 h-max aspect-square">
+                        <Pie data={chartData} options={options} />
                     </div>
-                ))}
-            </div>
-        </div>
+                    <div className="w-full h-full overflow-y-auto grid 2xl:grid-cols-2 grid-cols-1 items-center">
+                        {data.map((item, index) => {
+                            const isLast = index === data.length - 1;
+                            const isOdd = data.length % 2 === 1;
+                            const itemClass =
+                                isLast && isOdd
+                                    ? "w-full col-span-2 flex justify-center items-center gap-2"
+                                    : "w-full col-span-1 flex items-center gap-2";
+
+                            return (
+                                <div key={item.category} className={itemClass}>
+                                    <div className="w-max flex items-center gap-2">
+                                        <div
+                                            className="w-3 h-3 rounded-full flex-shrink-0"
+                                            style={{ backgroundColor: colors[index] }}
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                {item.category}
+                                            </span>
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                                ({Number(item.total).toLocaleString()}{SITE_CONFIG.CURRENCY_STRING})
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500">
+                    <div className="text-center">
+                        <p className="text-lg font-medium">No category data available</p>
+                        <p className="text-sm">Start adding transactions with categories to see the breakdown</p>
+                    </div>
+                </div>)
     );
 }

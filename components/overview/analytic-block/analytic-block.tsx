@@ -21,21 +21,20 @@ export interface AnalyticBlockProps {
 }
 
 export default function AnalyticBlock({ label, value, timeRange }: AnalyticBlockProps) {
+
+	const mapTitleColor: Record<string, string> = {
+		'Total Income': 'text-success',
+		'Total Expense': 'text-danger',
+		'Total Savings': 'text-warning',
+	}
+
 	return (
-		<Card shadow={"sm"}>
+		<Card shadow={"none"}>
 			<CardBody className={"flex flex-col lg:gap-2 gap-4 pt-2 pb-4"}>
 				<div className={"flex items-center justify-between"}>
 					<div className={"w-full flex items-center gap-2"}>
-						<p className={"w-full text-center lg:text-left"}>{label}</p>
+						<p className={clsx("w-full text-center lg:text-left")}>{label}</p>
 					</div>
-					{/* <div>
-						<Button
-							isIconOnly
-							variant={"light"}
-						>
-							{ICONS.ELLIPSIS.MD}
-						</Button>
-					</div> */}
 				</div>
 				<div className={"w-full flex flex-col lg:gap-2 gap-4"}>
 					<p className={clsx("w-full text-center lg:text-left text-2xl font-bold")}>{value.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}</p>

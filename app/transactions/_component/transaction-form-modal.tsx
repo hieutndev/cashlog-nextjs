@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { Input, Textarea } from "@heroui/input";
 import { RadioGroup } from "@heroui/radio";
-import { Skeleton } from "@heroui/skeleton";
 import { Alert } from "@heroui/alert";
-import { ScrollShadow } from "@heroui/scroll-shadow";
 import { DatePicker } from "@heroui/date-picker";
 import { parseDate } from '@internationalized/date';
 import { addToast } from "@heroui/toast";
@@ -24,7 +22,6 @@ import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
 import { TCrudTransaction as TCrudTransaction, TTransaction } from "@/types/transaction";
 import TransactionType from "@/components/transactions/transaction-type";
-import BankCardRadio, { AccountCardProps } from "@/components/shared/bank-card-radio/bank-card-radio";
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
 import { setForm } from "@/utils/set-form";
@@ -34,6 +31,7 @@ import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
 import { SITE_CONFIG } from "@/configs/site-config";
+import SelectCardRadioGroup from "@/components/shared/select-card-radio-group/select-card-radio-group";
 
 interface CrudTransactionModalProps {
 	isOpen: boolean;
@@ -294,13 +292,13 @@ export default function CrudTransactionModal({
 							onReset={resetTransactionForm}
 							onSubmit={mode === "create" ? handleCreateTransaction : handleUpdateTransaction}
 						>
-							<div className={"w-max flex flex-col gap-4"}>
-								<RadioGroup
-									classNames={{
-										wrapper: "w-full flex gap-2",
-									}}
-									label={"From Account"}
-									value={transactionInfo.card_id?.toString()}
+							<div className={"w-full flex flex-col gap-4"}>
+								<SelectCardRadioGroup
+									compact
+									cards={listCard}
+									label="From Account"
+									loading={loadingCards}
+									value={transactionInfo.card_id ?? 0}
 									onValueChange={(e) =>
 										setForm<TCrudTransaction>(
 											"card_id",
@@ -310,27 +308,7 @@ export default function CrudTransactionModal({
 											setTransactionInfo
 										)
 									}
-								>
-									<ScrollShadow
-										hideScrollBar
-										className={"flex flex-col gap-2 max-h-84"}
-									>
-										{loadingCards ? (
-											<Skeleton
-												className={
-													"w-96 h-14 rounded-2xl flex justify-start items-center"
-												}
-											/>
-										) : (
-											listCard.map((card) => (
-												<BankCardRadio
-													key={card.card_id}
-													{...card}
-												/>
-											))
-										)}
-									</ScrollShadow>
-								</RadioGroup>
+								/>
 							</div>
 							<div className={"w-full flex flex-col gap-4"}>
 								<RadioGroup

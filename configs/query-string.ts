@@ -94,7 +94,7 @@ export const QUERY_STRING = {
                                                                       LEFT JOIN
                                                                   transaction_categories tc ON tn.category_id = tc.category_id
                                                              WHERE u.user_id = ?
-                                                             ORDER BY tn.date DESC;`,
+                                                             ORDER BY tn.date DESC, tn.created_at DESC`,
 	GET_ALL_TRANSACTIONS_WITH_CARD_AND_CATEGORY_BY_USER_ID_PAGINATED: `SELECT tn.transaction_id,
                                                                     tn.amount,
                                                                     tn.date,
@@ -233,6 +233,7 @@ export const QUERY_STRING = {
           r.*,
           c.card_name,
           c.card_balance,
+          c.bank_code,
           tc.category_name,
           (
             SELECT COUNT(*) 
@@ -249,6 +250,16 @@ export const QUERY_STRING = {
             FROM recurring_instances 
             WHERE recurring_id = r.recurring_id AND status = 'skipped'
           ) as skipped_instances,
+		   (
+            SELECT COUNT(*) 
+            FROM recurring_instances 
+            WHERE recurring_id = r.recurring_id AND status = 'skipped'
+          ) as skipped_instances,
+          (
+            SELECT COUNT(*) 
+            FROM recurring_instances 
+            WHERE recurring_id = r.recurring_id AND status = 'overdue'
+          ) as overdue_instances,
           (
             SELECT SUM(actual_amount) 
             FROM recurring_instances 
@@ -299,6 +310,7 @@ export const QUERY_STRING = {
 			r.frequency,
 			c.card_name,
 			tc.category_name,
+			tc.category_id,
 			t.transaction_id as transaction_link
 		FROM recurring_instances ri
 		JOIN recurrings r ON ri.recurring_id = r.recurring_id
@@ -308,11 +320,10 @@ export const QUERY_STRING = {
 		WHERE r.user_id = ?
 	`,
 
-	GET_NEXT_SCHEDULED_INSTANCES: `
+	GET_ALL_INSTANCES_OF_RECURRING: `
 		SELECT * FROM recurring_instances
-		WHERE recurring_id = ? AND status = 'pending' AND scheduled_date >= CURDATE()
+		WHERE recurring_id = ?
 		ORDER BY scheduled_date ASC
-		LIMIT 5
 	`,
 
 	UPDATE_OVERDUE_INSTANCES: `
@@ -372,9 +383,9 @@ export const QUERY_STRING = {
 
 	ADD_TRANSACTION_FROM_RECURRING_INSTANCE: `
 		INSERT INTO transactions_new (
-			user_id, card_id, category_id, description, amount, direction,
-			transaction_date, source, is_recurring, instance_id, note
-		) VALUES (?, ?, ?, ?, ?, ?, ?, 'recurring', TRUE, ?, ?)
+			card_id, category_id, description, amount, direction,
+			date, source, is_recurring, recurring_instance_id, note
+		) VALUES (?, ?, ?, ?, ?, ?, 'recurring', TRUE, ?, ?)
 	`,
 
 	GET_CARD_BALANCE: `
@@ -383,7 +394,7 @@ export const QUERY_STRING = {
 
 	UPDATE_INSTANCE_COMPLETED: `
 		UPDATE recurring_instances
-		SET status = ?, transaction_id = ?, actual_date = ?, actual_amount = ?,
+		SET status = ?, actual_date = ?, actual_amount = ?,
 				notes = ?, completed_at = NOW(), updated_at = NOW()
 		WHERE instance_id = ?
 	`,
@@ -449,14 +460,10 @@ export const QUERY_STRING = {
 		) VALUES (?, ?, 'cancelled', ?)
 	`,
 	DELETE_RECURRING: `DELETE FROM recurrings WHERE recurring_id = ?`,
-
-	// Landing data queries
 	GET_TOTAL_USERS_COUNT: `SELECT COUNT(*) as total FROM users`,
 	GET_TOTAL_CARDS_COUNT: `SELECT COUNT(*) as total FROM cards`,
 	GET_TOTAL_TRANSACTIONS_COUNT: `SELECT COUNT(*) as total FROM transactions_new`,
 	GET_TOTAL_RECURRINGS_COUNT: `SELECT COUNT(*) as total FROM recurrings`,
-
-	// Settings reset queries
 	DELETE_TRANSACTIONS_BY_USER: `
 		DELETE tn FROM transactions_new tn
 		INNER JOIN cards c ON tn.card_id = c.card_id
@@ -468,4 +475,23 @@ export const QUERY_STRING = {
 	`,
 	DELETE_CATEGORIES_BY_USER: `DELETE FROM transaction_categories WHERE user_id = ?`,
 	DELETE_CARDS_BY_USER: `DELETE FROM cards WHERE user_id = ?`,
+	GET_ALL_RECURRING_ANALYSIS: `SELECT COUNT(*) AS total_instances,
+COUNT(CASE WHEN STATUS IN ('completed', 'modified') THEN 1 END) AS count_completed,
+COUNT(CASE WHEN STATUS = 'pending' THEN 1 END) AS count_pending,
+COUNT(CASE WHEN STATUS = 'overdue' THEN 1 END) AS count_overdue,
+COUNT(CASE WHEN STATUS = 'skipped' THEN 1 END) AS count_skipped
+FROM
+  recurring_instances
+WHERE
+  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ?)`,
+	GET_ALL_RECURRING_ANALYSIS_BY_CARD: `SELECT
+  COUNT(*) AS total_instances,
+  COUNT(CASE WHEN STATUS IN ('completed', 'modified') THEN 1 END) AS count_completed,
+  COUNT(CASE WHEN STATUS = 'pending' THEN 1 END) AS count_pending,
+  COUNT(CASE WHEN STATUS = 'overdue' THEN 1 END) AS count_overdue,
+  COUNT(CASE WHEN STATUS = 'skipped' THEN 1 END) AS count_skipped
+FROM
+  recurring_instances
+WHERE
+  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ? AND card_id = ?)`
 };

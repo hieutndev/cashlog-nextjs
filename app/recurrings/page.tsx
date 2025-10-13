@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RadioGroup } from "@heroui/radio";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { getKeyValue, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import clsx from "clsx";
@@ -11,41 +10,50 @@ import { useRouter } from "next/navigation";
 import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 import { Chip } from "@heroui/chip";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 import { addToast } from "@heroui/toast";
+import { useDisclosure } from "@heroui/modal";
 
 import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
-import BankCardRadio from "@/components/shared/bank-card-radio/bank-card-radio";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import { TRecurringResponse, TRecurringStatus, TFrequencyType } from "@/types/recurring";
-import { SITE_CONFIG } from "@/configs/site-config";
-import { useRecurringActions } from "@/hooks/useRecurringActions";
+import { TCompleteInstanceFormData, TRecurringInstance, TRecurringInstanceProjection, TRecurringInstancesResponse, TRecurringInstanceStatus } from "@/types/recurring";
+import { API_ENDPOINT } from "@/configs/api-endpoint";
+import CustomModal from "@/components/shared/custom-modal/custom-modal";
+import RecurringInstanceForm from "@/components/recurrings/recurring-instance-form";
+import LoadingBlock from "@/components/shared/loading-block/loading-block";
+import SelectCardRadioGroup from "@/components/shared/select-card-radio-group/select-card-radio-group";
 
 export default function RecurringPage() {
     const router = useRouter();
     const { width } = useWindowSize();
 
     const [recurringStats, setRecurringStats] = useState([
-        { label: "Total Recurrings", value: "0", color: "primary" },
-        { label: "Active", value: "0", color: "success" },
-        { label: "Monthly Income", value: "0", color: "success" },
-        { label: "Monthly Expenses", value: "0", color: "danger" },
+        { label: "Total Instances", value: "0", color: "primary" },
+        { label: "Pending", value: "0", color: "warning" },
+        { label: "Completed", value: "0", color: "success" },
+        { label: "Overdue", value: "0", color: "danger" },
+        { label: "Skipped", value: "0", color: "secondary" },
     ]);
 
     // Fetch cards for filter
     const {
         data: fetchCardResults,
         error: fetchCardError,
-    } = useFetch<IAPIResponse<TCard[]>>("/cards");
+    } = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE);
 
     const [listCards, setListCards] = useState<TCard[]>([]);
     const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
     useEffect(() => {
         if (fetchCardResults) {
-            setListCards(fetchCardResults.results ?? []);
+            const cards = fetchCardResults.results ?? [];
+
+            setListCards(cards);
+
+            if (cards.length > 0 && selectedCard === null) {
+                setSelectedCard(cards[0].card_id);
+            }
         }
 
         if (fetchCardError) {
@@ -55,123 +63,224 @@ export default function RecurringPage() {
                 color: "danger",
             });
         }
-    }, [fetchCardResults, fetchCardError]);
-
-    // const {recurrings, loading, error, refetch} = useRecurrings(filters);
-    const { deleteRecurringAction } = useRecurringActions();
+    }, [fetchCardResults, fetchCardError, selectedCard]);
 
     const {
-        data: fetchRecurringsResults,
-        loading: fetchingRecurrings,
-        error: fetchRecurringsError,
-        fetch: fetchRecurrings
-    } = useFetch<IAPIResponse<TRecurringResponse[]>>(`/recurrings`,
+        data: fetchInstancesResults,
+        loading: fetchingInstances,
+        error: fetchInstancesError,
+        fetch: fetchInstances
+    } = useFetch<IAPIResponse<TRecurringInstancesResponse>>(
+        API_ENDPOINT.RECURRINGS.INSTANCES,
         {
             card_id: selectedCard,
         },
         {
             method: "GET",
+            skip: true,
         }
     );
 
+    useEffect(() => {
+        if (selectedCard !== null) {
+            fetchInstances();
+        }
+    }, [selectedCard]);
 
     useEffect(() => {
-        if (fetchRecurringsResults && fetchRecurringsResults.results) {
+        if (fetchInstancesResults && fetchInstancesResults.results) {
+            const { total_instances, count_completed, count_pending, count_overdue, count_skipped } = fetchInstancesResults.results.analysis;
+
             setRecurringStats([
-                { label: "Total Recurrings", value: (fetchRecurringsResults.results.length || 0).toLocaleString(), color: "primary" },
+                { label: "Total Instances", value: total_instances.toLocaleString(), color: "primary" },
                 {
-                    label: "Active",
-                    value: fetchRecurringsResults.results.filter((r) => r.status === 'active').length.toLocaleString(),
+                    label: "Pending",
+                    value: count_pending.toLocaleString(),
+                    color: "warning",
+                },
+                {
+                    label: "Completed",
+                    value: count_completed.toLocaleString(),
                     color: "success",
                 },
                 {
-                    label: "Monthly Income",
-                    value: fetchRecurringsResults.results.reduce((acc, r) => {
-                        if (r.status === 'active' && r.direction === 'in') {
-                            return acc + Number(r.amount);
-                        }
-
-                        return acc;
-                    }, 0).toLocaleString() + SITE_CONFIG.CURRENCY_STRING,
-                    color: "success",
-                },
-                {
-                    label: "Monthly Expenses",
-                    value: fetchRecurringsResults.results.reduce((acc, r) => {
-                        if (r.status === 'active' && r.direction === 'out') {
-                            return acc + Number(r.amount);
-                        }
-
-                        return acc;
-                    }, 0).toLocaleString() + SITE_CONFIG.CURRENCY_STRING,
+                    label: "Overdue",
+                    value: count_overdue.toLocaleString(),
                     color: "danger",
+                },
+                {
+                    label: "Skipped",
+                    value: count_skipped.toLocaleString(),
+                    color: "secondary",
                 },
             ]);
         }
 
-        if (fetchRecurringsError) {
-            const parsedError = JSON.parse(fetchRecurringsError);
-
-            console.log('parsedError', parsedError);
+        if (fetchInstancesError) {
+            const parsedError = JSON.parse(fetchInstancesError);
 
             addToast({
                 title: "Error",
                 description: parsedError.message,
                 color: "danger",
-            })
-        }
-    }, [fetchRecurringsResults, fetchRecurringsError]);
-
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this recurring transaction?')) {
-            return;
-        }
-
-        const success = await deleteRecurringAction(id, {
-            delete_instances: false,
-            keep_completed_transactions: true,
-        });
-
-        if (success) {
-            addToast({
-                title: "Success",
-                description: "Recurring transaction deleted successfully",
-                color: "success",
             });
         }
+    }, [fetchInstancesResults, fetchInstancesError]);
+
+    /* HANDLE SELECTED INSTANCE */
+    const [selectedInstance, setSelectedInstance] = useState<TRecurringInstanceProjection | null>(null);
+    const [action, setAction] = useState<'skip' | 'create' | null>(null);
+
+    const handleSelectedInstance = (instance: TRecurringInstanceProjection, action: 'skip' | 'create') => {
+        setSelectedInstance(instance);
+        setAction(action);
     };
 
-    const getStatusColor = (status: TRecurringStatus): "success" | "warning" | "primary" | "default" => {
+    const resetSelectedInstance = () => {
+        setSelectedInstance(null);
+        setAction(null);
+    }
+
+    const { isOpen, onOpenChange } = useDisclosure();
+
+    useEffect(() => {
+        if (selectedInstance !== null && action !== null) {
+            switch (action) {
+                case 'create':
+                    onOpenChange();
+                    break;
+
+                case 'skip':
+                    // call skip API
+                    skipInstance({
+                        body: {
+                            reason: 'Skipped by user'
+                        }
+                    });
+                    resetSelectedInstance();
+                    break;
+
+                case 'create':
+                    onOpenChange();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }, [selectedInstance, action]);
+
+    useEffect(() => {
+        if (isOpen === false) {
+            resetSelectedInstance();
+        }
+    }, [isOpen]);
+
+
+
+    /* HANDLE CREATE TRANSACTION */
+
+    const { data: createTransactionResult, error: createTransactionError, loading: creatingTransaction, fetch: createTransaction } = useFetch<IAPIResponse>(API_ENDPOINT.RECURRINGS.INSTANCE_CREATE_TRANSACTION(selectedInstance?.instance_id?.toString() ?? '-1'), {
+        method: 'POST',
+        skip: true,
+    })
+
+    useEffect(() => {
+        if (createTransactionResult) {
+            addToast({
+                title: "Success",
+                description: createTransactionResult.message,
+                color: "success",
+            });
+            fetchInstances();
+            onOpenChange();
+        }
+
+        if (createTransactionError) {
+            const parsedError = JSON.parse(createTransactionError);
+
+            addToast({
+                title: "Error",
+                description: parsedError.message,
+                color: "danger",
+            });
+        }
+    }, [createTransactionResult, createTransactionError]);
+
+    /* HANDLE SKIP INSTANCE */
+
+    const {
+        data: skipInstanceResult,
+        error: skipInstanceError,
+        loading: skippingInstance,
+        fetch: skipInstance
+    } = useFetch<IAPIResponse>(API_ENDPOINT.RECURRINGS.INSTANCE_SKIP(selectedInstance?.instance_id?.toString() ?? '-1'), {
+        method: 'POST',
+        skip: true,
+    })
+
+    useEffect(() => {
+        if (skipInstanceResult) {
+            addToast({
+                title: "Success",
+                description: skipInstanceResult.message,
+                color: "success",
+            });
+            fetchInstances();
+        }
+
+        if (skipInstanceError) {
+            const parsedError = JSON.parse(skipInstanceError);
+
+            addToast({
+                title: "Error",
+                description: parsedError.message,
+                color: "danger",
+            });
+        }
+    }, [skipInstanceResult, skipInstanceError]);
+
+
+
+    const handleAddTransactionFromInstance = (instanceId: TRecurringInstance['instance_id'], payload: TCompleteInstanceFormData) => {
+        createTransaction({
+            url: API_ENDPOINT.RECURRINGS.INSTANCE_CREATE_TRANSACTION(instanceId.toString()),
+            method: 'POST',
+            body: {
+                amount: payload.actual_amount,
+                transaction_date: payload.actual_date,
+                category_id: payload.category_id,
+                note: payload.notes,
+            },
+        });
+    }
+
+
+
+    const getStatusColor = (status: TRecurringInstanceStatus): "success" | "warning" | "primary" | "default" | "danger" => {
         switch (status) {
-            case 'active':
-                return 'success';
-            case 'paused':
-                return 'warning';
             case 'completed':
+                return 'success';
+            case 'pending':
+                return 'warning';
+            case 'modified':
                 return 'primary';
+            case 'skipped':
             case 'cancelled':
                 return 'default';
+            case 'overdue':
+                return 'danger';
             default:
                 return 'default';
         }
     };
 
-    const formatFrequency = (frequency: TFrequencyType, interval: number) => {
-        const base = frequency.charAt(0).toUpperCase() + frequency.slice(1);
-
-        if (interval === 1) {
-            return base;
-        }
-
-        return `Every ${interval} ${frequency}`;
-    };
-
     const columns = [
+        { key: "scheduled_date", label: "Date" },
         { key: "recurring_name", label: "Name" },
-        { key: "amount", label: "Amount" },
-        { key: "frequency", label: "Frequency" },
-        { key: "card_name", label: "Card" },
-        { key: "next_scheduled_date", label: "Next Date" },
+        { key: "old_balance", label: "Old Balance" },
+        { key: "scheduled_amount", label: "Amount" },
+        { key: "new_balance", label: "New Balance" },
         { key: "status", label: "Status" },
         { key: "actions", label: "Actions" },
     ];
@@ -191,7 +300,7 @@ export default function RecurringPage() {
             </div>
             {/* Stats */}
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {
                     recurringStats.map((stat, index) => {
                         return (
@@ -206,132 +315,150 @@ export default function RecurringPage() {
             </div>
 
             {/* Filters */}
-            <div className={"flex flex-col md:flex-row gap-4"}>
-                <RadioGroup
-                    label={"Filter by card"}
-                    orientation="horizontal"
-                    value={selectedCard ? selectedCard.toString() ?? '' : ''}
+            <div className={"flex flex-col gap-2"}>
+                <SelectCardRadioGroup
+                    cards={listCards}
+                    compact
+                    label="Filter by card"
+                    value={selectedCard ?? 0}
                     onValueChange={(value) => setSelectedCard(value ? parseInt(value) : null)}
-                >
-                    {listCards && listCards.length > 0 ? (
-                        listCards.map((card) => (
-                            <BankCardRadio
-                                key={card.card_id.toString()}
-                                bank_code={card.bank_code}
-                                card_balance={card.card_balance}
-                                card_id={card.card_id}
-                                card_name={card.card_name}
-                            />
-                        ))
-                    ) : null}
-                </RadioGroup>
+                />
             </div>
 
             {/* Table */}
-            <Table isHeaderSticky aria-label="Recurring transactions table">
+            <Table isHeaderSticky aria-label="Recurring instances table">
                 <TableHeader columns={columns}>
                     {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
                 </TableHeader>
                 <TableBody
-                    emptyContent={fetchingRecurrings ? "Loading..." : "No recurring transactions found"}
-                    isLoading={fetchingRecurrings}
-                    items={fetchRecurringsResults?.results || []}
+                    emptyContent={fetchingInstances ? <LoadingBlock /> : "No recurring instances found"}
+                    isLoading={fetchingInstances}
+                    items={fetchInstancesResults?.results?.instances || []}
                 >
-                    {(item: TRecurringResponse) => (
-                        <TableRow key={item.recurring_id}>
-                            {(columnKey) => {
-                                switch (columnKey) {
-                                    case "recurring_name":
-                                        return (
-                                            <TableCell>
-                                                <div>
-                                                    <p className="font-medium">{item.recurring_name}</p>
-                                                    {item.category_name && (
-                                                        <p className="text-xs text-default-500">{item.category_name}</p>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        );
-                                    case "amount":
-                                        return (
-                                            <TableCell>
-                                                <span
-                                                    className={clsx("font-semibold", {
-                                                        "text-success": item.direction === "in",
-                                                        "text-danger": item.direction === "out",
-                                                    })}
-                                                >
-                                                    {item.direction === "in" ? "+" : "-"}
-                                                    {item.amount.toLocaleString()}
-                                                </span>
-                                            </TableCell>
-                                        );
-                                    case "frequency":
-                                        return (
-                                            <TableCell>
-                                                {formatFrequency(item.frequency, item.interval)}
-                                            </TableCell>
-                                        );
-                                    case "card_name":
-                                        return <TableCell>{item.card_name || "N/A"}</TableCell>;
-                                    case "next_scheduled_date":
-                                        return (
-                                            <TableCell>
-                                                {item.next_scheduled_date
-                                                    ? moment(item.next_scheduled_date).format("DD-MM-YYYY")
-                                                    : "N/A"}
-                                            </TableCell>
-                                        );
-                                    case "status":
-                                        return (
-                                            <TableCell>
-                                                <Chip color={getStatusColor(item.status)} size="sm" variant="flat">
-                                                    {item.status}
-                                                </Chip>
-                                            </TableCell>
-                                        );
-                                    case "actions":
-                                        return (
-                                            <TableCell>
-                                                <Dropdown>
-                                                    <DropdownTrigger>
-                                                        <Button isIconOnly size="sm" variant="light">
-                                                            {ICONS.ELLIPSIS.MD}
+                    {(item: TRecurringInstanceProjection) => {
+                        return (
+                            <TableRow key={item.instance_id}>
+                                {(columnKey) => {
+                                    switch (columnKey) {
+                                        case "scheduled_date":
+                                            return (
+                                                <TableCell>
+                                                    <div>
+                                                        <p className="font-medium">
+                                                            {moment(item.scheduled_date).format("DD-MM-YYYY")}
+                                                        </p>
+                                                        <p className="text-xs text-default-500">
+                                                            {moment(item.scheduled_date).format("dddd")}
+                                                        </p>
+                                                    </div>
+                                                </TableCell>
+                                            );
+                                        case "recurring_name":
+                                            return (
+                                                <TableCell>
+                                                    <div>
+                                                        <p className="font-medium">{item.recurring_name}</p>
+                                                        {item.category_name && (
+                                                            <p className="text-xs text-default-500">{item.category_name}</p>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            );
+                                        case "old_balance":
+                                            return (
+                                                <TableCell>
+                                                    <span className="font-medium">
+                                                        {(item.old_balance || 0).toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                            );
+                                        case "scheduled_amount":
+                                            return (
+                                                <TableCell>
+                                                    <span
+                                                        className={clsx("font-semibold", {
+                                                            "text-success": item.direction === "in",
+                                                            "text-danger": item.direction === "out",
+                                                        })}
+                                                    >
+                                                        {item.direction === "in" ? "+" : "-"}
+                                                        {item.scheduled_amount.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                            );
+                                        case "new_balance":
+                                            return (
+                                                <TableCell>
+                                                    <span
+                                                        className={clsx("font-semibold", {
+                                                            "text-success": (item.new_balance || 0) >= 0,
+                                                            "text-danger": (item.new_balance || 0) < 0,
+                                                        })}
+                                                    >
+                                                        {(item.new_balance || 0).toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                            );
+                                        case "status":
+                                            return (
+                                                <TableCell>
+                                                    <Chip className={"capitalize"} color={getStatusColor(item.status)} size="sm" variant="flat">
+                                                        {item.status}
+                                                    </Chip>
+                                                </TableCell>
+                                            );
+                                        case "actions":
+                                            return (
+                                                <TableCell>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            isIconOnly
+                                                            color="warning"
+                                                            isDisabled={item.status !== 'pending' && item.status !== 'overdue'}
+                                                            isLoading={skippingInstance}
+                                                            size="sm"
+                                                            title="Skip"
+                                                            variant="flat"
+                                                            onPress={() => handleSelectedInstance(item, 'skip')}
+                                                        >
+                                                            {ICONS.XMARK.MD}
                                                         </Button>
-                                                    </DropdownTrigger>
-                                                    <DropdownMenu aria-label="Actions">
-                                                        <DropdownItem
-                                                            key="view"
-                                                            onPress={() => router.push(`/settings/recurrings/${item.recurring_id}`)}
+
+                                                        <Button
+                                                            isIconOnly
+                                                            color="primary"
+                                                            isDisabled={item.status !== 'pending' && item.status !== 'overdue'}
+                                                            isLoading={creatingTransaction}
+                                                            size="sm"
+                                                            title="Create Transaction"
+                                                            variant="flat"
+                                                            onPress={() => handleSelectedInstance(item, 'create')}
                                                         >
-                                                            View Details
-                                                        </DropdownItem>
-                                                        <DropdownItem
-                                                            key="edit"
-                                                            onPress={() => router.push(`/settings/recurrings/${item.recurring_id}`)}
-                                                        >
-                                                            Edit
-                                                        </DropdownItem>
-                                                        <DropdownItem
-                                                            key="delete"
-                                                            className="text-danger"
-                                                            color="danger"
-                                                            onPress={() => handleDelete(item.recurring_id)}
-                                                        >
-                                                            Delete
-                                                        </DropdownItem>
-                                                    </DropdownMenu>
-                                                </Dropdown>
-                                            </TableCell>
-                                        );
-                                    default:
-                                        return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
-                                }
-                            }}
-                        </TableRow>
-                    )}
+                                                            {ICONS.NEW.MD}
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            );
+                                        default:
+                                            return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+                                    }
+                                }}
+                            </TableRow>
+                        );
+                    }}
                 </TableBody>
             </Table>
+            <CustomModal
+                isOpen={isOpen}
+                title="Create Transaction From Instance"
+                onOpenChange={onOpenChange}
+            >
+                <RecurringInstanceForm
+                    instanceId={selectedInstance?.instance_id ?? -1}
+                    isLoading={creatingTransaction}
+                    onSubmit={handleAddTransactionFromInstance}
+                />
+            </CustomModal>
         </section>
     );
 }

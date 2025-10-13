@@ -19,7 +19,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      data: await skipInstance(Number(recurring_instance_id), Number(user_id), body.reason || null),
+      message: 'Skip recurring instance successfully',
+      results: await skipInstance(Number(recurring_instance_id), Number(user_id), body.reason || null),
     });
   } catch (error: unknown) {
     return handleError(error);

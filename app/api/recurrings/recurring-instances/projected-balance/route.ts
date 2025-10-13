@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: await getProjectedBalance(user_id, Number(card_id), up_to_date, from_date),
+      message: 'Projected balance retrieved successfully',
+      results: await getProjectedBalance(user_id, Number(card_id), up_to_date, from_date),
     });
   } catch (error: unknown) {
     return handleError(error);

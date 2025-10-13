@@ -68,12 +68,7 @@ export async function POST(request: NextRequest) {
       message: "Created recurring transaction successfully",
       results: await addNewRecurring(user_id, body),
     }, { status: 201 });
-  } catch (error: any) {
-    console.error('Error creating recurring:', error);
-
-    return NextResponse.json(
-      { error: error.message || 'Failed to create recurring transaction' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleError(error);
   }
 }

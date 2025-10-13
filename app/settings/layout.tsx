@@ -40,30 +40,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 		{
 			label: ["Settings", "Recurring", "New Recurring"],
 			key: "^/settings/recurrings/new",
-			customButton: [
-				{
-					children: "Back",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.BACK.LG,
-					href: "/settings/recurrings",
-				},
-			],
 		},
 		{
 			label: ["Settings", "Recurring", "Recurring Details"],
 			key: "^/settings/recurrings/[^[/]+",
-			customButton: [
-				{
-					children: "Back",
-					color: "primary",
-					variant: "solid",
-					size: "lg",
-					startContent: ICONS.BACK.LG,
-					href: "/settings/recurrings",
-				},
-			],
 		},
 	];
 

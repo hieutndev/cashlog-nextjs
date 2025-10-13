@@ -1,9 +1,9 @@
 import { RowDataPacket, ResultSetHeader, PoolConnection } from 'mysql2/promise';
 import { z } from 'zod';
+import moment from 'moment';
 
 import { validateCardOwnership } from '../cards/card-services';
 import { validateCategoryOwnership } from '../categories/categories-services';
-import { updateCardBalance } from '../transactions/transaction-services';
 
 import { getCardInfoById } from './../cards/card-services';
 
@@ -16,7 +16,6 @@ import {
   UpdateRecurringOptions,
   TRemoveRecurringOptions,
   TRecurringResponse,
-  RecurringInstance,
   TRecurringFilters,
   TRecurringInstanceFilters,
   RECURRING_STATUS,
@@ -46,7 +45,7 @@ export const getAllRecurringsQueryParams = z.object({
 });
 
 export const frequencyConfigPayload = z.object({
-  daysOfWeek: z.number().min(0).max(6).optional().array(),
+  // daysOfWeek: z.number().min(0).max(6).optional().array(),
   dayOfMonth: z.number().min(1).max(31).optional(),
   adjustment: z.enum(RECURRING_ADJUSTMENT_TYPES, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }).optional(),
   month: z.number().min(1).max(12).optional(),
@@ -74,6 +73,8 @@ const recurringPayloadObject = {
   notes: z.string().nullable().optional()
 }
 
+
+
 export const addRecurringsPayload = z.object(recurringPayloadObject).refine((data) => {
 
   if (data.end_date) {
@@ -97,6 +98,12 @@ export const updateRecurringPayload = z.object({
 export const createTransactionFromInstancePayload = z.object({
   amount: z.number().min(1, { message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO }),
   transaction_date: z.iso.datetime({ message: VALIDATE_MESSAGE.REQUIRE_ISO_DATE }),
+  category_id: z.coerce
+    .number({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO })
+    .positive({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO })
+    .nullable()
+    .optional(),
+  note: z.string().nullable().optional()
 })
 
 export function addDays(date: Date, days: number): Date {
@@ -110,6 +117,9 @@ export function addDays(date: Date, days: number): Date {
 export function addMonths(date: Date, months: number): Date {
   const result = new Date(date);
 
+  // Set to day 1 first to avoid date overflow issues
+  // (e.g., Jan 31 + 1 month should go to Feb 1, not Mar 3)
+  result.setDate(1);
   result.setMonth(result.getMonth() + months);
 
   return result;
@@ -118,6 +128,10 @@ export function addMonths(date: Date, months: number): Date {
 export function addYears(date: Date, years: number): Date {
   const result = new Date(date);
 
+  // Set to day 1 and month 0 first to avoid date overflow issues
+  // (e.g., Feb 29 2024 + 1 year should go to Jan 1 2025, not Mar 1 2025)
+  result.setDate(1);
+  result.setMonth(0);
   result.setFullYear(result.getFullYear() + years);
 
   return result;
@@ -301,38 +315,55 @@ export function calculateOccurrences(
   const max_iterations = 10000;
   let iterations = 0;
 
+  // Ensure start_date is not after max_date
+  if (current_date > max_date) {
+    return occurrences;
+  }
+
   while (current_date <= max_date && iterations < max_iterations) {
     iterations++;
 
     switch (frequency) {
       case 'daily':
-        occurrences.push(new Date(current_date));
+        if (current_date >= start_date && current_date <= max_date) {
+          occurrences.push(new Date(current_date));
+        }
         current_date = addDays(current_date, interval);
         break;
 
       case 'weekly':
-        const days_of_week = config.daysOfWeek || [current_date.getDay()];
+        const days_of_week = config.daysOfWeek || [start_date.getDay()];
 
-        for (const day of days_of_week.sort()) {
-          let occurrence_date = getNextDayOfWeek(current_date, day);
+        // Find the Monday of the current iteration week
+        const monday_of_week = new Date(current_date);
+        const daysFromMonday = (current_date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
 
-          if (occurrence_date < current_date) {
-            occurrence_date = addDays(occurrence_date, 7 * interval);
-          }
+        monday_of_week.setDate(current_date.getDate() - daysFromMonday);
 
-          if (occurrence_date <= max_date) {
+        // Generate occurrences for each specified day in this week
+        for (const dayOfWeek of days_of_week.sort()) {
+          const occurrence_date = new Date(monday_of_week);
+
+          // Calculate offset from Monday (0=Monday, 1=Tuesday, ..., 6=Sunday)
+          const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+          occurrence_date.setDate(monday_of_week.getDate() + offset);
+
+          // Only add if it's >= start_date and <= max_date
+          if (occurrence_date >= start_date && occurrence_date <= max_date) {
             occurrences.push(new Date(occurrence_date));
           }
         }
 
+        // Move to the next interval (add weeks)
         current_date = addDays(current_date, 7 * interval);
         break;
 
       case 'monthly':
         const monthly_date = calculateMonthlyOccurrence(current_date, config);
 
-        // Check if date is valid (not skipped)
-        if (monthly_date.getTime() > 0 && monthly_date <= max_date) {
+        // Check if date is valid (not skipped) and within range
+        if (monthly_date.getTime() > 0 && monthly_date >= start_date && monthly_date <= max_date) {
           occurrences.push(new Date(monthly_date));
         }
 
@@ -343,8 +374,8 @@ export function calculateOccurrences(
         const year = current_date.getFullYear();
         const yearlyDate = calculateYearlyOccurrence(year, config);
 
-        // Check if date is valid (not skipped)
-        if (yearlyDate.getTime() > 0 && yearlyDate <= max_date) {
+        // Check if date is valid (not skipped) and within range
+        if (yearlyDate.getTime() > 0 && yearlyDate >= start_date && yearlyDate <= max_date) {
           occurrences.push(new Date(yearlyDate));
         }
 
@@ -399,7 +430,7 @@ export async function getRecurringById(
   recurring_id: TRecurring['recurring_id'],
   user_id: TUser['user_id'],
   connection: PoolConnection | null = null
-): Promise<TRecurringResponse> {
+) {
 
   if (connection) {
     const [rows] = await connection.query<RowDataPacket[]>(
@@ -425,14 +456,14 @@ export async function getRecurringById(
     }
 
     const instanceRows = await dbQuery<RowDataPacket[]>(
-      QUERY_STRING.GET_NEXT_SCHEDULED_INSTANCES,
+      QUERY_STRING.GET_ALL_INSTANCES_OF_RECURRING,
       [recurring_id]
     );
 
     return {
       ...rows[0],
-      upcoming_instances: instanceRows as RecurringInstance[],
-    } as TRecurringResponse;
+      upcoming_instances: instanceRows,
+    };
   }
 }
 
@@ -473,13 +504,64 @@ export async function getRecurringInstancesOfUser(
     params.push(filters.days_ahead);
   }
 
-  query += ' ORDER BY ri.scheduled_date ASC';
+  query += ' AND ri.status IN ("pending","overdue") ORDER BY ri.scheduled_date ASC LIMIT 20';
 
   return await dbQuery<RowDataPacket[]>(query, params);
 }
 
 export async function updateOverdueInstances(user_id: TUser['user_id']): Promise<void> {
   await dbQuery(QUERY_STRING.UPDATE_OVERDUE_INSTANCES, [user_id]);
+}
+
+
+
+export async function getRecurringInstancesWithBalances(
+  user_id: TUser['user_id'],
+  filters: TRecurringInstanceFilters = {}
+) {
+  const instances = await getRecurringInstancesOfUser(user_id, filters);
+
+  if (instances.length === 0) {
+    return [];
+  }
+
+  const cardId = filters.card_id || (instances[0] as any).card_id;
+
+  if (!cardId) {
+    return instances.map(instance => ({
+      ...instance,
+      old_balance: 0,
+      new_balance: 0
+    }));
+  }
+
+  const card = await getCardInfoById(cardId, user_id);
+  const currentBalance = Number(card.card_balance);
+
+  const sortedInstances = [...instances].sort((a, b) =>
+    new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime()
+  );
+
+  let runningBalance = currentBalance;
+  const instancesWithBalances: any[] = [];
+
+  sortedInstances.forEach((instance) => {
+    const oldBalance = runningBalance;
+    const change = instance.direction === 'in'
+      ? Number(instance.scheduled_amount)
+      : -Number(instance.scheduled_amount);
+    const newBalance = runningBalance + change;
+
+    instancesWithBalances.push({
+      ...instance,
+      old_balance: oldBalance,
+      new_balance: newBalance
+    });
+
+    runningBalance = newBalance;
+  });
+
+  return instancesWithBalances;
 }
 
 export async function addNewRecurring(
@@ -562,9 +644,10 @@ export async function generateInstances(
     [recurring_id]
   );
 
-  const is_new_recurring = last_instance_rows.length === 0;
+  // Check if there are existing instances AND if the last_date is not NULL
+  const has_existing_instances = last_instance_rows.length > 0 && last_instance_rows[0].last_date != null;
 
-  const occurrences_start_date = !is_new_recurring
+  const occurrences_start_date = has_existing_instances
     ? addDays(new Date(last_instance_rows[0].last_date), 1)
     : new Date(recurring.start_date);
 
@@ -636,44 +719,23 @@ export async function markInstanceAsCompleted(
     const instance = await getRecurringInstanceById(recurring_instance_id, user_id);
 
     if (instance.status !== 'pending' && instance.status !== 'overdue') {
-      throw new Error(`Cannot complete instance with status: ${instance.status}`);
+      throw new ApiError(`Cannot complete instance with status: ${instance.status}`, 404);
     }
 
-    const actual_date = overrides.actual_date || formatMYSQLDate(new Date().toISOString());
+
+
+    const actual_date = overrides.actual_date ? moment(overrides.actual_date).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+    const instance_date = moment(instance.scheduled_date).format('YYYY-MM-DD');
+
     const actual_amount = overrides.actual_amount || instance.scheduled_amount;
-    const is_modified = actual_date !== instance.scheduled_date || actual_amount !== instance.scheduled_amount;
 
-    const [add_transaction_result] = await connection.query<ResultSetHeader>(
-      QUERY_STRING.ADD_TRANSACTION_FROM_RECURRING_INSTANCE,
-      [
-        user_id,
-        instance.card_id,
-        instance.category_id,
-        instance.recurring_name,
-        actual_amount,
-        instance.direction,
-        actual_date,
-        recurring_instance_id,
-        overrides.notes || (is_modified ? buildModificationNote(
-          instance.scheduled_date,
-          instance.scheduled_amount,
-          actual_date,
-          actual_amount
-        ) : null)
-      ]
-    );
+    const is_modified = actual_date !== instance_date || Number(actual_amount) !== Number(instance.scheduled_amount);
 
-    const transaction_id = add_transaction_result.insertId;
-
-    await updateCardBalance(instance.card_id, user_id);
-
-    // Update instance
     await connection.query(
       QUERY_STRING.UPDATE_INSTANCE_COMPLETED,
       [
         is_modified ? 'modified' : 'completed',
-        transaction_id,
-        actual_date,
+        formatMYSQLDate(actual_date),
         actual_amount,
         overrides.notes || null,
         recurring_instance_id
@@ -746,11 +808,86 @@ export async function createTransactionFromInstance(
     note?: string;
   }
 ) {
-  return markInstanceAsCompleted(recurring_instance_id, user_id, {
-    actual_date: transaction_payload.transaction_date,
-    actual_amount: transaction_payload.amount,
-    notes: transaction_payload.note
-  });
+  const connection = await mysqlPool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Load instance inside the flow
+    const instance = await getRecurringInstanceById(recurring_instance_id, user_id);
+
+    if (instance.status !== 'pending' && instance.status !== 'overdue') {
+      throw new Error(`Cannot create transaction for instance with status: ${instance.status}`);
+    }
+
+    // Validate category ownership if category_id is provided
+    if (transaction_payload.category_id) {
+      await validateCategoryOwnership(Number(transaction_payload.category_id), user_id);
+    }
+
+    const actual_date = transaction_payload.transaction_date || new Date().toISOString();
+    const actual_amount = transaction_payload.amount || instance.scheduled_amount;
+    const is_modified = actual_date !== instance.scheduled_date || actual_amount !== instance.scheduled_amount;
+
+    // Create transaction from recurring instance within the current transaction
+    const [add_transaction_result] = await connection.query<ResultSetHeader>(
+      QUERY_STRING.ADD_TRANSACTION_FROM_RECURRING_INSTANCE,
+      [
+        instance.card_id,
+        transaction_payload.category_id ?? instance.category_id,
+        transaction_payload.note || instance.recurring_name,
+        actual_amount,
+        instance.direction,
+        formatMYSQLDate(actual_date),
+        recurring_instance_id,
+        transaction_payload.note || (is_modified ? buildModificationNote(
+          instance.scheduled_date,
+          instance.scheduled_amount,
+          actual_date,
+          actual_amount
+        ) : null)
+      ]
+    );
+
+    const transaction_id = add_transaction_result.insertId;
+
+    // Recalculate and update card balance inside the current transaction/connection
+    const [balanceRows] = await connection.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(CASE WHEN direction = 'in' THEN amount ELSE -amount END), 0) as balance FROM transactions_new WHERE card_id = ?`,
+      [instance.card_id]
+    );
+
+    const newBalance = Number((balanceRows as any)[0]?.balance ?? 0);
+
+    await connection.query(
+      QUERY_STRING.UPDATE_CARD_BALANCE,
+      [newBalance, instance.card_id]
+    );
+
+    // Commit the transaction creation and balance update first
+    await connection.commit();
+
+    // Now mark the instance as completed using the dedicated function which
+    // will insert history. It opens its own transaction.
+    await markInstanceAsCompleted(recurring_instance_id, user_id, {
+      actual_date,
+      actual_amount,
+      notes: transaction_payload.note || null,
+      // include transaction_id so markInstanceAsCompleted can link it when updating instance
+      // (markInstanceAsCompleted reads overrides.transaction_id)
+      ...({ transaction_id } as any)
+    });
+
+    return {
+      success: true,
+      transaction_id
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function getProjectedBalance(
@@ -946,4 +1083,20 @@ export async function deleteRecurring(
   await dbQuery(QUERY_STRING.DELETE_RECURRING, [recurring_id]);
 
   return true;
+}
+
+export async function getRecurringAnalysis(user_id: TUser['user_id'], card_id: TCard['card_id'] | null = null) {
+  console.log("🚀 ~ getRecurringAnalysis ~ card_id:", card_id)
+  if (card_id) {
+    await validateCardOwnership(card_id, user_id);
+  }
+
+  const base_query = card_id ? QUERY_STRING.GET_ALL_RECURRING_ANALYSIS_BY_CARD : QUERY_STRING.GET_ALL_RECURRING_ANALYSIS;
+
+  const [query] = await dbQuery<RowDataPacket[]>(
+    base_query,
+    card_id ? [user_id, card_id] : [user_id]
+  );
+
+  return query;
 }

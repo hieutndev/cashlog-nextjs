@@ -28,7 +28,7 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 			<Image
 				alt="Bank Logo"
 				aria-hidden="true"
-				className="absolute -right-1/4 top-1/2 -translate-y-1/2 h-[125%] w-auto opacity-25 pointer-events-none select-none"
+				className="absolute -right-0 top-1/2 -translate-y-1/2 h-full w-auto scale-150 opacity-25 pointer-events-none select-none"
 				height={1000}
 				priority={false}
 				src={getBankLogo(bankCode, 1)}
@@ -37,9 +37,9 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 			<div className="relative w-full h-full flex items-end">
 				<div className="flex flex-col gap-2">
 					{/* large faded balance behind the name */}
-					
+
 					{/* card name above the faded balance */}
-					<p className="text-md uppercase font-semibold">{cardName}</p>
+					<p className="text-left text-md uppercase font-semibold">{cardName}</p>
 					<h1 className="text-4xl font-bold text-white z-0 pointer-events-none">
 						{cardBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
 					</h1>
