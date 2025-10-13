@@ -1,12 +1,14 @@
 "use client";
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Chart as ChartJS, ArcElement, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import { shortNumber } from "hieutndev-toolkit";
+import { Tooltip } from "@heroui/tooltip";
 
 import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Legend);
 
 interface CategoryBreakdownChartProps {
     data: {
@@ -104,7 +106,11 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
                     <div className="px-8 w-full h-full overflow-y-auto flex flex-row flex-wrap gap-4 items-center">
                         {data.map((item, index) => {
                             return (
-                                <div key={item.category} className="flex items-center gap-2">
+                                <Tooltip
+                                    key={item.category} className="flex items-center gap-2"
+                                    content={`${Number(item.total).toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`}
+                                    placement="top"
+                                >
                                     <div className="w-max flex items-center gap-2">
                                         <div
                                             className="w-3 h-3 rounded-full flex-shrink-0"
@@ -115,11 +121,11 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
                                                 {item.category}
                                             </span>
                                             <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
-                                                ({Number(item.total).toLocaleString()}{SITE_CONFIG.CURRENCY_STRING})
+                                                (~{shortNumber(item.total, 1)})
                                             </span>
                                         </div>
                                     </div>
-                                </div>
+                                </Tooltip>
                             );
                         })}
                     </div>
