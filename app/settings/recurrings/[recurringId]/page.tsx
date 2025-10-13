@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Image } from "@heroui/image"
-import { Skeleton } from "@heroui/skeleton";
 import clsx from "clsx";
 import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
@@ -11,7 +10,6 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import moment from "moment";
 import { Button } from "@heroui/button";
-import { Tooltip } from "@heroui/tooltip";
 import { useDisclosure } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 

@@ -13,7 +13,6 @@ import { QUERY_STRING } from '@/configs/query-string';
 import {
   TAddRecurringPayload,
   TFrequencyConfig,
-  UpdateRecurringOptions,
   TRemoveRecurringOptions,
   TRecurringResponse,
   TRecurringFilters,
@@ -23,7 +22,7 @@ import {
   RECURRING_ADJUSTMENT_TYPES,
   TFrequencyType,
   TRecurring,
-  TRecurringInstance
+  TRecurringInstance,
 } from '@/types/recurring';
 import { ApiError } from '@/types/api-error';
 import { TUser } from '@/types/user';
@@ -430,7 +429,7 @@ export async function getRecurringById(
   recurring_id: TRecurring['recurring_id'],
   user_id: TUser['user_id'],
   connection: PoolConnection | null = null
-) {
+): Promise<TRecurringResponse> {
 
   if (connection) {
     const [rows] = await connection.query<RowDataPacket[]>(
@@ -461,8 +460,8 @@ export async function getRecurringById(
     );
 
     return {
-      ...rows[0],
-      upcoming_instances: instanceRows,
+      ...rows[0] as TRecurringResponse,
+      upcoming_instances: instanceRows as TRecurringInstance[],
     };
   }
 }
@@ -932,7 +931,10 @@ export async function updateRecurring(
   recurring_id: TRecurring['recurring_id'],
   user_id: TUser['user_id'],
   updates: TAddRecurringPayload,
-  options: UpdateRecurringOptions = {}
+  options: {
+    apply_to_future?: boolean;
+    recreate_instances?: boolean;
+  } = {}
 ) {
   const connection = await mysqlPool.getConnection();
 

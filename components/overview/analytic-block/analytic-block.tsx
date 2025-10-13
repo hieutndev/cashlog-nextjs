@@ -21,13 +21,6 @@ export interface AnalyticBlockProps {
 }
 
 export default function AnalyticBlock({ label, value, timeRange }: AnalyticBlockProps) {
-
-	const mapTitleColor: Record<string, string> = {
-		'Total Income': 'text-success',
-		'Total Expense': 'text-danger',
-		'Total Savings': 'text-warning',
-	}
-
 	return (
 		<Card shadow={"none"}>
 			<CardBody className={"flex flex-col lg:gap-2 gap-4 pt-2 pb-4"}>

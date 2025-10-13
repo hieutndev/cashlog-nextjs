@@ -209,7 +209,7 @@ export default function RecurringForm({ mode, initialData, onSuccess, recurringI
 
 	const {
 		data: fetchCardsResult,
-		loading: loadingCards,
+		// loading: loadingCards,
 		error: errorCards,
 	} = useFetch<IAPIResponse<TCard[]>>("/cards");
 

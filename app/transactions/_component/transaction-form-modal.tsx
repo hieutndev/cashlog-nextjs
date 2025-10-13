@@ -52,7 +52,7 @@ export default function CrudTransactionModal({
 	const { width } = useWindowSize();
 
 	// HANDLE FETCH CARD
-	const [listCard, setListCard] = useState<AccountCardProps[]>([]);
+	const [listCard, setListCard] = useState<TCard[]>([]);
 
 	const {
 		data: fetchCardsResult,
@@ -104,7 +104,7 @@ export default function CrudTransactionModal({
 		loading: updatingTransaction,
 		error: updateTransactionError,
 		fetch: updateTransaction,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_ID(defaultData?.transaction_id ?? ""), {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_ID(defaultData?.transaction_id.toString() ?? ""), {
 		method: "PUT",
 		body: transactionInfo,
 		skip: true,

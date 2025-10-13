@@ -89,7 +89,7 @@ export const DELETE = async (request: Request) => {
         }
 
 
-        if (await deleteTransaction(transactionId, userId)) {
+        if (await deleteTransaction(Number(transactionId), userId)) {
             return Response.json({
                 status: "success",
                 message: "Delete transaction successfully"

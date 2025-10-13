@@ -317,8 +317,8 @@ export default function RecurringPage() {
             {/* Filters */}
             <div className={"flex flex-col gap-2"}>
                 <SelectCardRadioGroup
-                    cards={listCards}
                     compact
+                    cards={listCards}
                     label="Filter by card"
                     value={selectedCard ?? 0}
                     onValueChange={(value) => setSelectedCard(value ? parseInt(value) : null)}

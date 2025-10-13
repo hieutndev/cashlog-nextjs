@@ -40,6 +40,7 @@ export type TRecurringResponse = TRecurring & {
   completed_instances: number;
   skipped_instances: number;
   overdue_instances: number;
+  next_scheduled_date: string;
 } & TCard & TCategory & { user_id: TUser['user_id'] };
 
 export interface RecurringInstance {

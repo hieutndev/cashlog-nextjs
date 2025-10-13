@@ -10,10 +10,8 @@ import {
     Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { Card, CardBody } from "@heroui/card";
 
 import { SITE_CONFIG } from "@/configs/site-config";
-import LoadingBlock from "@/components/shared/loading-block/loading-block";
 
 ChartJS.register(
     CategoryScale,

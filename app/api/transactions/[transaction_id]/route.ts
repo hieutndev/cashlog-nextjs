@@ -17,7 +17,7 @@ export const GET = async (request: Request, { params }: TransactionDetailsRouteP
         return Response.json({
             status: "success",
             message: "Get transaction details successfully",
-            results: await getTransactionById(transaction_id, userId)
+            results: await getTransactionById(Number(transaction_id), userId)
         });
 
     } catch (error: unknown) {
@@ -33,7 +33,7 @@ export const PUT = async (request: Request, { params }: TransactionDetailsRouteP
 
         const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
 
-        await updateTransaction(transaction_id, await request.json(), userId);
+        await updateTransaction(Number(transaction_id), await request.json(), userId);
 
         return Response.json({
             status: "success",

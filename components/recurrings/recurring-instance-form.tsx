@@ -166,10 +166,10 @@ export default function RecurringInstanceForm({ instanceId, onSubmit, isLoading 
                     />
 
                     <Select
+                        description={data?.results ? `Default: ${(data.results as any).category_name || 'No category'}` : ''}
                         label="Category"
                         labelPlacement="outside"
                         placeholder="Select category"
-                        description={data?.results ? `Default: ${(data.results as any).category_name || 'No category'}` : ''}
                         selectedKeys={formData.category_id ? [formData.category_id.toString()] : []}
                         variant="bordered"
                         onChange={(e) =>

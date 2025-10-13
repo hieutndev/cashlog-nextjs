@@ -239,7 +239,7 @@ export default function TransactionsPage() {
 		data: deleteTransactionResults,
 		error: errorDeleteTransaction,
 		fetch: deleteTransaction,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_QUERY(selectedTransaction?.transaction_id ?? ''), {
+	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_QUERY(selectedTransaction?.transaction_id.toString() ?? ''), {
 		method: "DELETE",
 		skip: true,
 	});

@@ -5,7 +5,6 @@ import type { TRecurringResponse } from "@/types/recurring";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Spinner } from "@heroui/spinner";
 import { useFetch } from "hieutndev-toolkit";
 
 import RecurringForm from "../../_components/recurring-form";
