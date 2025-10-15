@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useFetch } from "hieutndev-toolkit";
 
 import LandingSectionHeader from "./landing-section-header";
-import { useFetch } from "hieutndev-toolkit";
+
 import { API_ENDPOINT } from "@/configs/api-endpoint";
 import { IAPIResponse } from "@/types/global";
 
