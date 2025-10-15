@@ -3,6 +3,7 @@
 import { Button } from "@heroui/button";
 import { Image } from "@heroui/image";
 import { useRouter } from "next/navigation";
+
 import { useAuth } from "../providers/auth-provider";
 
 export default function HeroSection() {
@@ -15,18 +16,18 @@ export default function HeroSection() {
 		<section className="relative overflow-hidden bg-white">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 				<div className="grid lg:grid-cols-2 gap-12 items-center">
-					<div className="w-full flex flex-col gap-4">
+					<div className="w-full flex flex-col gap-4 lg:items-start items-center">
 						<span className="text-primary font-semibold text-sm tracking-wide uppercase">
 							Take control of your money
 						</span>
 
 						{/* Main Heading */}
-						<h1 className="text-6xl lg:text-7xl font-bold text-gray-900 !leading-tight">
+						<h1 className="lg:text-left text-center text-6xl lg:text-7xl font-bold text-gray-900 !leading-tight">
 							Track and manage your finances better
 						</h1>
 
 						{/* Subheading */}
-						<p className="text-xl text-gray-600 leading-relaxed max-w-2xl">
+						<p className="lg:text-left text-center text-xl text-gray-600 leading-relaxed max-w-2xl">
 							Track income and expenses, automatically categorize transactions, and see clear forecasts so you always know what&apos;s coming. Fast setup, one unified view, real financial confidence.
 						</p>
 

@@ -136,7 +136,7 @@ export default function WhyChooseSection() {
 				/>
 
 				<motion.div
-					className="grid lg:grid-cols-2 gap-8 items-start"
+					className="lg:px-16 md:px-8 px-4 grid lg:grid-cols-2 gap-8 items-start"
 					initial="initial"
 					variants={staggerContainer}
 					viewport={{ once: true }}

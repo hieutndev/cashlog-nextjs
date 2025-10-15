@@ -99,7 +99,7 @@ export default function StatisticsSection() {
 					title="Built for real financial clarity"
 				/>
 
-				<div className="px-16 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+				<div className="lg:px-16 md:px-8 px-4 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
 					{loading ? (
 						<div className="col-span-4 text-center text-gray-500">Loading statistics…</div>
 					) : (
