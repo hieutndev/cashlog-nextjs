@@ -1,5 +1,5 @@
 import { handleError, handleValidateError } from "../../_helpers/handle-error"
-import { categorizeCategoriesPayload, categorizeUserCategories } from "../categories-services";
+import { categorizeCategoriesPayload, categorizeUserCategories } from "../../_services/categories-services";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 
 import { TUser } from "@/types/user";

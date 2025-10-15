@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getRecurringInstanceById, RecurringInstanceRouteProps } from "../../recurring-services";
-
+import { getRecurringInstanceById, RecurringInstanceRouteProps } from '@/app/api/_services/recurring-services';
 import { getFromHeaders } from "@/app/api/_helpers/get-from-headers";
 import { handleError } from "@/app/api/_helpers/handle-error";
 import { TUser } from "@/types/user";

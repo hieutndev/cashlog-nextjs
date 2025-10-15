@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getProjectedBalance, addDays } from '../../recurring-services';
-
+import { getProjectedBalance, addDays } from '@/app/api/_services/recurring-services';
 import { getFromHeaders } from '@/app/api/_helpers/get-from-headers';
 import { TUser } from '@/types/user';
 import { handleError } from '@/app/api/_helpers/handle-error';

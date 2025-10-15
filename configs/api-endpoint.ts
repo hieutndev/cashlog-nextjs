@@ -3,6 +3,9 @@ export const API_ENDPOINT = {
     DASHBOARD: {
         BASE: '/dashboard',
     },
+    LANDING_PAGE: {
+        BASE: '/landing-data',
+    },
     CARDS: {
         BASE: '/cards',
         CREATE_NEW_CARD: '/cards',

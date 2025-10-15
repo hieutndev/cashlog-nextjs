@@ -9,7 +9,7 @@ import {
     deleteTransaction,
     getAllTransactions,
     addTransactionPayload
-} from "@/app/api/transactions/transaction-services";
+} from "@/app/api/_services/transaction-services";
 import { ApiError } from "@/types/api-error";
 import { TUser } from "@/types/user";
 

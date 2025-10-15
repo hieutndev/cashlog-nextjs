@@ -16,8 +16,7 @@ import { Input } from "@heroui/input";
 import { useFetch, useWindowSize } from "hieutndev-toolkit";
 import moment from "moment";
 
-import CrudTransactionModal from "./_component/transaction-form-modal";
-
+import CrudTransactionModal from "@/components/transactions/transaction-form-modal";
 import { API_ENDPOINT } from "@/configs/api-endpoint";
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
 import { useDebounce } from "@/hooks/useDebounce";

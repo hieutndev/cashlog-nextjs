@@ -1,6 +1,6 @@
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 import { handleError } from "../../_helpers/handle-error";
-import { syncAllCardsBalance } from "../card-services";
+import { syncAllCardsBalance } from "../../_services/card-services";
 
 import { TUser } from "@/types/user";
 

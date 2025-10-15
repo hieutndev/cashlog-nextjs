@@ -4,13 +4,19 @@ import { Button } from "@heroui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "../providers/auth-provider";
+
+import ICONS from "@/configs/icons";
+
 export default function CTASection() {
 
 	const router = useRouter();
 
+	const { isLoggedIn } = useAuth();
+
 	return (
 		<section className="relative py-20 bg-gradient-to-br from-primary/90 to-primary overflow-hidden">
-			<div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center px-6">
+			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-6">
 				{/* Left column: existing content */}
 				<div className="flex flex-col gap-8">
 					<h2 className="text-5xl font-semibold text-white leading-normal">
@@ -22,16 +28,17 @@ export default function CTASection() {
 					<div className="flex items-start md:items-center">
 						<Button
 							className="px-9 py-4 bg-primary shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white text-white hover:bg-white hover:text-primary"
+							endContent={ICONS.NEXT.LG}
 							size="lg"
-							onPress={() => router.push('/sign-up')}
+							onPress={() => isLoggedIn ? router.push('/overview') : router.push('/sign-up')}
 						>
-							Create your free account
+							{isLoggedIn ? "Start Tracking" : "Create your free account"}
 						</Button>
 					</div>
 				</div>
 
 				{/* Right column: larger image with a smaller overlay at bottom-left */}
-				<div className="flex justify-center">
+				<div className="hidden lg:flex justify-center">
 					<div className="relative w-full max-w-full h-full">
 						{/* Large below image */}
 						<div className="absolute left-12 -top-48 bg-white/5 rounded-3xl p-2 shadow-xl backdrop-blur-sm overflow-hidden">

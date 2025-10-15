@@ -35,6 +35,7 @@ export const middleware = async (request: NextRequest) => {
 
     try {
         user = decodeJwt(token);
+        console.log("🚀 ~ middleware ~ user:", user)
     } catch {
         return NextResponse.json(
             {
@@ -67,6 +68,8 @@ export const config = {
         "/api/settings/:path*",
         "/api/recurrings/:path*",
         "/api/dashboard/:path*",
+        // "/api/extract-bill/:path*",
+        // "/api/users/x-rftk"
         // "/api/users/x-rftk"
     ],
 };

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { signIn, signInSchema } from "../user-services";
+import { signIn, signInSchema } from "../../_services/user-services";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
 
 import { zodValidate } from "@/utils/zod-validate";

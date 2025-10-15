@@ -40,6 +40,7 @@ export default function LandingNavbar() {
 							</Button> : (
 								<>
 									<Button
+										className={"hidden md:block"}
 										color={"primary"}
 										variant={"light"}
 										onPress={() => router.push('/sign-in')}

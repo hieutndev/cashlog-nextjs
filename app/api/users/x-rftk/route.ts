@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getNewAccessToken } from "../user-services";
+import { getNewAccessToken } from "../../_services/user-services";
 import { handleError } from "../../_helpers/handle-error";
 
 import { ApiError } from "@/types/api-error";

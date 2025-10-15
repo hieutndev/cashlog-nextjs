@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
-
-import { addCategoryPayload, addNewCategory, getAllCategoriesOfUser } from "./categories-services";
+import { addCategoryPayload, addNewCategory, getAllCategoriesOfUser } from "../_services/categories-services";
 
 import { zodValidate } from "@/utils/zod-validate";
 import { TUser } from "@/types/user";

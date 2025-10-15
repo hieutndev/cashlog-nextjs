@@ -1,6 +1,6 @@
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 import { handleError } from "../../_helpers/handle-error"
-import { validateCards } from "../card-services";
+import { validateCards } from "../../_services/card-services";
 
 import { ApiError } from "@/types/api-error";
 

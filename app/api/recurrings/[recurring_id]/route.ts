@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { handleError, handleValidateError } from '../../_helpers/handle-error';
-import { getRecurringById, updateRecurring, removeRecurring, updateRecurringPayload, deleteRecurring } from '../recurring-services';
 import { getFromHeaders } from '../../_helpers/get-from-headers';
 
+import { getRecurringById, updateRecurring, removeRecurring, updateRecurringPayload, deleteRecurring } from '@/app/api/_services/recurring-services';
 import { TRemoveRecurringOptions } from '@/types/recurring';
 import { zodValidate } from '@/utils/zod-validate';
 import { TUser } from '@/types/user';
