@@ -1,6 +1,6 @@
 import { handleError } from "@/app/api/_helpers/handle-error";
 import { getFromHeaders } from "@/app/api/_helpers/get-from-headers";
-import { getTransactionById, updateTransaction } from "@/app/api/transactions/transaction-services";
+import { getTransactionById, updateTransaction } from "@/app/api/_services/transaction-services";
 import { TUser } from "@/types/user";
 
 interface TransactionDetailsRouteProps {

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFetch } from "hieutndev-toolkit";
 
-import RecurringForm from "../../_components/recurring-form";
+import RecurringForm from "../../../../../components/recurrings/recurring-form";
 
 import ICONS from "@/configs/icons";
 import SectionHeader from "@/components/shared/partials/section-header";

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { decodeJwt } from "jose";
 
 import { handleError } from "../../_helpers/handle-error"
-import { getUserById } from "../user-services";
+import { getUserById } from "../../_services/user-services";
 
 import { ApiError } from "@/types/api-error";
 

@@ -1,4 +1,4 @@
-import { readXlsxFile } from "../transaction-services";
+import { readXlsxFile } from "../../_services/transaction-services";
 
 import { handleError } from './../../_helpers/handle-error';
 

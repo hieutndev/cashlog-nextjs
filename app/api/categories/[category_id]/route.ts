@@ -5,7 +5,7 @@ import {
   getCategoryById,
   updateCategory,
   updateCategoryPayload,
-} from "../categories-services";
+} from "../../_services/categories-services";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 

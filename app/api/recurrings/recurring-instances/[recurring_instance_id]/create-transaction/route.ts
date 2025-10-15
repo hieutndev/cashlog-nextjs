@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createTransactionFromInstance, RecurringInstanceRouteProps } from '../../../recurring-services';
-
-import { createTransactionFromInstancePayload } from './../../../recurring-services';
-
+import { createTransactionFromInstance, RecurringInstanceRouteProps } from '@/app/api/_services/recurring-services';
+import { createTransactionFromInstancePayload } from '@/app/api/_services/recurring-services';
 import { getFromHeaders } from '@/app/api/_helpers/get-from-headers';
 import { TUser } from '@/types/user';
 import { handleError, handleValidateError } from '@/app/api/_helpers/handle-error';

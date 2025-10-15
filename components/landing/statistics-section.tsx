@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import LandingSectionHeader from "./landing-section-header";
+import { useFetch } from "hieutndev-toolkit";
+import { API_ENDPOINT } from "@/configs/api-endpoint";
+import { IAPIResponse } from "@/types/global";
 
 interface StatisticCardProps {
 	title: string;
@@ -65,43 +68,26 @@ function StatisticCard({ title, value, suffix = "", icon }: StatisticCardProps) 
 }
 
 export default function StatisticsSection() {
-	const [stats, setStats] = useState({ total_users: 0, total_cards: 0, total_transactions: 0, total_forecasts: 0 });
-	const [loading, setLoading] = useState(true);
+	const [stats, setStats] = useState({ total_users: 0, total_cards: 0, total_transactions: 0, total_recurrings: 0 });
+
+	const { data, loading, error } = useFetch<IAPIResponse<{
+		total_users: number;
+		total_cards: number;
+		total_transactions: number;
+		total_recurrings: number;
+	}>>(API_ENDPOINT.LANDING_PAGE.BASE)
 
 	useEffect(() => {
-		let mounted = true;
-
-		(async () => {
-			try {
-				const res = await fetch('/api/landing-data');
-
-				if (!res.ok) throw new Error('Failed to fetch');
-
-				const data = await res.json();
-
-				if (mounted) {
-					setStats({
-						total_users: data.total_users || 0,
-						total_cards: data.total_cards || 0,
-						total_transactions: data.total_transactions || 0,
-						total_forecasts: data.total_forecasts || 0,
-					});
-				}
-			} catch (e) {
-				console.error('Error fetching landing stats', e);
-			} finally {
-				if (mounted) setLoading(false);
-			}
-		})();
-
-		return () => { mounted = false; };
-	}, []);
+		if (data && data.results) {
+			setStats(data.results);
+		}
+	}, [data, error]);
 
 	const statistics = [
 		{ title: 'Total Users', value: stats.total_users, suffix: '', icon: '👥' },
 		{ title: 'Bank Cards', value: stats.total_cards, suffix: '', icon: '💳' },
 		{ title: 'Transactions', value: stats.total_transactions, suffix: '', icon: '💰' },
-		{ title: 'Forecasts', value: stats.total_forecasts, suffix: '', icon: '📊' },
+		{ title: 'Forecasts', value: stats.total_recurrings, suffix: '', icon: '📊' },
 	];
 
 	return (

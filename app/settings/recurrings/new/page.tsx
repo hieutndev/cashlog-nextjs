@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import RecurringForm from "../_components/recurring-form";
+import RecurringForm from "../../../../components/recurrings/recurring-form";
 
 import ICONS from "@/configs/icons";
 import SectionHeader from "@/components/shared/partials/section-header";

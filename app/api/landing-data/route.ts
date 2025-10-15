@@ -1,6 +1,5 @@
 import { handleError } from '../_helpers/handle-error';
-
-import { getLandingDataStats } from './landing-data-services';
+import { getLandingDataStats } from '../_services/landing-data-services';
 
 export const runtime = 'nodejs';
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { handleError } from "../../_helpers/handle-error";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
-import { getCategoryStatsByUserId } from "../analytics-services";
+import { getCategoryStatsByUserId } from "../../_services/analytics-services";
 
 import { TUser } from "@/types/user";
 

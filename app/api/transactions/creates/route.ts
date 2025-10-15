@@ -1,6 +1,6 @@
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
-import { addMultipleTransactionsPayload, createMultipleTransaction } from "../transaction-services";
+import { addMultipleTransactionsPayload, createMultipleTransaction } from "../../_services/transaction-services";
 
 import { TUser } from "@/types/user";
 import { zodValidate } from "@/utils/zod-validate";

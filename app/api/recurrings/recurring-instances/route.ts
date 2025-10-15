@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getRecurringAnalysis, getRecurringInstancesWithBalances, updateOverdueInstances } from '../recurring-services';
 import { getFromHeaders } from '../../_helpers/get-from-headers';
 import { handleError } from '../../_helpers/handle-error';
 
+import { getRecurringAnalysis, getRecurringInstancesWithBalances, updateOverdueInstances } from '@/app/api/_services/recurring-services';
 import { TUser } from '@/types/user';
 import { TRecurringInstanceFilters, TRecurringInstanceStatus } from '@/types/recurring';
 
