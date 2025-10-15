@@ -338,7 +338,7 @@ export default function OverviewPage() {
 														"text-success": transaction.direction === "in",
 														"text-danger": transaction.direction === "out"
 													})}>
-														{transaction.direction === "in" ? "- " : "+ "}
+														{transaction.direction === "in" ? "+ " : "- "}
 														{transaction.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
 													</span>
 												</TableCell>
@@ -404,7 +404,7 @@ export default function OverviewPage() {
 															"text-success": instance.direction === "in",
 															"text-danger": instance.direction === "out"
 														})}>
-															{instance.direction === "in" ? "- " : "+ "}
+															{instance.direction === "in" ? "+" : "- "}
 															{instance.scheduled_amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
 														</span>
 													</TableCell>

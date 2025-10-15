@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { handleError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
-import { calculateAnalytics, getCategoryStatsByUserId, getMonthlyAnalyticsData } from "../analytics/analytics-services";
-import { getAllCardsOfUser } from "../cards/card-services";
-import { getAllTransactions } from "../transactions/transaction-services";
-import { getRecurringAnalysis, getRecurringInstancesWithBalances, updateOverdueInstances } from "../recurrings/recurring-services";
+import { calculateAnalytics, getCategoryStatsByUserId, getMonthlyAnalyticsData } from "../_services/analytics-services";
+import { getAllCardsOfUser } from "../_services/card-services";
+import { getAllTransactions } from "../_services/transaction-services";
 
+import { getRecurringAnalysis, getRecurringInstancesWithBalances, updateOverdueInstances } from '@/app/api/_services/recurring-services';
 import { TUser } from "@/types/user";
 import { TRecurringInstanceFilters } from "@/types/recurring";
 import { ApiError } from "@/types/api-error";
@@ -16,6 +16,8 @@ const EST_YEAR = process.env.NEXT_PUBLIC_EST_YEAR ? parseInt(process.env.NEXT_PU
 export async function GET(request: NextRequest) {
   try {
     const user_id = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
+    
+    console.log("🚀 ~ GET ~ user_id:", user_id)
 
     const search_params = request.nextUrl.searchParams;
     const time_period = search_params.get('time_period') || 'month';

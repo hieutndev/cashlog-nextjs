@@ -4,9 +4,15 @@ import { Button } from "@heroui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "../providers/auth-provider";
+
+import ICONS from "@/configs/icons";
+
 export default function CTASection() {
 
 	const router = useRouter();
+
+	const { isLoggedIn } = useAuth();
 
 	return (
 		<section className="relative py-20 bg-gradient-to-br from-primary/90 to-primary overflow-hidden">
@@ -22,10 +28,11 @@ export default function CTASection() {
 					<div className="flex items-start md:items-center">
 						<Button
 							className="px-9 py-4 bg-primary shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white text-white hover:bg-white hover:text-primary"
+							endContent={ICONS.NEXT.LG}
 							size="lg"
-							onPress={() => router.push('/sign-up')}
+							onPress={() => isLoggedIn ? router.push('/overview') : router.push('/sign-up')}
 						>
-							Create your free account
+							{isLoggedIn ? "Start Tracking" : "Create your free account"}
 						</Button>
 					</div>
 				</div>

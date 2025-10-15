@@ -1,6 +1,6 @@
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 import { handleError, handleValidateError } from "../../_helpers/handle-error";
-import { createMultiCardsPayload, createMultipleCards } from "../card-services";
+import { createMultiCardsPayload, createMultipleCards } from "../../_services/card-services";
 
 import { TUser } from "@/types/user";
 import { zodValidate } from "@/utils/zod-validate";

@@ -11,8 +11,7 @@ import { useDisclosure } from "@heroui/modal";
 import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 
-import CategoryForm from "./_component/category-form";
-
+import CategoryForm from "@/components/categories/category-form";
 import { TCategory } from "@/types/category";
 import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";

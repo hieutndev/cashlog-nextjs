@@ -7,7 +7,7 @@ import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
 import { ApiError } from "@/types/api-error";
-import { syncAllCardsBalance, validateCardOwnership } from "@/app/api/cards/card-services";
+import { syncAllCardsBalance, validateCardOwnership } from "@/app/api/_services/card-services";
 import { TUser } from "@/types/user";
 import { parseExcelFile, ParseExcelResult } from "@/libs/parseExcelFile";
 import { VALIDATE_MESSAGE } from "@/utils/api/zod-validate-message";

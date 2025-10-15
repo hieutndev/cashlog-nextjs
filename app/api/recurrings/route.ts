@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFromHeaders } from '../_helpers/get-from-headers';
 import { handleError, handleValidateError } from '../_helpers/handle-error';
 
-import { getAllRecurringsByUser, addNewRecurring, addRecurringsPayload, getAllRecurringsQueryParams } from './recurring-services';
-
+import { getAllRecurringsByUser, addNewRecurring, addRecurringsPayload, getAllRecurringsQueryParams } from '@/app/api/_services/recurring-services';
 import { TRecurringFilters, TRecurringStatus, TFrequencyType } from '@/types/recurring';
 import { TUser } from '@/types/user';
 import { zodValidate } from '@/utils/zod-validate';

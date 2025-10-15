@@ -1,5 +1,5 @@
 
-import { deleteCard, editCardSchema, getCardInfoById, cardQueryParams, updateCardInfo } from "../card-services";
+import { deleteCard, editCardSchema, getCardInfoById, cardQueryParams, updateCardInfo } from "../../_services/card-services";
 import { handleError, handleValidateError } from '../../_helpers/handle-error';
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 

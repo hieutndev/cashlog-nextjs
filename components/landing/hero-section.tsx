@@ -3,10 +3,13 @@
 import { Button } from "@heroui/button";
 import { Image } from "@heroui/image";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../providers/auth-provider";
 
 export default function HeroSection() {
 
 	const router = useRouter();
+
+	const { isLoggedIn } = useAuth();
 
 	return (
 		<section className="relative overflow-hidden bg-white">
@@ -33,7 +36,7 @@ export default function HeroSection() {
 								color={"primary"}
 								size={"lg"}
 								variant={"shadow"}
-								onPress={() => { router.push('/sign-up'); }}
+								onPress={() => { isLoggedIn ? router.push('/overview') : router.push('/sign-up'); }}
 							>
 								Get started — it&apos;s free
 							</Button>
@@ -46,7 +49,7 @@ export default function HeroSection() {
 							alt="Financial Dashboard Preview"
 							className="w-auto max-h-128 scale-110"
 							height={1200}
-							src="/assets/homepage/hero-mockup.png"
+							src="/assets/landing/hero-mockup.png"
 							width={1200}
 						/>
 					</div>

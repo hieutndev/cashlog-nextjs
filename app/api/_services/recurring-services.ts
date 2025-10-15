@@ -2,10 +2,9 @@ import { RowDataPacket, ResultSetHeader, PoolConnection } from 'mysql2/promise';
 import { z } from 'zod';
 import moment from 'moment';
 
-import { validateCardOwnership } from '../cards/card-services';
-import { validateCategoryOwnership } from '../categories/categories-services';
-
-import { getCardInfoById } from './../cards/card-services';
+import { validateCardOwnership } from '../_services/card-services';
+import { validateCategoryOwnership } from '../_services/categories-services';
+import { getCardInfoById } from '../_services/card-services';
 
 
 import { dbQuery, mysqlPool } from '@/libs/mysql';

@@ -1,7 +1,6 @@
 import { handleError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
-
-import { calculateAnalytics } from "./analytics-services";
+import { calculateAnalytics } from "../_services/analytics-services";
 
 import { ApiError } from "@/types/api-error";
 import { TUser } from "@/types/user";

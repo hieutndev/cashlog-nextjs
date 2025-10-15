@@ -1,7 +1,7 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { updateCardBalance } from "../transactions/transaction-services";
+import { updateCardBalance } from "./transaction-services";
 
 import { TCard, TUpdateCard, TCreateNewCard } from "@/types/card";
 import { dbQuery, mysqlPool } from "@/libs/mysql";

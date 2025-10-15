@@ -2,7 +2,7 @@
 import { handleError, handleValidateError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
 
-import { addNewCard, deleteCard, getAllCardsOfUser, newCardPayload } from "@/app/api/cards/card-services";
+import { addNewCard, deleteCard, getAllCardsOfUser, newCardPayload } from "@/app/api/_services/card-services";
 import { zodValidate } from "@/utils/zod-validate";
 import { ApiError } from "@/types/api-error";
 import { TUser } from "@/types/user";

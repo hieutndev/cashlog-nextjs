@@ -13,7 +13,7 @@ import { Button } from "@heroui/button";
 import { useDisclosure } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import RecurringInstancesTable from "../_components/recurring-instances-table";
+import RecurringInstancesTable from "../../../../components/recurrings/recurring-instances-table";
 
 import { getBankLogo } from "@/configs/bank";
 import ICONS from "@/configs/icons";

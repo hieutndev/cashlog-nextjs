@@ -1,6 +1,6 @@
 import { handleError } from "../../_helpers/handle-error";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
-import { getMonthlyAnalyticsData } from "../analytics-services";
+import { getMonthlyAnalyticsData } from "../../_services/analytics-services";
 
 export const GET = async (request: Request) => {
     try {
