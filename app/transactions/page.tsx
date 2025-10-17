@@ -17,6 +17,7 @@ import { useFetch, useWindowSize } from "hieutndev-toolkit";
 import moment from "moment";
 
 import CrudTransactionModal from "@/components/transactions/transaction-form-modal";
+import MultiTransactionModal from "@/components/transactions/multi-transaction-modal";
 import { API_ENDPOINT } from "@/configs/api-endpoint";
 import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -273,6 +274,10 @@ export default function TransactionsPage() {
 
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
+	// HANDLE OPEN MULTI TRANSACTION MODAL
+
+	const { isOpen: isMultiOpen, onOpen: onMultiOpen, onOpenChange: onMultiOpenChange } = useDisclosure();
+
 	// HANDLE OPEN UPDATE TRANSACTION MODAL
 
 	const [defaultData, setDefaultData] = useState<TTransaction | null>(null);
@@ -288,6 +293,10 @@ export default function TransactionsPage() {
 		setDefaultData(null);
 		setModalMode("create");
 		onOpen();
+	};
+
+	const handleCreateMultipleTransactions = () => {
+		onMultiOpen();
 	};
 
 	return (
@@ -307,6 +316,14 @@ export default function TransactionsPage() {
 						onPress={() => router.push("/transactions/import-transactions")}
 					>
 						{width < BREAK_POINT.MD ? "Import" : "Import from Excel"}
+					</Button>
+					<Button
+						color={"primary"}
+						startContent={ICONS.BULK.MD}
+						variant={"light"}
+						onPress={handleCreateMultipleTransactions}
+					>
+						{width < BREAK_POINT.MD ? "Multi" : "Multi Transactions"}
 					</Button>
 					<Button
 						color={"primary"}
@@ -606,6 +623,12 @@ export default function TransactionsPage() {
 				isOpen={isOpen}
 				mode={modalMode}
 				onOpenChange={onOpenChange}
+				onSuccess={() => fetchTransactions()}
+			/>
+
+			<MultiTransactionModal
+				isOpen={isMultiOpen}
+				onOpenChange={onMultiOpenChange}
 				onSuccess={() => fetchTransactions()}
 			/>
 		</section>

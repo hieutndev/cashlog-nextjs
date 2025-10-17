@@ -15,6 +15,8 @@ export const API_ENDPOINT = {
         BASE: '/transactions',
         BY_ID: (transactionId: string) => `/transactions/${transactionId}`,
         BY_QUERY: (transactionId: string) => `/transactions?transaction_id=${transactionId}`,
+        CREATES: '/transactions/creates',
+        OPENAI: '/transactions/openai',
     },
     CATEGORIES: {
         BASE: '/categories',

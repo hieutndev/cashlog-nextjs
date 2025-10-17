@@ -35,7 +35,6 @@ export const middleware = async (request: NextRequest) => {
 
     try {
         user = decodeJwt(token);
-        console.log("🚀 ~ middleware ~ user:", user)
     } catch {
         return NextResponse.json(
             {
