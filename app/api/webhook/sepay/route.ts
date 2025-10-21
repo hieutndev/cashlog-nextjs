@@ -1,6 +1,7 @@
-import { ApiError } from "@/types/api-error";
 import { getFromHeaders } from "../../_helpers/get-from-headers";
 import { handleError } from "../../_helpers/handle-error"
+
+import { ApiError } from "@/types/api-error";
 
 export const POST = async (request: Request) => {
     try {

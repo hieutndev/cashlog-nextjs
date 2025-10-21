@@ -7,16 +7,16 @@ import clsx from "clsx";
 import { addToast } from "@heroui/toast";
 import { Alert } from "@heroui/alert";
 import { Spinner } from "@heroui/spinner";
-import { useFetch } from "hieutndev-toolkit";
 
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import { TCard } from "@/types/card";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { IAPIResponse } from "@/types/global";
 import { TBankCode } from "@/types/bank";
 import ICONS from "@/configs/icons";
 
 export default function SettingCardsPage() {
 	const router = useRouter();
+	const { useGetListCards, useDeleteCard, useSyncCardBalance } = useCardEndpoint();
 
 	const [listCards, setListCards] = useState<TCard[]>([]);
 
@@ -27,21 +27,14 @@ export default function SettingCardsPage() {
 		loading: loadingCard,
 		// error: errorFetchCard,
 		fetch: fetchCard,
-	} = useFetch<IAPIResponse<TCard[]>>("/cards");
+	} = useGetListCards();
 
 	const {
 		data: deleteCardResults,
 		// loading: deletingCard,
 		error: errorDeleteCard,
 		fetch: deleteCard,
-	} = useFetch<IAPIResponse>(
-		"/cards",
-		{ cardId: selectedCardId },
-		{
-			method: "DELETE",
-			skip: true,
-		}
-	);
+	} = useDeleteCard(selectedCardId ? parseInt(selectedCardId) : -1);
 
 	useEffect(() => {
 		if (selectedCardId) {
@@ -82,9 +75,7 @@ export default function SettingCardsPage() {
 		loading: syncingCard,
 		error: syncCardError,
 		fetch: syncCard,
-	} = useFetch<IAPIResponse>("/cards/sync", {
-		skip: true,
-	});
+	} = useSyncCardBalance();
 
 	useEffect(() => {
 		if (syncCardResult) {

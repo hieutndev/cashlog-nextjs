@@ -12,9 +12,9 @@ export const SITE_CONFIG = {
 	FAVICON: "/cashlog_fav.ico",
 	SIDEBAR_ITEMS: [
 		{
-			label: "Overview",
-			href: "/overview",
-			icon: ICONS.OVERVIEW.LG,
+			label: "Dashboard",
+			href: "/dashboard",
+			icon: ICONS.DASHBOARD.LG,
 		},
 		{
 			label: "Transactions",

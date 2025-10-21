@@ -30,7 +30,7 @@ export default function CTASection() {
 							className="px-9 py-4 bg-primary shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white text-white hover:bg-white hover:text-primary"
 							endContent={ICONS.NEXT.LG}
 							size="lg"
-							onPress={() => isLoggedIn ? router.push('/overview') : router.push('/sign-up')}
+							onPress={() => isLoggedIn ? router.push('/dashboard') : router.push('/sign-up')}
 						>
 							{isLoggedIn ? "Start Tracking" : "Create your free account"}
 						</Button>

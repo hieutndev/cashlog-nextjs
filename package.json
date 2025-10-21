@@ -10,6 +10,7 @@
 		"lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
 	},
 	"dependencies": {
+		"@heroui/accordion": "^2.2.24",
 		"@heroui/alert": "^2.2.19",
 		"@heroui/avatar": "^2.2.21",
 		"@heroui/breadcrumbs": "^2.2.13",

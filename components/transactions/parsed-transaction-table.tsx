@@ -1,26 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
-import { Input } from "@heroui/input";
+import { Accordion, AccordionItem } from "@heroui/accordion";
+import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { DatePicker } from "@heroui/date-picker";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 import { Checkbox } from "@heroui/checkbox";
-import { useFetch } from "hieutndev-toolkit";
+import { RadioGroup } from "@heroui/radio";
 import { parseDate } from '@internationalized/date';
 import moment from "moment";
 
-import { API_ENDPOINT } from "@/configs/api-endpoint";
-import { TCrudTransaction } from "@/types/transaction";
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
+import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
+import { TAddTransaction } from "@/types/transaction";
 import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
-import { IAPIResponse } from "@/types/global";
-import TransactionType from "./transaction-type";
+import ICONS from "@/configs/icons";
+import { SITE_CONFIG } from "@/configs/site-config";
+import TransactionType from "@/components/transactions/transaction-type";
+import SelectCardRadioGroup from "@/components/shared/select-card-radio-group/select-card-radio-group";
 
-interface ParsedTransaction extends TCrudTransaction {
+
+interface ParsedTransaction extends TAddTransaction {
   originalText: string;
   parsingStatus: "pending" | "success" | "error";
   errorMessage?: string;
@@ -28,7 +32,7 @@ interface ParsedTransaction extends TCrudTransaction {
 
 interface ParsedTransactionTableProps {
   transactions: ParsedTransaction[];
-  onTransactionUpdate: (index: number, updates: Partial<TCrudTransaction>) => void;
+  onTransactionUpdate: (index: number, updates: Partial<TAddTransaction>) => void;
   onTransactionRemove: (index: number) => void;
   selectedTransactions: number[];
   onSelectionChange: (selected: number[]) => void;
@@ -43,25 +47,21 @@ export default function ParsedTransactionTable({
 }: ParsedTransactionTableProps) {
   const [listCard, setListCard] = useState<TCard[]>([]);
   const [listCategories, setListCategories] = useState<TCategory[]>([]);
+  const { useGetListCards } = useCardEndpoint();
+  const { useGetCategories } = useCategoryEndpoint();
 
   // Fetch cards
   const {
     data: fetchCardsResult,
     loading: loadingCards,
-    error: fetchCardsError,
     fetch: fetchCards,
-  } = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE, {
-    skip: true,
-  });
+  } = useGetListCards();
 
   // Fetch categories
   const {
     data: fetchCategoriesResult,
-    error: fetchCategoriesError,
     fetch: fetchCategories,
-  } = useFetch<IAPIResponse<TCategory[]>>(API_ENDPOINT.CATEGORIES.BASE, {
-    skip: true,
-  });
+  } = useGetCategories();
 
   useEffect(() => {
     fetchCards();
@@ -80,24 +80,6 @@ export default function ParsedTransactionTable({
     }
   }, [fetchCategoriesResult]);
 
-  const getStatusColor = (status: ParsedTransaction["parsingStatus"]) => {
-    switch (status) {
-      case "success": return "success";
-      case "error": return "danger";
-      case "pending": return "warning";
-      default: return "default";
-    }
-  };
-
-  const getStatusText = (status: ParsedTransaction["parsingStatus"]) => {
-    switch (status) {
-      case "success": return "Success";
-      case "error": return "Error";
-      case "pending": return "Parsing";
-      default: return "Unknown";
-    }
-  };
-
   const handleSelectionChange = (index: number, isSelected: boolean) => {
     if (isSelected) {
       onSelectionChange([...selectedTransactions, index]);
@@ -106,175 +88,233 @@ export default function ParsedTransactionTable({
     }
   };
 
-  const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      onSelectionChange(transactions.map((_, index) => index));
-    } else {
-      onSelectionChange([]);
+  // Get direction display info
+  const getDirectionInfo = (direction: "in" | "out") => {
+    if (direction === "in") {
+      return {
+        color: "success" as const,
+        label: "In",
+      };
     }
+
+    return {
+      color: "danger" as const,
+      label: "Out",
+    };
   };
 
-  const isAllSelected = transactions.length > 0 && selectedTransactions.length === transactions.length;
-  const isSomeSelected = selectedTransactions.length > 0 && selectedTransactions.length < transactions.length;
+  // Format amount with currency
+  const formatAmount = (amount: number) => {
+    return `${amount.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`;
+  };
+
+  // Get card name by ID
+  const getCardName = (cardId: number) => {
+    const card = listCard.find(c => c.card_id === cardId);
+
+    return card?.card_name || "Select card";
+  };
+
+  // Get category name by ID
+  const getCategoryName = (categoryId: number | null) => {
+    if (!categoryId || categoryId === -1) return "No category";
+    const category = listCategories.find(c => c.category_id === categoryId);
+
+    return category?.category_name || "No category";
+  };
+
+  if (loadingCards) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Spinner size="lg">Loading cards and categories...</Spinner>
+      </div>
+    );
+  }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table aria-label="Parsed transactions table">
-        <TableHeader>
-          <TableColumn width={50}>
-            <Checkbox
-              isSelected={isAllSelected}
-              isIndeterminate={isSomeSelected}
-              onValueChange={handleSelectAll}
-            />
-          </TableColumn>
-          <TableColumn>Status</TableColumn>
-          <TableColumn>Original Text</TableColumn>
-          <TableColumn>Card</TableColumn>
-          <TableColumn>Type</TableColumn>
-          <TableColumn>Amount</TableColumn>
-          <TableColumn>Date</TableColumn>
-          <TableColumn>Category</TableColumn>
-          <TableColumn>Description</TableColumn>
-          <TableColumn>Actions</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((transaction, index) => (
-            <TableRow key={index}>
-              <TableCell>
+    <div className="flex flex-col gap-2">
+      <Accordion selectionMode="multiple" variant="splitted">
+        {transactions.map((transaction, index) => {
+          const hasCard = transaction.card_id > 0;
+          const hasDate = !!transaction.date;
+
+          return (
+            <AccordionItem
+              key={index}
+              classNames={{
+                // base: "border rounded-lg",
+                title: "flex items-center gap-2 flex-wrap",
+              }}
+              startContent={
                 <Checkbox
                   isSelected={selectedTransactions.includes(index)}
                   onValueChange={(isSelected) => handleSelectionChange(index, isSelected)}
                 />
-              </TableCell>
-              <TableCell>
-                <Chip 
-                  color={getStatusColor(transaction.parsingStatus)}
-                  size="sm"
+              }
+              title={
+                <div className="flex items-center justify-between gap-2 flex-1">
+                  {/* Left side - Chips */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Chip
+                      color={hasCard ? "success" : "danger"}
+                      size="sm"
+                      variant="flat"
+                    >
+                      {getCardName(transaction.card_id)}
+                    </Chip>
+                    <Chip
+                      color={hasDate ? "success" : "danger"}
+                      size="sm"
+                      variant="flat"
+                    >
+                      {moment(transaction.date).format("DD/MM/YYYY")}
+                    </Chip>
+
+                    <Chip
+                      color={transaction.amount > 0 ? "success" : "danger"}
+                      size="sm"
+                      variant="flat"
+                    >
+                      {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
+                    </Chip>
+
+
+
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                    >
+                      {getCategoryName(transaction.category_id)}
+                    </Chip>
+                  </div>
+
+                  {/* Right side - Delete button */}
+                  <Button
+                    isIconOnly
+                    color="danger"
+                    size="sm"
+                    variant="flat"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTransactionRemove(index);
+                    }}
+                  >
+                    {ICONS.TRASH.SM}
+                  </Button>
+                </div>
+              }
+            >
+              <div className="w-full flex flex-col gap-4 p-4">
+                {/* Card Selection */}
+                <SelectCardRadioGroup
+                  compact
+                  cards={listCard}
+                  label="From Account"
+                  value={transaction.card_id ?? 0}
+                  onValueChange={(e) =>
+                    onTransactionUpdate(index, { card_id: parseInt(e) })
+                  }
+                />
+
+                <RadioGroup
+                  isRequired
+                  classNames={{
+                    wrapper: "min-w-max flex flex-row items-center gap-2",
+                  }}
+                  label="Transaction Type"
+                  value={transaction.direction}
+                  onValueChange={(e) => {
+                    onTransactionUpdate(index, { direction: e as "in" | "out" });
+                  }}
                 >
-                  {getStatusText(transaction.parsingStatus)}
-                </Chip>
+                  <TransactionType key="in" type="in" />
+                  <TransactionType key="out" type="out" />
+                </RadioGroup>
+                <div className="w-full flex flex-row items-start gap-4">
+                  {/* Transaction Type */}
+
+
+                  {/* Amount */}
+                  <Input
+                    isRequired
+                    endContent={SITE_CONFIG.CURRENCY_STRING}
+                    label="Amount"
+                    labelPlacement="outside"
+                    placeholder="Enter amount"
+                    type="number"
+                    value={transaction.amount?.toString() ?? "0"}
+                    variant="bordered"
+                    onValueChange={(e) =>
+                      onTransactionUpdate(index, { amount: parseInt(e) || 0 })
+                    }
+                    className="w-48"
+                  />
+                  <Select
+                    className="w-48"
+                    items={listCategories}
+                    label="Select category"
+                    labelPlacement="outside"
+                    placeholder="Select category"
+                    selectedKeys={[transaction.category_id?.toString() ?? "-1"]}
+                    variant="bordered"
+                    onChange={(e) =>
+                      onTransactionUpdate(index, {
+                        category_id: parseInt(e.target.value)
+                      })
+                    }
+                  >
+                    {(category) => (
+                      <SelectItem
+                        key={category.category_id}
+                        textValue={category.category_name}
+                      >
+                        {category.category_name}
+                      </SelectItem>
+                    )}
+                  </Select>
+
+                  <DatePicker
+                    disableAnimation
+                    hideTimeZone
+                    isRequired
+                    showMonthAndYearPickers
+                    aria-label="Date"
+                    className="w-48"
+                    label="Transaction Date"
+                    labelPlacement="outside"
+                    value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
+                    variant="bordered"
+                    onChange={(date) => {
+                      onTransactionUpdate(index, {
+                        date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
+                      });
+                    }}
+                  />
+                </div>
+
+                {/* Description */}
+                <Textarea
+                  label="Description"
+                  labelPlacement="outside"
+                  placeholder="Enter description"
+                  value={transaction.description?.toString()}
+                  variant="bordered"
+                  onValueChange={(e) =>
+                    onTransactionUpdate(index, { description: e })
+                  }
+                />
+
+                {/* Error Message */}
                 {transaction.errorMessage && (
-                  <div className="text-xs text-danger mt-1">
+                  <div className="text-sm text-danger">
                     {transaction.errorMessage}
                   </div>
                 )}
-              </TableCell>
-              
-              <TableCell className="max-w-xs">
-                <div className="text-sm text-default-500 truncate">
-                  {transaction.originalText}
-                </div>
-              </TableCell>
-
-              <TableCell>
-                {loadingCards ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <Select
-                    size="sm"
-                    selectedKeys={new Set([transaction.card_id?.toString() || "0"])}
-                    onSelectionChange={(keys) => {
-                      const selectedKey = Array.from(keys)[0] as string;
-                      onTransactionUpdate(index, { card_id: parseInt(selectedKey) });
-                    }}
-                  >
-                    {listCard.map((card) => (
-                      <SelectItem key={card.card_id} textValue={card.card_name}>
-                        {card.card_name}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                )}
-              </TableCell>
-
-              <TableCell>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    color={transaction.direction === "in" ? "success" : "default"}
-                    variant={transaction.direction === "in" ? "solid" : "flat"}
-                    onPress={() => onTransactionUpdate(index, { direction: "in" })}
-                  >
-                    In
-                  </Button>
-                  <Button
-                    size="sm"
-                    color={transaction.direction === "out" ? "danger" : "default"}
-                    variant={transaction.direction === "out" ? "solid" : "flat"}
-                    onPress={() => onTransactionUpdate(index, { direction: "out" })}
-                  >
-                    Out
-                  </Button>
-                </div>
-              </TableCell>
-
-              <TableCell>
-                <Input
-                  size="sm"
-                  type="number"
-                  value={transaction.amount?.toString() || "0"}
-                  onValueChange={(value) => 
-                    onTransactionUpdate(index, { amount: parseInt(value) || 0 })
-                  }
-                />
-              </TableCell>
-
-              <TableCell>
-                <DatePicker
-                  size="sm"
-                  value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
-                  onChange={(date) => {
-                    onTransactionUpdate(index, { 
-                      date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
-                    });
-                  }}
-                />
-              </TableCell>
-
-              <TableCell>
-                <Select
-                  size="sm"
-                  selectedKeys={new Set([transaction.category_id?.toString() || "-1"])}
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
-                    onTransactionUpdate(index, { 
-                      category_id: selectedKey === "-1" ? null : parseInt(selectedKey)
-                    });
-                  }}
-                >
-                  {listCategories.map((category) => (
-                    <SelectItem key={category.category_id} textValue={category.category_name}>
-                      {category.category_name}
-                    </SelectItem>
-                  ))}
-                </Select>
-              </TableCell>
-
-              <TableCell>
-                <Input
-                  size="sm"
-                  value={transaction.description || ""}
-                  onValueChange={(value) => 
-                    onTransactionUpdate(index, { description: value })
-                  }
-                />
-              </TableCell>
-
-              <TableCell>
-                <Button
-                  size="sm"
-                  color="danger"
-                  variant="flat"
-                  onPress={() => onTransactionRemove(index)}
-                >
-                  Remove
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </div>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
     </div>
   );
 }

@@ -7,11 +7,10 @@ import { Input } from "@heroui/input";
 import { addToast } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { useFetch, useWindowSize } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
-import { API_ENDPOINT } from "@/configs/api-endpoint";
+import { useAuthEndpoint } from "@/hooks/useAuthEndpoint";
 import CustomForm from "@/components/shared/form/custom-form";
-import { IAPIResponse } from "@/types/global";
 import { setForm } from "@/utils/set-form";
 import { TSignUp } from "@/types/user";
 import { getFieldError } from "@/utils/get-field-error";
@@ -20,6 +19,7 @@ import { ZodCustomError } from "@/types/zod";
 
 export default function SignUpPage() {
 	const router = useRouter();
+	const { useSignUp } = useAuthEndpoint();
 
 	const { width } = useWindowSize();
 
@@ -35,14 +35,7 @@ export default function SignUpPage() {
 		error: signUpError,
 		loading: signingUp,
 		fetch: signUp,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.USERS.SIGN_UP, {
-		method: "POST",
-		body: signUpForm,
-		headers: {
-			"Content-Type": "application/json",
-		},
-		skip: true,
-	});
+	} = useSignUp(signUpForm);
 
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);

@@ -34,7 +34,7 @@ const SIZE_ICON = {
 };
 
 const ICONS = {
-	OVERVIEW: {
+	DASHBOARD: {
 		SM: <RxDashboard size={SIZE_ICON.SM} />,
 		MD: <RxDashboard size={SIZE_ICON.MD} />,
 		LG: <RxDashboard size={SIZE_ICON.LG} />,

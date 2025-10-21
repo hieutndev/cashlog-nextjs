@@ -7,23 +7,20 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure
 import { addToast } from "@heroui/toast";
 import { clsx } from "clsx";
 import { Alert } from "@heroui/alert";
-import { useFetch } from "hieutndev-toolkit";
 
-import { IAPIResponse } from "@/types/global";
+import { useSettingsEndpoint } from "@/hooks/useSettingsEndpoint";
 import ICONS from "@/configs/icons";
 
 export default function SettingsPage() {
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const { useResetAccountData } = useSettingsEndpoint();
 
 	const {
 		data: resetDataResults,
 		loading: resettingData,
 		error: errorResetData,
 		fetch: resetData,
-	} = useFetch<IAPIResponse<any>>("/settings/reset", {
-		method: "POST",
-		skip: true,
-	});
+	} = useResetAccountData();
 
 	// Handle reset response
 	useEffect(() => {

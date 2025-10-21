@@ -34,7 +34,7 @@ export default function LandingNavbar() {
 							? <Button color={"primary"}
 								endContent={ICONS.NEXT.MD}
 								variant={"light"}
-								onPress={() => router.push('/overview')}
+								onPress={() => router.push('/dashboard')}
 							>
 								Dashboard
 							</Button> : (

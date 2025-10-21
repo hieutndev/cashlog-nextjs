@@ -37,7 +37,7 @@ export default function HeroSection() {
 								color={"primary"}
 								size={"lg"}
 								variant={"shadow"}
-								onPress={() => { isLoggedIn ? router.push('/overview') : router.push('/sign-up'); }}
+								onPress={() => { isLoggedIn ? router.push('/dashboard') : router.push('/sign-up'); }}
 							>
 								Get started — it&apos;s free
 							</Button>

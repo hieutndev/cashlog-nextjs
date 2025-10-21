@@ -3,7 +3,6 @@
 import moment from "moment";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { useFetch } from "hieutndev-toolkit";
 import { addToast } from "@heroui/toast";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
@@ -17,53 +16,45 @@ import "swiper/css/effect-cards";
 
 import { Card, CardBody } from "@heroui/card";
 
+import { useDashboardEndpoint } from "@/hooks/useDashboardEndpoint";
 import Container from "@/components/shared/container/container";
 import BankCard from "@/components/shared/bank-card/bank-card";
-import { IAPIResponse } from "@/types/global";
-import CategoryBreakdownChart from "@/components/overview/chartjs/category-breakdown-chart";
-import FinancialAnalysisChart from "@/components/overview/chartjs/financial-analysis-chart";
+import CategoryBreakdownChart from "@/components/dashboard/chartjs/category-breakdown-chart";
+import FinancialAnalysisChart from "@/components/dashboard/chartjs/financial-analysis-chart";
 import { MAP_ICON } from "@/configs/map-icons";
 import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
-import AnalyticBlock from "@/components/overview/analytic-block/analytic-block";
+import AnalyticBlock from "@/components/dashboard/analytic-block/analytic-block";
 import { TDashboardData } from "@/types/dashboard";
-import { API_ENDPOINT } from "@/configs/api-endpoint";
 
 const EST_YEAR = process.env.NEXT_PUBLIC_EST_YEAR ? parseInt(process.env.NEXT_PUBLIC_EST_YEAR) : 2025;
 
-export default function OverviewPage() {
+export default function DashboardPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("month");
 	const [selectedSpecificTime, setSelectedSpecificTime] = useState<string>(() => {
 		return (moment().month() + 1).toString();
 	});
 
+	const [dashboardData, setDashboardData] = useState<TDashboardData | null>(null);
+
 	const isSpecificTimeEnabled = selectedTimePeriod === "month" || selectedTimePeriod === "year";
 
-	// Build dashboard URL with parameters
-	const buildDashboardUrl = () => {
-		const params = new URLSearchParams();
-
-		params.set("time_period", selectedTimePeriod);
-
-		if (selectedSpecificTime && isSpecificTimeEnabled) {
-			params.set("specific_time", selectedSpecificTime);
-		}
-
-		return `${API_ENDPOINT.DASHBOARD.BASE}?${params.toString()}`;
-	};
+	const { useGetDashboardData } = useDashboardEndpoint();
 
 	// Single consolidated API call for all dashboard data
 	const {
-		data: dashboardData,
-		loading: dashboardLoading,
-		error: dashboardError,
-		fetch: fetchDashboardData,
-	} = useFetch<IAPIResponse<TDashboardData>>(buildDashboardUrl());
+		data,
+		error,
+		fetch,
+	} = useGetDashboardData({
+		time_period: selectedTimePeriod,
+		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
+	});
 
 	// Consolidated error handling
 	useEffect(() => {
-		if (dashboardError) {
-			const parseError = JSON.parse(dashboardError);
+		if (error) {
+			const parseError = JSON.parse(error);
 
 			addToast({
 				title: "Error",
@@ -71,11 +62,18 @@ export default function OverviewPage() {
 				color: "danger",
 			});
 		}
-	}, [dashboardError]);
+
+		if (data && data.results) {
+			console.log("data.results: ", data.results);
+			
+			setDashboardData(data.results);
+		}	
+
+	}, [error, data]);
 
 	// Fetch dashboard data when time period changes
 	useEffect(() => {
-		fetchDashboardData();
+		fetch();
 	}, [selectedTimePeriod, selectedSpecificTime]);
 
 	const timePeriodOptions = [
@@ -106,12 +104,12 @@ export default function OverviewPage() {
 	};
 
 	// Extract data from consolidated response
-	const analytics = dashboardData?.results?.analytics;
-	const cards = dashboardData?.results?.cards || [];
-	const categoryBreakdown = dashboardData?.results?.category_breakdown || [];
-	const monthlyAnalytics = dashboardData?.results?.monthly_analytics || null;
-	const recentTransactions = dashboardData?.results?.recent_transactions || [];
-	const upcomingRecurrings = dashboardData?.results?.upcoming_recurrings;
+	const analytics = dashboardData?.analytics;
+	const cards = dashboardData?.cards || [];
+	const categoryBreakdown = dashboardData?.category_breakdown || [];
+	const monthlyAnalytics = dashboardData?.monthly_analytics || null;
+	const recentTransactions = dashboardData?.recent_transactions || [];
+	const upcomingRecurrings = dashboardData?.upcoming_recurrings;
 
 	const balanceFluctuationData =
 		analytics?.balanceFluctuation?.[selectedTimePeriod] || [];
@@ -148,7 +146,7 @@ export default function OverviewPage() {
 			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
 				<div className="lg:col-span-4 flex flex-col gap-4 lg:order-1 order-2">
 					<div className="bg-white rounded-3xl">
-						{dashboardLoading ? (
+						{dashboardData === null ? (
 
 							<LoadingBlock className="min-h-72" type="card" />
 						) : cards && cards.length > 0 ? (
@@ -185,7 +183,7 @@ export default function OverviewPage() {
 					<Card>
 						<CardBody className={"flex flex-col gap-4 items-center"}>
 							<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
-							<CategoryBreakdownChart data={categoryBreakdown} loading={dashboardLoading} />
+							<CategoryBreakdownChart data={categoryBreakdown} loading={dashboardData === null } />
 						</CardBody>
 					</Card>
 				</div>
@@ -230,7 +228,7 @@ export default function OverviewPage() {
 							</div>
 
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-								{dashboardLoading ?
+								{dashboardData === null  ?
 									Array.from({ length: 3 }).map((_, index) => (
 										<LoadingBlock key={index} className={"min-h-32"} type={"card"} />
 									))
@@ -265,15 +263,15 @@ export default function OverviewPage() {
 
 					<Card>
 						<CardBody className="flex flex-col items-center justify-center max-h-88 overflow-hidden">
-							{dashboardLoading
+							{dashboardData === null 
 								? <LoadingBlock />
 								: <>
 									<h3 className={"w-full font-semibold text-xl text-left text-gray-400/50"}>Fluctuation Chart</h3>
 									<FinancialAnalysisChart
 										data={monthlyAnalytics}
 										error={
-											dashboardError
-												? JSON.parse(dashboardError).message
+											error
+												? JSON.parse(error).message
 												: null
 										}
 									/>
@@ -286,7 +284,7 @@ export default function OverviewPage() {
 					<Card>
 						<CardBody className={"flex flex-col gap-4"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Recent Activity</h3>
-							{dashboardLoading
+							{dashboardData === null 
 								? <LoadingBlock />
 								:
 								<Table
@@ -353,7 +351,7 @@ export default function OverviewPage() {
 					<Card>
 						<CardBody className={"flex flex-col gap-6"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Upcoming Transactions</h3>
-							{dashboardLoading
+							{dashboardData === null 
 								? <LoadingBlock />
 								: (
 									<Table

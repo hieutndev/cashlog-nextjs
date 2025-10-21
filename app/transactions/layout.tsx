@@ -4,6 +4,7 @@ import { Metadata } from "next";
 
 import Container from "@/components/shared/container/container";
 import ContentHeader, { BreadcrumbsType } from "@/components/shared/partials/content-header";
+import ICONS from "@/configs/icons";
 
 export const metadata: Metadata = {
 	title: "Transactions",
@@ -18,6 +19,13 @@ export default function TransactionsLayout({ children }: { children: React.React
 		{
 			label: ["Transactions", "Import from Excel"],
 			key: "^/transactions/import-transactions",
+			customButton: [{
+				children: "Back",
+				href: "/transactions",
+				variant: "light",
+				color: "primary",
+				startContent: ICONS.BACK.MD
+			}]
 		},
 	];
 

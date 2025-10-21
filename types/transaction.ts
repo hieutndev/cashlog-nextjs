@@ -17,10 +17,12 @@ export type TTransactionWithCard = TTransaction & TCard;
 
 export type TTransactionWithCardAndCategory = TTransaction & TCard & TCategory;
 
-export type TCrudTransaction = Omit<TTransaction, "transaction_id" | "created_at" | "date"> &
+export type TAddTransaction = Omit<TTransaction, "transaction_id" | "created_at" | "date"> &
 	Pick<TCard, "card_id"> & {
 		date: string;
 	};
+
+export type TUpdateTransaction = TAddTransaction & Pick<TTransaction, "transaction_id">;
 
 export type TImportFileXLSXResponse = {
 	headers: string[];
@@ -52,7 +54,7 @@ export type TAddMultipleTransactionsResponse = {
 	success_count: number;
 	error_count: number;
 	errors: {
-		transaction: TCrudTransaction;
+		transaction: TAddTransaction;
 		error: string;
 	}[];
 };

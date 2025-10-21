@@ -8,12 +8,11 @@ import { Button } from "@heroui/button";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
 import { useDisclosure } from "@heroui/modal";
-import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 
+import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import CategoryForm from "@/components/categories/category-form";
 import { TCategory } from "@/types/category";
-import { IAPIResponse } from "@/types/global";
 import ICONS from "@/configs/icons";
 import { sliceText } from "@/utils/string";
 import { BREAK_POINT } from "@/configs/break-point";
@@ -26,6 +25,7 @@ const categoryColumns = [
 
 export default function CategoriesPage() {
 	const { width } = useWindowSize();
+	const { useGetCategories, useDeleteCategory } = useCategoryEndpoint();
 
 	const [formAction, setFormAction] = useState<"add" | "edit">("add");
 	const [selectedCategory, setSelectedCategory] = useState<TCategory | undefined>(undefined);
@@ -39,7 +39,7 @@ export default function CategoriesPage() {
 		loading: loadingCategories,
 		error: fetchCategoriesError,
 		fetch: fetchCategories,
-	} = useFetch<IAPIResponse<TCategory[]>>(`/categories`);
+	} = useGetCategories();
 
 	useEffect(() => {
 		if (fetchCategoriesResult) {
@@ -65,10 +65,7 @@ export default function CategoriesPage() {
 		data: deleteCategoryResult,
 		error: deleteCategoryError,
 		fetch: deleteCategory,
-	} = useFetch<IAPIResponse>(`categories/${selectedDeleteCategory}`, {
-		method: "DELETE",
-		skip: true,
-	});
+	} = useDeleteCategory(selectedDeleteCategory ?? -1);
 
 	useEffect(() => {
 		if (selectedDeleteCategory) {

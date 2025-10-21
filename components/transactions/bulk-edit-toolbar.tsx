@@ -9,14 +9,14 @@ import { Chip } from "@heroui/chip";
 import { parseDate } from '@internationalized/date';
 import moment from "moment";
 
-import { TCrudTransaction } from "@/types/transaction";
-import { TCard } from "@/types/card";
+import { TAddTransaction } from "@/types/transaction";
 import { TCategory } from "@/types/category";
+import { FilterAndSortItem } from "@/types/global";
 
 interface BulkEditToolbarProps {
   selectedCount: number;
-  onBulkUpdate: (updates: Partial<TCrudTransaction>) => void;
-  listCards: TCard[];
+  onBulkUpdate: (updates: Partial<TAddTransaction>) => void;
+  listCards: FilterAndSortItem[];
   listCategories: TCategory[];
 }
 
@@ -38,7 +38,7 @@ export default function BulkEditToolbar({
   const handleApply = () => {
     if (selectedField === "") return;
 
-    let updates: Partial<TCrudTransaction> = {};
+    let updates: Partial<TAddTransaction> = {};
 
     switch (selectedField) {
       case "card":
@@ -88,29 +88,29 @@ export default function BulkEditToolbar({
   const canApply = selectedField !== "" && selectedCount > 0;
 
   return (
-    <div className="bg-default-50 border border-default-200 rounded-lg p-4 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Chip color="primary" variant="flat">
+    <div className="flex flex-col gap-4 p-4 bg-default-50 border border-default-200 rounded-2xl">
+      <div className="w-full flex items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Chip color="primary" size="sm" variant="flat">
             {selectedCount} selected
           </Chip>
           <span className="text-sm text-default-600">Select a field to bulk edit:</span>
         </div>
-        {selectedField && (
-          <Button size="sm" color="danger" variant="flat" onPress={resetForm}>
+        {/* {selectedField && (
+          <Button color="danger" size="sm" variant="flat" onPress={resetForm}>
             Cancel
           </Button>
-        )}
+        )} */}
       </div>
-
-      <div className="flex flex-wrap items-end gap-4">
+      <div className="flex flex-wrap items-start gap-4">
         <Select
           className="w-48"
-          label="Field to edit"
           placeholder="Select field"
           selectedKeys={selectedField ? [selectedField] : []}
+          size="sm"
           onSelectionChange={(keys) => {
             const key = Array.from(keys)[0] as BulkEditField;
+
             setSelectedField(key || "");
           }}
         >
@@ -124,30 +124,50 @@ export default function BulkEditToolbar({
         {selectedField === "card" && (
           <Select
             className="w-48"
-            label="Select Card"
+            items={listCards}
             placeholder="Choose card"
+            renderValue={(cards) => (
+              <div className="flex items-center gap-2">
+                {cards.map((card, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1"
+                  >
+                    {card.props?.startContent}
+                    {card.rendered}
+                  </div>
+                ))}
+              </div>
+            )}
             selectedKeys={cardValue ? [cardValue] : []}
+
+            size="sm"
             onSelectionChange={(keys) => {
               const key = Array.from(keys)[0] as string;
+
               setCardValue(key || "");
             }}
           >
-            {listCards.map((card) => (
-              <SelectItem key={card.card_id.toString()} textValue={card.card_name}>
-                {card.card_name}
+            {(card) => (
+              <SelectItem
+                key={card.key}
+                startContent={card.startIcon}
+              >
+                {card.label}
               </SelectItem>
-            ))}
+            )}
           </Select>
         )}
 
         {selectedField === "category" && (
           <Select
             className="w-48"
-            label="Select Category"
             placeholder="Choose category"
             selectedKeys={categoryValue ? [categoryValue] : []}
+            size="sm"
             onSelectionChange={(keys) => {
               const key = Array.from(keys)[0] as string;
+
               setCategoryValue(key || "");
             }}
           >
@@ -167,11 +187,12 @@ export default function BulkEditToolbar({
         {selectedField === "direction" && (
           <Select
             className="w-48"
-            label="Transaction Type"
             placeholder="Choose type"
             selectedKeys={directionValue ? [directionValue] : []}
+            size="sm"
             onSelectionChange={(keys) => {
               const key = Array.from(keys)[0] as "in" | "out";
+
               setDirectionValue(key || "");
             }}
           >
@@ -187,7 +208,7 @@ export default function BulkEditToolbar({
         {selectedField === "date" && (
           <DatePicker
             className="w-48"
-            label="Transaction Date"
+            size="sm"
             value={dateValue ? parseDate(moment(dateValue).format("YYYY-MM-DD")) : undefined}
             onChange={(date) => {
               if (date) {
@@ -200,8 +221,8 @@ export default function BulkEditToolbar({
         {selectedField === "description" && (
           <Input
             className="w-48"
-            label="Description"
             placeholder="Enter description"
+            size="sm"
             value={descriptionValue}
             onValueChange={setDescriptionValue}
           />
@@ -211,9 +232,10 @@ export default function BulkEditToolbar({
           <Button
             color="primary"
             isDisabled={!canApply}
+            size="sm"
             onPress={handleApply}
           >
-            Apply to {selectedCount} transactions
+            Apply
           </Button>
         )}
       </div>

@@ -5,11 +5,11 @@ import clsx from "clsx";
 import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
-import { useFetch } from "hieutndev-toolkit";
 
+import { useCategoryFormEndpoint } from "@/hooks/useCategoryFormEndpoint";
 import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
-import { IAPIResponse, LIST_COLORS } from "@/types/global";
+import { LIST_COLORS } from "@/types/global";
 import { TCategory, TAddCategoryPayload } from "@/types/category";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
@@ -21,6 +21,7 @@ interface NewCategoryProps {
 }
 
 export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }: NewCategoryProps) {
+	const { useCreateCategory, useUpdateCategory } = useCategoryFormEndpoint();
 	const [categoryForm, setCategoryForm] = useState<TAddCategoryPayload>({
 		category_name: "",
 		color: "red",
@@ -36,28 +37,15 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 		setValidateErrors([]);
 	};
 
-	const getActionRoute = (action: string) => {
-		const MAP_ACTION_ROUTE: Record<string, string> = {
-			add: "/categories",
-			edit: `/categories/${categoryInfo?.category_id}`,
-		};
-
-		return MAP_ACTION_ROUTE[action];
-	};
+	const createHook = useCreateCategory();
+	const updateHook = useUpdateCategory(categoryInfo?.category_id ?? -1);
 
 	const {
 		data: formActionResult,
 		loading: formActionLoading,
 		error: formActionError,
 		fetch: formAction,
-	} = useFetch<IAPIResponse>(getActionRoute(action), {
-		method: action === "add" ? "POST" : "PUT",
-		body: categoryForm,
-		headers: {
-			"Content-Type": "application/json",
-		},
-		skip: true,
-	});
+	} = action === "add" ? createHook : updateHook;
 
 	useEffect(() => {
 		if (formActionResult) {

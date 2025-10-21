@@ -10,7 +10,7 @@ import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 
 import Container from "@/components/shared/container/container";
-import { TAddMultipleTransactionsResponse, TCrudTransaction, TImportFileXLSXResponse } from "@/types/transaction";
+import { TAddMultipleTransactionsResponse, TAddTransaction, TImportFileXLSXResponse } from "@/types/transaction";
 import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import { IAPIResponse } from "@/types/global";
@@ -69,7 +69,7 @@ export default function PreviewData({ uploadResult, onCancelImport, onSubmitSucc
 		}
 	}, [cardsResult, cardsError]);
 
-	const [mappedData, setMappedData] = useState<TCrudTransaction[]>([]);
+	const [mappedData, setMappedData] = useState<TAddTransaction[]>([]);
 
 	const columns = [
 		{ key: "date", label: "Date" },
@@ -81,7 +81,7 @@ export default function PreviewData({ uploadResult, onCancelImport, onSubmitSucc
 	];
 
 	useEffect(() => {
-		const newData: TCrudTransaction[] = uploadResult.mapped_column_data.date.map((row, index) => ({
+		const newData: TAddTransaction[] = uploadResult.mapped_column_data.date.map((row, index) => ({
 			date: moment(row).startOf("day").toISOString(),
 			direction: uploadResult.mapped_column_data.direction[index],
 			amount: Number(uploadResult.mapped_column_data.amount[index]),
