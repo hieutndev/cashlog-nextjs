@@ -49,24 +49,24 @@ export default function FinancialAnalysisChart({ data }: FinancialAnalysisChartP
             {
                 label: "Income",
                 data: data?.income || [],
-                backgroundColor: "#22c55e",
-                borderColor: "#22c55e",
+                backgroundColor: "rgba(34, 197, 94, 0.4)", // 40% opacity for fill
+                borderColor: "#22c55e", // Solid color for border
                 borderWidth: 1,
                 stack: "stack0",
             },
             {
                 label: "Expenses",
                 data: expensesData,
-                backgroundColor: "#ef4444",
-                borderColor: "#ef4444",
+                backgroundColor: "rgba(239, 68, 68, 0.4)", // 40% opacity for fill
+                borderColor: "#ef4444", // Solid color for border
                 borderWidth: 1,
                 stack: "stack0",
             },
             {
                 label: "Savings",
                 data: data?.savings || [],
-                backgroundColor: "#eab308",
-                borderColor: "#eab308",
+                backgroundColor: "rgba(234, 179, 8, 0.4)", // 40% opacity for fill
+                borderColor: "#eab308", // Solid color for border
                 borderWidth: 1,
                 stack: "stack1",
             },

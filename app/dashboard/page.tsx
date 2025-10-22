@@ -26,6 +26,7 @@ import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
 import AnalyticBlock from "@/components/dashboard/analytic-block/analytic-block";
 import { TDashboardData } from "@/types/dashboard";
+import ICONS from "@/configs/icons";
 
 const EST_YEAR = process.env.NEXT_PUBLIC_EST_YEAR ? parseInt(process.env.NEXT_PUBLIC_EST_YEAR) : 2025;
 
@@ -65,9 +66,9 @@ export default function DashboardPage() {
 
 		if (data && data.results) {
 			console.log("data.results: ", data.results);
-			
+
 			setDashboardData(data.results);
-		}	
+		}
 
 	}, [error, data]);
 
@@ -182,8 +183,13 @@ export default function DashboardPage() {
 
 					<Card>
 						<CardBody className={"flex flex-col gap-4 items-center"}>
-							<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
-							<CategoryBreakdownChart data={categoryBreakdown} loading={dashboardData === null } />
+							<div className={"w-full flex items-center justify-between"}>
+								<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
+								<Button color="primary" endContent={ICONS.NEXT.MD} variant="light">
+									Details
+								</Button>
+							</div>
+							<CategoryBreakdownChart data={categoryBreakdown} loading={dashboardData === null} />
 						</CardBody>
 					</Card>
 				</div>
@@ -228,7 +234,7 @@ export default function DashboardPage() {
 							</div>
 
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-								{dashboardData === null  ?
+								{dashboardData === null ?
 									Array.from({ length: 3 }).map((_, index) => (
 										<LoadingBlock key={index} className={"min-h-32"} type={"card"} />
 									))
@@ -263,7 +269,7 @@ export default function DashboardPage() {
 
 					<Card>
 						<CardBody className="flex flex-col items-center justify-center max-h-88 overflow-hidden">
-							{dashboardData === null 
+							{dashboardData === null
 								? <LoadingBlock />
 								: <>
 									<h3 className={"w-full font-semibold text-xl text-left text-gray-400/50"}>Fluctuation Chart</h3>
@@ -284,7 +290,7 @@ export default function DashboardPage() {
 					<Card>
 						<CardBody className={"flex flex-col gap-4"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Recent Activity</h3>
-							{dashboardData === null 
+							{dashboardData === null
 								? <LoadingBlock />
 								:
 								<Table
@@ -351,7 +357,7 @@ export default function DashboardPage() {
 					<Card>
 						<CardBody className={"flex flex-col gap-6"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Upcoming Transactions</h3>
-							{dashboardData === null 
+							{dashboardData === null
 								? <LoadingBlock />
 								: (
 									<Table

@@ -237,6 +237,7 @@ export default function ParsedTransactionTable({
                   {/* Amount */}
                   <Input
                     isRequired
+                    className="w-48"
                     endContent={SITE_CONFIG.CURRENCY_STRING}
                     label="Amount"
                     labelPlacement="outside"
@@ -247,7 +248,6 @@ export default function ParsedTransactionTable({
                     onValueChange={(e) =>
                       onTransactionUpdate(index, { amount: parseInt(e) || 0 })
                     }
-                    className="w-48"
                   />
                   <Select
                     className="w-48"

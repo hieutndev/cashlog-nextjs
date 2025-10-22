@@ -54,12 +54,12 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
         datasets: [
             {
                 data: data.map(item => item.total),
-                backgroundColor: generateColors(data),
-                borderColor: generateColors(data).map(color => color + "CC"), // Add transparency to border
-                borderWidth: 2,
-                hoverBackgroundColor: generateColors(data).map(color => color + "DD"),
-                hoverBorderColor: generateColors(data).map(color => color),
-                hoverBorderWidth: 3,
+                backgroundColor: generateColors(data).map(color => color + "40"), // 25% opacity for fill
+                borderColor: generateColors(data), // Solid color for border
+                borderWidth: 0.5,
+                hoverBackgroundColor: generateColors(data).map(color => color + "80"), // 50% opacity on hover
+                hoverBorderColor: generateColors(data),
+                hoverBorderWidth: 1.5,
             },
         ],
     };
@@ -67,6 +67,7 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        
         plugins: {
             legend: {
                 display: false, // Hide default legend since we'll use custom one
@@ -94,16 +95,15 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
         },
     };
 
-    const colors = generateColors(data);
 
     return (
         loading ? <LoadingBlock /> :
             data.length > 0 ? (
                 <div className="flex flex-col items-center gap-8 w-full h-full">
-                    <div className="w-1/2 h-max">
+                    <div className="w-full h-80 p-4">
                         <Pie data={chartData} options={options} />
                     </div>
-                    <div className="px-8 w-full h-full overflow-y-auto flex flex-row flex-wrap gap-4 items-center">
+                    {/* <div className="px-8 w-full h-full overflow-y-auto flex flex-row flex-wrap gap-4 items-center">
                         {data.map((item, index) => {
                             return (
                                 <Tooltip
@@ -128,7 +128,7 @@ export default function CategoryBreakdownChart({ data, loading = false }: Catego
                                 </Tooltip>
                             );
                         })}
-                    </div>
+                    </div> */}
                 </div>
             ) : (
                 <div className="flex items-center justify-center h-64 text-gray-500">
