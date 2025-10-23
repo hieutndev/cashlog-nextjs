@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { handleError } from "../_helpers/handle-error";
 import { getFromHeaders } from "../_helpers/get-from-headers";
-import { calculateAnalytics, getCategoryStatsByUserId, getMonthlyAnalyticsData } from "../_services/analytics-services";
+import { calculateAnalytics, getCategoryStatsByUserId, getMonthlyAnalyticsData, getDateRangeByTimePeriod } from "../_services/analytics-services";
 import { getAllCardsOfUser } from "../_services/card-services";
 import { getAllTransactions } from "../_services/transaction-services";
 
@@ -50,6 +50,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Get date range for category breakdown filtering
+    const { startDate, endDate } = getDateRangeByTimePeriod(time_period, parsed_specific_time);
+
     const [
       analytics,
       cards,
@@ -61,7 +64,7 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       calculateAnalytics(user_id, time_period, parsed_specific_time),
       getAllCardsOfUser(user_id),
-      getCategoryStatsByUserId(user_id),
+      getCategoryStatsByUserId(user_id, startDate, endDate),
       getMonthlyAnalyticsData(user_id),
       getAllTransactions(user_id, 1, 5, '', '', '', 'date_desc'),
       (async () => {

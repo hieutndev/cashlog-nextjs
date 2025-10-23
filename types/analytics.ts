@@ -36,6 +36,20 @@ export type TMonthlyAnalyticsResponse = {
     months: string[];
 }
 
+export type TTotalAsset = {
+    date: string;
+    total_asset: number;
+};
+
+export type TCategoryVolume = {
+    category_id: number | null;
+    category_name: string;
+    color: string;
+    total_income: number;
+    total_expense: number;
+    total_volume: number;
+};
+
 export type TAnalyticsResponse = {
     balanceFluctuation: TBalanceFluctuation;
     summary: TAnalyticsSummary

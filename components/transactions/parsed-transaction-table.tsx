@@ -88,21 +88,6 @@ export default function ParsedTransactionTable({
     }
   };
 
-  // Get direction display info
-  const getDirectionInfo = (direction: "in" | "out") => {
-    if (direction === "in") {
-      return {
-        color: "success" as const,
-        label: "In",
-      };
-    }
-
-    return {
-      color: "danger" as const,
-      label: "Out",
-    };
-  };
-
   // Format amount with currency
   const formatAmount = (amount: number) => {
     return `${amount.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`;
@@ -131,8 +116,42 @@ export default function ParsedTransactionTable({
     );
   }
 
+  // Check if all transactions are selected
+  const allSelected = transactions.length > 0 && selectedTransactions.length === transactions.length;
+  const someSelected = selectedTransactions.length > 0 && !allSelected;
+
+  // Handle select all toggle
+  const handleSelectAll = () => {
+    if (allSelected) {
+      // Deselect all
+      onSelectionChange([]);
+    } else {
+      // Select all
+      onSelectionChange(transactions.map((_, index) => index));
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
+      {transactions.length > 0 && (
+        <div className="flex items-center gap-2 px-2 py-1 bg-default-100 rounded-lg">
+          <Checkbox
+            isIndeterminate={someSelected}
+            isSelected={allSelected}
+            onValueChange={handleSelectAll}
+          >
+            <span className="text-sm text-default-700">
+              {allSelected 
+                ? `All ${transactions.length} transactions selected` 
+                : someSelected 
+                ? `${selectedTransactions.length} of ${transactions.length} transactions selected`
+                : `Select all ${transactions.length} transactions`
+              }
+            </span>
+          </Checkbox>
+        </div>
+      )}
+      
       <Accordion selectionMode="multiple" variant="splitted">
         {transactions.map((transaction, index) => {
           const hasCard = transaction.card_id > 0;

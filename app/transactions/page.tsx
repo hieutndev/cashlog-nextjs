@@ -455,7 +455,7 @@ export default function TransactionsPage() {
 					)}
 				</TableHeader>
 				<TableBody
-					emptyContent={dataTable.rows.length === 0 ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"}
+					emptyContent={dataTable.rows.length === 0 && retrievingTxn ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"}
 					items={dataTable.rows}
 				>
 					{(item) => (

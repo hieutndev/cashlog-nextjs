@@ -10,6 +10,8 @@ export type TCategoryStats = {
     category: string;
     color: string;
     total: number;
+    income?: number;
+    expense?: number;
 };
 
 export type TPeriodTotals = {
@@ -23,12 +25,90 @@ export type TDailyAnalytics = {
     expense: number;
 };
 
-export const getCategoryStatsByUserId = async (userId: TUser["user_id"]): Promise<TCategoryStats[]> => {
+export type TDateRange = {
+    startDate: string;
+    endDate: string;
+};
+
+/**
+ * Calculate date range based on time period and specific time
+ */
+export const getDateRangeByTimePeriod = (
+    timePeriod: string,
+    specificTime: number | null = null
+): TDateRange => {
+    const currentDate = moment();
+    let startDate: string;
+    let endDate: string;
+
+    switch (timePeriod) {
+        case 'day':
+            startDate = currentDate.format('YYYY-MM-DD');
+            endDate = currentDate.format('YYYY-MM-DD');
+            break;
+        case 'week':
+            startDate = currentDate.clone().startOf('isoWeek').format('YYYY-MM-DD');
+            endDate = currentDate.clone().endOf('isoWeek').format('YYYY-MM-DD');
+            break;
+        case 'month':
+            if (specificTime !== null) {
+                startDate = moment({ year: currentDate.year(), month: specificTime - 1 }).startOf('month').format('YYYY-MM-DD');
+                endDate = moment({ year: currentDate.year(), month: specificTime - 1 }).endOf('month').format('YYYY-MM-DD');
+            } else {
+                startDate = currentDate.clone().startOf('month').format('YYYY-MM-DD');
+                endDate = currentDate.clone().endOf('month').format('YYYY-MM-DD');
+            }
+            break;
+        case 'year':
+            if (specificTime !== null) {
+                startDate = `${specificTime}-01-01`;
+                endDate = `${specificTime}-12-31`;
+            } else {
+                startDate = `${currentDate.year()}-01-01`;
+                endDate = `${currentDate.year()}-12-31`;
+            }
+            break;
+        default:
+            startDate = currentDate.clone().startOf('month').format('YYYY-MM-DD');
+            endDate = currentDate.clone().endOf('month').format('YYYY-MM-DD');
+    }
+
+    return { startDate, endDate };
+};
+
+export const getCategoryStatsByUserId = async (
+    userId: TUser["user_id"],
+    startDate?: string,
+    endDate?: string
+): Promise<TCategoryStats[]> => {
     try {
-        const categoryStats = await dbQuery<RowDataPacket[]>(
-            QUERY_STRING.GET_CATEGORY_STATS_BY_USER_ID,
-            [userId]
-        );
+        let query = QUERY_STRING.GET_CATEGORY_STATS_BY_USER_ID;
+        let params: any[] = [userId];
+
+        // If date range is provided, use the filtered query with income/expense breakdown
+        // Excludes initial balance transactions to prevent double-counting
+        if (startDate && endDate) {
+            query = `SELECT
+                        COALESCE(tc.category_name, 'Uncategorized') as category,
+                        COALESCE(tc.color, 'slate') as color,
+                        SUM(tn.amount) as total,
+                        SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
+                        SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
+                    FROM transactions_new tn
+                    JOIN cards c ON tn.card_id = c.card_id
+                    JOIN users u ON c.user_id = u.user_id
+                    LEFT JOIN transaction_categories tc ON tn.category_id = tc.category_id
+                    WHERE u.user_id = ?
+                        AND tn.date >= ?
+                        AND tn.date <= ?
+                        AND tn.description != 'Auto-generated when creating a new card'
+                    GROUP BY tc.category_id, tc.category_name, tc.color
+                    HAVING total > 0
+                    ORDER BY total DESC`;
+            params = [userId, startDate, endDate];
+        }
+
+        const categoryStats = await dbQuery<RowDataPacket[]>(query, params);
 
         if (!categoryStats) {
             return [];
@@ -239,6 +319,176 @@ export const calculateTotalSummary = (income: number, expense: number): TTimePer
     };
 }
 
+export type TTotalAsset = {
+    date: string;
+    total_asset: number;
+};
+
+export type TCategoryVolume = {
+    category_id: number | null;
+    category_name: string;
+    color: string;
+    total_income: number;
+    total_expense: number;
+    total_volume: number;
+};
+
+export const getTotalAssetFluctuation = async (
+    userId: string | number,
+    timePeriod: string = 'month',
+    specificTime: number | null = null
+): Promise<TTotalAsset[]> => {
+    try {
+        const { startDate, endDate } = getDateRangeByTimePeriod(timePeriod, specificTime);
+
+        // Calculate initial total assets from ALL initial card balance transactions
+        // These are transactions created when cards are added with initial balances
+        // This sum is independent of the selected time period
+        const initialBalanceQuery = `
+            SELECT SUM(tn.amount) as initial_total_assets
+            FROM transactions_new tn
+            JOIN cards c ON tn.card_id = c.card_id
+            WHERE c.user_id = ?
+                AND tn.description = 'Auto-generated when creating a new card'
+        `;
+        const initialBalanceResult = await dbQuery<RowDataPacket[]>(initialBalanceQuery, [userId]);
+        const initialTotalAssets = (initialBalanceResult[0]?.initial_total_assets as number) || 0;
+
+        console.log(`[getTotalAssetFluctuation] userId=${userId}, startDate=${startDate}, endDate=${endDate}`);
+        console.log(`[getTotalAssetFluctuation] initialTotalAssets=${initialTotalAssets}`);
+
+        // Get all transactions in the date range, ordered by date
+        // Exclude initial balance transactions from cumulative calculation
+        // These are already included in initialTotalAssets
+        const query = `
+            SELECT
+                DATE(tn.date) as date,
+                SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as daily_income,
+                SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as daily_expense
+            FROM transactions_new tn
+            JOIN cards c ON tn.card_id = c.card_id
+            WHERE c.user_id = ?
+                AND tn.date >= ?
+                AND tn.date <= ?
+                AND tn.description != 'Auto-generated when creating a new card'
+            GROUP BY DATE(tn.date)
+            ORDER BY DATE(tn.date) ASC
+        `;
+
+        const dailyData = await dbQuery<RowDataPacket[]>(query, [userId, startDate, endDate]);
+
+        // Calculate cumulative total asset starting from initial total assets
+        // Formula: Total Asset = initialTotalAssets + Σ(income) - Σ(expense)
+        let cumulativeAsset = initialTotalAssets;
+        const dailyResults: TTotalAsset[] = [];
+
+        for (const day of dailyData) {
+            const dailyIncome = (day.daily_income as number) || 0;
+            const dailyExpense = (day.daily_expense as number) || 0;
+
+            cumulativeAsset = cumulativeAsset + dailyIncome - dailyExpense;
+
+            console.log(`[getTotalAssetFluctuation] date=${day.date}, income=${dailyIncome}, expense=${dailyExpense}, cumulative=${cumulativeAsset}`);
+
+            dailyResults.push({
+                date: day.date as string,
+                total_asset: cumulativeAsset,
+            });
+        }
+
+        // Aggregate to monthly data (end-of-month snapshots)
+        // Build a map of year-month to cumulative total asset
+        const monthlyMap = new Map<string, TTotalAsset>();
+
+        for (const dailyResult of dailyResults) {
+            const dateStr = dailyResult.date;
+            const yearMonth = dateStr.substring(0, 7); // YYYY-MM format
+
+            monthlyMap.set(yearMonth, dailyResult); // Keep overwriting to get the last day of each month
+        }
+
+        // Generate all months in the period and fill in missing months with previous month's value
+        const monthlyResults: TTotalAsset[] = [];
+        const startMoment = moment(startDate);
+        const endMoment = moment(endDate);
+
+        let currentMoment = startMoment.clone().startOf('month');
+        let lastKnownAsset = initialTotalAssets; // Start with initial assets
+
+        while (currentMoment.isSameOrBefore(endMoment, 'month')) {
+            const yearMonth = currentMoment.format('YYYY-MM');
+
+            if (monthlyMap.has(yearMonth)) {
+                // Month has transactions, use the actual cumulative value
+                const monthData = monthlyMap.get(yearMonth)!;
+                lastKnownAsset = monthData.total_asset;
+                monthlyResults.push(monthData);
+            } else {
+                // Month has no transactions, carry forward the previous month's value
+                // Use the last day of the month as the date
+                const lastDayOfMonth = currentMoment.clone().endOf('month').format('YYYY-MM-DD');
+                monthlyResults.push({
+                    date: lastDayOfMonth,
+                    total_asset: lastKnownAsset,
+                });
+            }
+
+            currentMoment.add(1, 'month');
+        }
+
+        console.log(`[getTotalAssetFluctuation] Returning ${monthlyResults.length} monthly data points`);
+
+        return monthlyResults;
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : "Error in getTotalAssetFluctuation");
+    }
+};
+
+export const getCategoryVolumeStats = async (
+    userId: string | number,
+    timePeriod: string = 'month',
+    specificTime: number | null = null
+): Promise<TCategoryVolume[]> => {
+    try {
+        const { startDate, endDate } = getDateRangeByTimePeriod(timePeriod, specificTime);
+
+        // Excludes initial balance transactions to prevent double-counting
+        // Initial balances are already reflected in the card_balance field
+        const query = `
+            SELECT
+                COALESCE(tc.category_id, 0) as category_id,
+                COALESCE(tc.category_name, 'Uncategorized') as category_name,
+                COALESCE(tc.color, 'slate') as color,
+                SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as total_income,
+                SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as total_expense,
+                SUM(ABS(tn.amount)) as total_volume
+            FROM transactions_new tn
+            JOIN cards c ON tn.card_id = c.card_id
+            JOIN users u ON c.user_id = u.user_id
+            LEFT JOIN transaction_categories tc ON tn.category_id = tc.category_id
+            WHERE u.user_id = ?
+                AND tn.date >= ?
+                AND tn.date <= ?
+                AND tn.description != 'Auto-generated when creating a new card'
+            GROUP BY tc.category_id, tc.category_name, tc.color
+            ORDER BY total_volume DESC
+        `;
+
+        const results = await dbQuery<RowDataPacket[]>(query, [userId, startDate, endDate]);
+
+        return results.map(row => ({
+            category_id: row.category_id as number | null,
+            category_name: row.category_name as string,
+            color: row.color as string,
+            total_income: (row.total_income as number) || 0,
+            total_expense: (row.total_expense as number) || 0,
+            total_volume: (row.total_volume as number) || 0,
+        }));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : "Error in getCategoryVolumeStats");
+    }
+};
+
 export const getMonthlyAnalyticsData = async (userId: string | number) => {
     try {
         const currentDate = moment();
@@ -256,7 +506,7 @@ export const getMonthlyAnalyticsData = async (userId: string | number) => {
             const endDate = moment({ year: currentYear, month: month - 1 }).endOf('month').format('YYYY-MM-DD');
 
             const monthlyTotals = await getPeriodTotals(userId, startDate, endDate);
-            
+
             const monthIndex = month - 1; // Convert to 0-based index
 
             income[monthIndex] = monthlyTotals.total_income;

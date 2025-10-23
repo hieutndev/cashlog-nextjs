@@ -25,6 +25,10 @@ export const API_ENDPOINT = {
         SIGN_UP: '/users/sign-up',
         SIGN_IN: '/users/sign-in',
     },
+    ANALYTICS: {
+        TOTAL_ASSET: '/analytics/total-asset',
+        CATEGORY_VOLUME: '/analytics/category-volume',
+    },
     RECURRINGS: {
         BASE: '/recurrings',
         BY_ID: (recurringId: string | number) => `/recurrings/${recurringId}`,

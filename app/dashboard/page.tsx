@@ -15,12 +15,15 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 
 import { Card, CardBody } from "@heroui/card";
+import { useDisclosure } from "@heroui/modal";
+
 
 import { useDashboardEndpoint } from "@/hooks/useDashboardEndpoint";
 import Container from "@/components/shared/container/container";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import CategoryBreakdownChart from "@/components/dashboard/chartjs/category-breakdown-chart";
 import FinancialAnalysisChart from "@/components/dashboard/chartjs/financial-analysis-chart";
+import CategoryDetailsModal from "@/components/dashboard/category-details-modal";
 import { MAP_ICON } from "@/configs/map-icons";
 import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
@@ -37,10 +40,15 @@ export default function DashboardPage() {
 	});
 
 	const [dashboardData, setDashboardData] = useState<TDashboardData | null>(null);
+	const [totalAssetData, setTotalAssetData] = useState<any>(null);
+	const [categoryVolumeData, setCategoryVolumeData] = useState<any>(null);
+
+	// Modal state for category details
+	const { isOpen: isOpenCategoryDetailsModal, onOpen: onOpenCategoryDetailsModal, onOpenChange: onCategoryDetailsModalChange } = useDisclosure();
 
 	const isSpecificTimeEnabled = selectedTimePeriod === "month" || selectedTimePeriod === "year";
 
-	const { useGetDashboardData } = useDashboardEndpoint();
+	const { useGetDashboardData, useGetTotalAssetFluctuation, useGetCategoryVolume } = useDashboardEndpoint();
 
 	// Single consolidated API call for all dashboard data
 	const {
@@ -48,6 +56,24 @@ export default function DashboardPage() {
 		error,
 		fetch,
 	} = useGetDashboardData({
+		time_period: selectedTimePeriod,
+		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
+	});
+
+	// Fetch total asset fluctuation data
+	const {
+		data: totalAssetResponse,
+		fetch: fetchTotalAsset,
+	} = useGetTotalAssetFluctuation({
+		time_period: selectedTimePeriod,
+		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
+	});
+
+	// Fetch category volume data
+	const {
+		data: categoryVolumeResponse,
+		fetch: fetchCategoryVolume,
+	} = useGetCategoryVolume({
 		time_period: selectedTimePeriod,
 		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
 	});
@@ -72,9 +98,25 @@ export default function DashboardPage() {
 
 	}, [error, data]);
 
+	// Handle total asset data
+	useEffect(() => {
+		if (totalAssetResponse && totalAssetResponse.results) {
+			setTotalAssetData(totalAssetResponse.results);
+		}
+	}, [totalAssetResponse]);
+
+	// Handle category volume data
+	useEffect(() => {
+		if (categoryVolumeResponse && categoryVolumeResponse.results) {
+			setCategoryVolumeData(categoryVolumeResponse.results);
+		}
+	}, [categoryVolumeResponse]);
+
 	// Fetch dashboard data when time period changes
 	useEffect(() => {
 		fetch();
+		fetchTotalAsset();
+		fetchCategoryVolume();
 	}, [selectedTimePeriod, selectedSpecificTime]);
 
 	const timePeriodOptions = [
@@ -185,11 +227,16 @@ export default function DashboardPage() {
 						<CardBody className={"flex flex-col gap-4 items-center"}>
 							<div className={"w-full flex items-center justify-between"}>
 								<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
-								<Button color="primary" endContent={ICONS.NEXT.MD} variant="light">
+								<Button color="primary" endContent={ICONS.NEXT.MD} variant="light" onPress={onOpenCategoryDetailsModal}>
 									Details
 								</Button>
 							</div>
-							<CategoryBreakdownChart data={categoryBreakdown} loading={dashboardData === null} />
+							<CategoryBreakdownChart
+								data={categoryBreakdown}
+								loading={dashboardData === null}
+								volumeData={categoryVolumeData}
+								onClick={onOpenCategoryDetailsModal}
+							/>
 						</CardBody>
 					</Card>
 				</div>
@@ -280,6 +327,7 @@ export default function DashboardPage() {
 												? JSON.parse(error).message
 												: null
 										}
+										totalAssetData={totalAssetData}
 									/>
 								</>
 							}
@@ -421,6 +469,13 @@ export default function DashboardPage() {
 					</Card>
 				</div>
 			</div >
+
+			{/* Category Details Modal */}
+			<CategoryDetailsModal
+				data={categoryBreakdown}
+				isOpen={isOpenCategoryDetailsModal}
+				onOpenChange={onCategoryDetailsModalChange}
+			/>
 		</Container >
 	);
 }
