@@ -8,19 +8,12 @@ import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
 import { Chip } from "@heroui/chip";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectCards } from "swiper/modules";
-
-import "swiper/css";
-import "swiper/css/effect-cards";
-
 import { Card, CardBody } from "@heroui/card";
 import { useDisclosure } from "@heroui/modal";
 
-
 import { useDashboardEndpoint } from "@/hooks/useDashboardEndpoint";
 import Container from "@/components/shared/container/container";
-import BankCard from "@/components/shared/bank-card/bank-card";
+import { CardSwiper } from "@/components/dashboard/card-swiper/card-swiper";
 import CategoryBreakdownChart from "@/components/dashboard/chartjs/category-breakdown-chart";
 import FinancialAnalysisChart from "@/components/dashboard/chartjs/financial-analysis-chart";
 import CategoryDetailsModal from "@/components/dashboard/category-details-modal";
@@ -171,39 +164,8 @@ export default function DashboardPage() {
 		>
 			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
 				<div className="lg:col-span-4 flex flex-col gap-4">
-					<div className="bg-white rounded-3xl">
-						{dashboardData === null ? (
-
-							<LoadingBlock className="min-h-72" type="card" />
-						) : cards && cards.length > 0 ? (
-							<div className="h-72 scale-90">
-								<Swiper
-									className="w-full h-full"
-									effect="cards"
-									grabCursor={true}
-									loop={true}
-									modules={[EffectCards]}
-								>
-									{cards.map((card) => (
-										<SwiperSlide key={card.card_id} className="h-full overflow-hidden bg-transparent rounded-2xl">
-											<div className="h-full flex w-full">
-												<BankCard
-													bankCode={card.bank_code}
-													cardBalance={card.card_balance}
-													cardName={card.card_name}
-													className="h-full"
-													color={card.card_color}
-												/>
-											</div>
-										</SwiperSlide>
-									))}
-								</Swiper>
-							</div>
-						) : (
-							<div className="w-full h-72 flex items-center justify-center text-gray-500">
-								<p>No cards available</p>
-							</div>
-						)}
+					<div className="bg-white rounded-3xl p-6">
+						<CardSwiper cards={cards} loading={dashboardData === null} />
 					</div>
 
 					<Card>

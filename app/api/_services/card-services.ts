@@ -24,7 +24,7 @@ export const newCardPayload = z.object({
 	card_balance_init: z.number().int().min(0, { message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_ALLOW_ZERO }),
 	card_color: z.enum(LIST_COLORS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
 	bank_code: z.enum(LIST_BANKS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
-	card_number: z.string({ message: VALIDATE_MESSAGE.REQUIRED_VALUE }).min(1),
+	card_number: z.string().min(1, { message: VALIDATE_MESSAGE.REQUIRED_VALUE }),
 });
 
 export const createMultiCardsPayload = z.object({

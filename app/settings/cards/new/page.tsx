@@ -40,7 +40,7 @@ export default function NewCardPage() {
 
 	const {
 		data,
-		// loading,
+		loading,
 		error,
 		fetch: createCard,
 	} = useFetch<IAPIResponse>(API_ENDPOINT.CARDS.CREATE_NEW_CARD, {
@@ -79,13 +79,14 @@ export default function NewCardPage() {
 		if (error) {
 			const parsedError = JSON.parse(error) as IAPIResponse;
 
-			if (parsedError.status === "failure") {
+			if (parsedError.status === "error") {
 				addToast({
 					title: "Error",
 					description: parsedError.message,
 					color: "danger",
 				});
 				if (parsedError.validateErrors) {
+					console.log(parsedError.validateErrors);
 					setValidateErrors(parsedError.validateErrors);
 				}
 			}
@@ -94,7 +95,7 @@ export default function NewCardPage() {
 
 	const onChangeValue = <K extends keyof TAddNewCard>(key: K, value: TAddNewCard[K]) => {
 		if (getFieldError(validateErrors, key)) {
-			setValidateErrors((prev) => prev.filter((error) => error.instancePath !== `/${key}`));
+			setValidateErrors((prev) => prev.filter((error) => error.instancePath !== `${key}`));
 		}
 
 		setNewCard((prev) => ({
@@ -123,6 +124,7 @@ export default function NewCardPage() {
 						className={"flex flex-col gap-4"}
 						disableSubmitButton={validateErrors.length > 0}
 						formId={"addNewCardForm"}
+						isLoading={loading}
 						loadingText={"Creating..."}
 						submitButtonSize={"lg"}
 						submitButtonText={"Create card"}
