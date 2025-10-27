@@ -363,6 +363,24 @@ export default function MultipleTxnModal({
 
   return (
     <CustomModal
+      customFooter={
+        <div className="w-full flex justify-between items-center">
+          <div className="text-sm text-default-500">
+            {hasValidTransactions
+              ? `${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} valid transactions ready to submit`
+              : "No valid transactions to submit"
+            }
+          </div>
+          <Button
+            color="success"
+            isDisabled={!hasValidTransactions || creatingMultiple}
+            isLoading={creatingMultiple}
+            onPress={handleSubmit}
+          >
+            {creatingMultiple ? "Creating..." : `Create ${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} Transactions`}
+          </Button>
+        </div>
+      }
       isOpen={isOpen}
       size="5xl"
       title="Add Multiple Transactions"
@@ -389,14 +407,14 @@ Chuyen khoan den: 200,000VND"
             variant="bordered"
             onValueChange={setInputText}
           />
-          <Button
+          {/* <Button
             color="primary"
             isDisabled={!inputText.trim() || isParsing}
             isLoading={isParsing}
             onPress={parseTransactions}
           >
             {isParsing ? "Parsing..." : "Parse Transactions"}
-          </Button>
+          </Button> */}
         </div>
 
         <div className="w-full flex flex-col gap-4">
@@ -418,22 +436,7 @@ Chuyen khoan den: 200,000VND"
             onTransactionUpdate={handleUpdateTxn}
           />
 
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-default-500">
-              {hasValidTransactions
-                ? `${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} valid transactions ready to submit`
-                : "No valid transactions to submit"
-              }
-            </div>
-            <Button
-              color="success"
-              isDisabled={!hasValidTransactions || creatingMultiple}
-              isLoading={creatingMultiple}
-              onPress={handleSubmit}
-            >
-              {creatingMultiple ? "Creating..." : `Create ${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} Transactions`}
-            </Button>
-          </div>
+
         </div>
       </div>
     </CustomModal>

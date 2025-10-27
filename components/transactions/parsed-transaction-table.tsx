@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Accordion, AccordionItem } from "@heroui/accordion";
-import { Input, Textarea } from "@heroui/input";
+import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { DatePicker } from "@heroui/date-picker";
 import { Button } from "@heroui/button";
-import { Chip } from "@heroui/chip";
-import { Spinner } from "@heroui/spinner";
 import { Checkbox } from "@heroui/checkbox";
-import { RadioGroup } from "@heroui/radio";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { parseDate } from '@internationalized/date';
 import moment from "moment";
 
@@ -20,8 +17,6 @@ import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
-import TransactionType from "@/components/transactions/transaction-type";
-import SelectCardRadioGroup from "@/components/shared/select-card-radio-group/select-card-radio-group";
 
 
 interface ParsedTransaction extends TAddTransaction {
@@ -38,6 +33,11 @@ interface ParsedTransactionTableProps {
   onSelectionChange: (selected: number[]) => void;
 }
 
+interface EditingCell {
+  rowIndex: number;
+  field: "card_id" | "amount" | "date" | "category_id" | null;
+}
+
 export default function ParsedTransactionTable({
   transactions,
   onTransactionUpdate,
@@ -47,13 +47,13 @@ export default function ParsedTransactionTable({
 }: ParsedTransactionTableProps) {
   const [listCard, setListCard] = useState<TCard[]>([]);
   const [listCategories, setListCategories] = useState<TCategory[]>([]);
+  const [editingCell, setEditingCell] = useState<EditingCell>({ rowIndex: -1, field: null });
   const { useGetListCards } = useCardEndpoint();
   const { useGetCategories } = useCategoryEndpoint();
 
   // Fetch cards
   const {
     data: fetchCardsResult,
-    loading: loadingCards,
     fetch: fetchCards,
   } = useGetListCards();
 
@@ -108,15 +108,6 @@ export default function ParsedTransactionTable({
     return category?.category_name || "No category";
   };
 
-  if (loadingCards) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Spinner size="lg">Loading cards and categories...</Spinner>
-      </div>
-    );
-  }
-
-  // Check if all transactions are selected
   const allSelected = transactions.length > 0 && selectedTransactions.length === transactions.length;
   const someSelected = selectedTransactions.length > 0 && !allSelected;
 
@@ -131,209 +122,314 @@ export default function ParsedTransactionTable({
     }
   };
 
+  const isEditing = (rowIndex: number, field: "card_id" | "amount" | "date" | "category_id") => {
+    return editingCell.rowIndex === rowIndex && editingCell.field === field;
+  };
+
+  const startEditing = (rowIndex: number, field: "card_id" | "amount" | "date" | "category_id") => {
+    setEditingCell({ rowIndex, field });
+  };
+
+  const stopEditing = () => {
+    setEditingCell({ rowIndex: -1, field: null });
+  };
+
+  const columns = [
+    { key: "checkbox", label: "" },
+    { key: "card", label: "Card" },
+    { key: "amount", label: "Amount" },
+    { key: "date", label: "Date" },
+    { key: "category", label: "Category" },
+    { key: "actions", label: "Actions" },
+  ];
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {transactions.length > 0 && (
-        <div className="flex items-center gap-2 px-2 py-1 bg-default-100 rounded-lg">
+        <div className="flex items-center gap-2 px-4 py-3 bg-default-100 rounded-lg border border-default-200">
           <Checkbox
             isIndeterminate={someSelected}
             isSelected={allSelected}
             onValueChange={handleSelectAll}
-          >
-            <span className="text-sm text-default-700">
-              {allSelected 
-                ? `All ${transactions.length} transactions selected` 
-                : someSelected 
+          />
+          <span className="text-sm text-default-700 font-medium">
+            {allSelected
+              ? `All ${transactions.length} transactions selected`
+              : someSelected
                 ? `${selectedTransactions.length} of ${transactions.length} transactions selected`
                 : `Select all ${transactions.length} transactions`
-              }
-            </span>
-          </Checkbox>
+            }
+          </span>
         </div>
       )}
-      
-      <Accordion selectionMode="multiple" variant="splitted">
-        {transactions.map((transaction, index) => {
-          const hasCard = transaction.card_id > 0;
-          const hasDate = !!transaction.date;
 
-          return (
-            <AccordionItem
-              key={index}
-              classNames={{
-                // base: "border rounded-lg",
-                title: "flex items-center gap-2 flex-wrap",
-              }}
-              startContent={
-                <Checkbox
-                  isSelected={selectedTransactions.includes(index)}
-                  onValueChange={(isSelected) => handleSelectionChange(index, isSelected)}
-                />
-              }
-              title={
-                <div className="flex items-center justify-between gap-2 flex-1">
-                  {/* Left side - Chips */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Chip
-                      color={hasCard ? "success" : "danger"}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {getCardName(transaction.card_id)}
-                    </Chip>
-                    <Chip
-                      color={hasDate ? "success" : "danger"}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {moment(transaction.date).format("DD/MM/YYYY")}
-                    </Chip>
-
-                    <Chip
-                      color={transaction.amount > 0 ? "success" : "danger"}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
-                    </Chip>
-
-
-
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                    >
-                      {getCategoryName(transaction.category_id)}
-                    </Chip>
-                  </div>
-
-                  {/* Right side - Delete button */}
-                  <Button
-                    isIconOnly
-                    color="danger"
-                    size="sm"
-                    variant="flat"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTransactionRemove(index);
-                    }}
-                  >
-                    {ICONS.TRASH.SM}
-                  </Button>
-                </div>
-              }
-            >
-              <div className="w-full flex flex-col gap-4 p-4">
-                {/* Card Selection */}
-                <SelectCardRadioGroup
-                  compact
-                  cards={listCard}
-                  label="From Account"
-                  value={transaction.card_id ?? 0}
-                  onValueChange={(e) =>
-                    onTransactionUpdate(index, { card_id: parseInt(e) })
-                  }
-                />
-
-                <RadioGroup
-                  isRequired
-                  classNames={{
-                    wrapper: "min-w-max flex flex-row items-center gap-2",
-                  }}
-                  label="Transaction Type"
-                  value={transaction.direction}
-                  onValueChange={(e) => {
-                    onTransactionUpdate(index, { direction: e as "in" | "out" });
-                  }}
-                >
-                  <TransactionType key="in" type="in" />
-                  <TransactionType key="out" type="out" />
-                </RadioGroup>
-                <div className="w-full flex flex-row items-start gap-4">
-                  {/* Transaction Type */}
-
-
-                  {/* Amount */}
-                  <Input
-                    isRequired
-                    className="w-48"
-                    endContent={SITE_CONFIG.CURRENCY_STRING}
-                    label="Amount"
-                    labelPlacement="outside"
-                    placeholder="Enter amount"
-                    type="number"
-                    value={transaction.amount?.toString() ?? "0"}
-                    variant="bordered"
-                    onValueChange={(e) =>
-                      onTransactionUpdate(index, { amount: parseInt(e) || 0 })
-                    }
-                  />
-                  <Select
-                    className="w-48"
-                    items={listCategories}
-                    label="Select category"
-                    labelPlacement="outside"
-                    placeholder="Select category"
-                    selectedKeys={[transaction.category_id?.toString() ?? "-1"]}
-                    variant="bordered"
-                    onChange={(e) =>
-                      onTransactionUpdate(index, {
-                        category_id: parseInt(e.target.value)
-                      })
-                    }
-                  >
-                    {(category) => (
-                      <SelectItem
-                        key={category.category_id}
-                        textValue={category.category_name}
-                      >
-                        {category.category_name}
-                      </SelectItem>
-                    )}
-                  </Select>
-
-                  <DatePicker
-                    disableAnimation
-                    hideTimeZone
-                    isRequired
-                    showMonthAndYearPickers
-                    aria-label="Date"
-                    className="w-48"
-                    label="Transaction Date"
-                    labelPlacement="outside"
-                    value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
-                    variant="bordered"
-                    onChange={(date) => {
-                      onTransactionUpdate(index, {
-                        date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
-                      });
-                    }}
-                  />
-                </div>
-
-                {/* Description */}
-                <Textarea
-                  label="Description"
-                  labelPlacement="outside"
-                  placeholder="Enter description"
-                  value={transaction.description?.toString()}
-                  variant="bordered"
-                  onValueChange={(e) =>
-                    onTransactionUpdate(index, { description: e })
-                  }
-                />
-
-                {/* Error Message */}
-                {transaction.errorMessage && (
-                  <div className="text-sm text-danger">
-                    {transaction.errorMessage}
-                  </div>
-                )}
+      <div className="border border-default-200 rounded-lg overflow-hidden">
+        <Table
+          isHeaderSticky
+          removeWrapper
+          aria-label="Parsed transactions table"
+          className="max-h-96 overflow-auto"
+        >
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.key}
+                align={column.key === "actions" ? "center" : "start"}
+                className={column.key === "checkbox" ? "w-12" : ""}
+              >
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody
+            emptyContent={
+              <div className="text-center py-8 text-default-500">
+                No transactions to display
               </div>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+            }
+            items={transactions.map((t, idx) => ({ ...t, _index: idx }))}
+          >
+            {(transaction: ParsedTransaction & { _index: number }) => {
+              const rowIndex = transaction._index;
+
+              return (
+                <TableRow key={`row-${rowIndex}`}>
+                {(columnKey) => {
+                  switch (columnKey) {
+                    case "checkbox":
+                      return (
+                        <TableCell>
+                          <Checkbox
+                            isSelected={selectedTransactions.includes(rowIndex)}
+                            onValueChange={(isSelected) => handleSelectionChange(rowIndex, isSelected)}
+                          />
+                        </TableCell>
+                      );
+
+                    case "card":
+                      return (
+                        <TableCell>
+                          {isEditing(rowIndex, "card_id") ? (
+                            <Select
+                              className="w-40"
+                              items={listCard}
+                              placeholder="Select card"
+                              selectedKeys={[transaction.card_id?.toString() ?? "0"]}
+                              size="sm"
+                              variant="bordered"
+                              onBlur={stopEditing}
+                              onClick={(e) => e.stopPropagation()}
+                              onSelectionChange={(keys) => {
+                                const key = Array.from(keys)[0] as string;
+
+                                onTransactionUpdate(rowIndex, { card_id: parseInt(key) || 0 });
+                                stopEditing();
+                              }}
+                            >
+                              {(card) => (
+                                <SelectItem key={card.card_id.toString()} textValue={card.card_name}>
+                                  {card.card_name}
+                                </SelectItem>
+                              )}
+                            </Select>
+                          ) : (
+                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+                            <div
+                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                              onBlur={() => {}}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(rowIndex, "card_id");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  startEditing(rowIndex, "card_id");
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                            >
+                              {getCardName(transaction.card_id)}
+                            </div>
+                          )}
+                        </TableCell>
+                      );
+
+                    case "amount":
+                      return (
+                        <TableCell>
+                          {isEditing(rowIndex, "amount") ? (
+                            <Input
+                              className="w-32"
+                              endContent={SITE_CONFIG.CURRENCY_STRING}
+                              placeholder="0"
+                              size="sm"
+                              type="number"
+                              value={transaction.amount?.toString() ?? "0"}
+                              variant="bordered"
+                              onBlur={stopEditing}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") stopEditing();
+                                if (e.key === "Escape") stopEditing();
+                              }}
+                              onValueChange={(e) =>
+                                onTransactionUpdate(rowIndex, { amount: parseInt(e) || 0 })
+                              }
+                            />
+                          ) : (
+                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
+                            <div
+                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                              role="button"
+                              tabIndex={0}
+                              onBlur={() => {}}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(rowIndex, "amount");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  startEditing(rowIndex, "amount");
+                                }
+                              }}
+                            >
+                              {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
+                            </div>
+                          )}
+                        </TableCell>
+                      );
+
+                    case "date":
+                      return (
+                        <TableCell>
+                          {isEditing(rowIndex, "date") ? (
+                            <DatePicker
+                              aria-label="Date"
+                              className="w-40"
+                              hideTimeZone
+                              showMonthAndYearPickers
+                              size="sm"
+                              value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
+                              variant="bordered"
+                              onChange={(date) => {
+                                onTransactionUpdate(rowIndex, {
+                                  date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
+                                });
+                                stopEditing();
+                              }}
+                            />
+                          ) : (
+                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
+                            <div
+                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                              role="button"
+                              tabIndex={0}
+                              onBlur={() => {}}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(rowIndex, "date");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  startEditing(rowIndex, "date");
+                                }
+                              }}
+                            >
+                              {moment(transaction.date).format("DD/MM/YYYY")}
+                            </div>
+                          )}
+                        </TableCell>
+                      );
+
+                    case "category": {
+                      const categoryOptions = [
+                        { category_id: -1, category_name: "No category" },
+                        ...listCategories
+                      ];
+
+                      return (
+                        <TableCell>
+                          {isEditing(rowIndex, "category_id") ? (
+                            <Select
+                              className="w-40"
+                              items={categoryOptions}
+                              placeholder="Select category"
+                              selectedKeys={[transaction.category_id?.toString() ?? "-1"]}
+                              size="sm"
+                              variant="bordered"
+                              onBlur={stopEditing}
+                              onClick={(e) => e.stopPropagation()}
+                              onSelectionChange={(keys) => {
+                                const key = Array.from(keys)[0] as string;
+
+                                onTransactionUpdate(rowIndex, {
+                                  category_id: key === "-1" ? null : parseInt(key)
+                                });
+                                stopEditing();
+                              }}
+                            >
+                              {(category) => (
+                                <SelectItem
+                                  key={category.category_id.toString()}
+                                  textValue={category.category_name}
+                                >
+                                  {category.category_name}
+                                </SelectItem>
+                              )}
+                            </Select>
+                          ) : (
+                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props, react/jsx-no-comment-textnodes
+                            <div
+                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                              role="button"
+                              tabIndex={0}
+                              onBlur={() => {}}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(rowIndex, "category_id");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  startEditing(rowIndex, "category_id");
+                                }
+                              }}
+                            >
+                              {getCategoryName(transaction.category_id)}
+                            </div>
+                          )}
+                        </TableCell>
+                      );
+                    }
+
+                    case "actions":
+                      return (
+                        <TableCell>
+                          <Button
+                            isIconOnly
+                            color="danger"
+                            size="sm"
+                            variant="flat"
+                            onPress={() => onTransactionRemove(rowIndex)}
+                          >
+                            {ICONS.TRASH.SM}
+                          </Button>
+                        </TableCell>
+                      );
+
+                    default:
+                      return <TableCell>-</TableCell>;
+                  }
+                }}
+              </TableRow>
+            );
+            }}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

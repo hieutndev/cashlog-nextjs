@@ -279,7 +279,7 @@ export default function TransactionsPage() {
 						color={"primary"}
 						startContent={ICONS.BULK.MD}
 						variant={"light"}
-						onPress={handleAddMultipleTxn}
+						onPress={() => router.push("/transactions/add-multiple-transactions")}
 					>
 						{width < BREAK_POINT.MD ? "Add Multiple" : "Add Multiple Transactions"}
 					</Button>

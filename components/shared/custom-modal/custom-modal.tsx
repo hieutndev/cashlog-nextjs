@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalProps } from "@heroui/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalProps, ModalFooter } from "@heroui/modal";
 import { useWindowSize } from "hieutndev-toolkit";
 
 import { BREAK_POINT } from "@/configs/break-point";
@@ -9,9 +9,10 @@ interface CustomModalProps {
     onOpenChange: (open: boolean) => void;
     children: React.ReactNode;
     size?: ModalProps["size"];
+    customFooter?: React.ReactNode;
 }
 
-export default function CustomModal({ title, isOpen, onOpenChange, children, size }: CustomModalProps) {
+export default function CustomModal({ title, isOpen, onOpenChange, children, size, customFooter }: CustomModalProps) {
 
     const { width } = useWindowSize();
 
@@ -30,6 +31,9 @@ export default function CustomModal({ title, isOpen, onOpenChange, children, siz
             <ModalBody className="mb-4">
                 {children}
             </ModalBody>
+            <ModalFooter>
+                {customFooter}
+            </ModalFooter>
         </ModalContent>
     </Modal>);
 }
