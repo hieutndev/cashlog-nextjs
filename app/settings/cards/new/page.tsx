@@ -22,7 +22,7 @@ import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
-import { API_ENDPOINT } from "@/configs/api-endpoint";
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 
 export default function NewCardPage() {
 	const router = useRouter();
@@ -38,19 +38,14 @@ export default function NewCardPage() {
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [createMoreCard, setCreateMoreCard] = useState<boolean>(false);
 
+	const { useAddNewCard } = useCardEndpoint();
+
 	const {
 		data,
 		loading,
 		error,
 		fetch: createCard,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.CARDS.CREATE_NEW_CARD, {
-		method: "POST",
-		body: newCard,
-		headers: {
-			"Content-Type": "application/json",
-		},
-		skip: true,
-	});
+	} = useAddNewCard(newCard);
 
 	const resetForm = () => {
 		setNewCard({
