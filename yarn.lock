@@ -592,14 +592,9 @@
   resolved "https://registry.npmjs.org/@heroui/shared-icons/-/shared-icons-2.1.10.tgz"
   integrity sha512-ePo60GjEpM0SEyZBGOeySsLueNDCqLsVL79Fq+5BphzlrBAcaKY7kUp74964ImtkXvknTxAWzuuTr3kCRqj6jg==
 
-"@heroui/shared-utils@2.1.12":
+"@heroui/shared-utils@2.1.12", "@heroui/shared-utils@^2.1.12":
   version "2.1.12"
   resolved "https://registry.npmjs.org/@heroui/shared-utils/-/shared-utils-2.1.12.tgz"
-  integrity sha512-0iCnxVAkIPtrHQo26Qa5g0UTqMTpugTbClNOrEPsrQuyRAq7Syux998cPwGlneTfB5E5xcU3LiEdA9GUyeK2cQ==
-
-"@heroui/shared-utils@^2.1.12":
-  version "2.1.12"
-  resolved "https://registry.yarnpkg.com/@heroui/shared-utils/-/shared-utils-2.1.12.tgz#2b0c654797985e8f66bfb7c00f5227ee05bf9ffb"
   integrity sha512-0iCnxVAkIPtrHQo26Qa5g0UTqMTpugTbClNOrEPsrQuyRAq7Syux998cPwGlneTfB5E5xcU3LiEdA9GUyeK2cQ==
 
 "@heroui/skeleton@^2.2.17":
@@ -3881,10 +3876,10 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-hieutndev-toolkit@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/hieutndev-toolkit/-/hieutndev-toolkit-0.3.1.tgz"
-  integrity sha512-/trnwnWZ9qdrERKJZied4k8hefvXIpjZBJHkOabBskCfHHvIPNzfdJpHX0k9OTEzRtrHH5fXk39WhSJ9h0QaPA==
+hieutndev-toolkit@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/hieutndev-toolkit/-/hieutndev-toolkit-0.4.0.tgz#6e7ad329bb32368125d075362497f4ae80d13713"
+  integrity sha512-Iv+7BNKFiqetzxxghw5OZkn39TjesKV4MYWLWWL1AkcRyjOULJC4l1duyQISxHKuePa6mwjwKwuDa2peDhZn5Q==
   dependencies:
     cookies-next "^6.0.0"
 
