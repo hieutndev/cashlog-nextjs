@@ -8,8 +8,8 @@ export const QUERY_STRING = {
 	GET_CARD_INFO_BY_NAME: `SELECT *
                     FROM cards
                     WHERE card_name = ? AND user_id = ?;`,
-	CREATE_NEW_CARD: `INSERT INTO cards(card_name, card_balance, card_color, bank_code, user_id)
-                      VALUES (?, ?, ?, ?, ?);`,
+	ADD_NEW_CARD: `INSERT INTO cards(card_name, card_balance, card_color, bank_code, card_number, user_id)
+                      VALUES (?, ?, ?, ?, ?, ?);`,
 	DELETE_CARD: `
         DELETE
         FROM cards
@@ -17,7 +17,8 @@ export const QUERY_STRING = {
 	UPDATE_CARD_INFO: `UPDATE cards
                        SET card_name  = ?,
                            card_color = ?,
-                           bank_code  = ?
+                           bank_code  = ?,
+                           card_number = ?
                        WHERE card_id = ?;`,
 	GET_TOTAL_BALANCE_OF_USER: `select sum(card_balance) as total_balance
                                 from cards
@@ -500,5 +501,10 @@ WHERE
 FROM
   recurring_instances
 WHERE
-  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ? AND card_id = ?)`
+  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ? AND card_id = ?)`,
+	GET_TOTAL_INITIAL_BALANCE_BY_USER: `SELECT SUM(tn.amount) as initial_total_assets
+            FROM transactions_new tn
+            JOIN cards c ON tn.card_id = c.card_id
+            WHERE c.user_id = ?
+                AND tn.description = 'Auto-generated when creating a new card'`,
 };

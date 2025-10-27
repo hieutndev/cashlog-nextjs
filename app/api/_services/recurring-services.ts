@@ -1087,7 +1087,6 @@ export async function deleteRecurring(
 }
 
 export async function getRecurringAnalysis(user_id: TUser['user_id'], card_id: TCard['card_id'] | null = null) {
-  console.log("🚀 ~ getRecurringAnalysis ~ card_id:", card_id)
   if (card_id) {
     await validateCardOwnership(card_id, user_id);
   }

@@ -13,7 +13,7 @@ import { Button } from "@heroui/button";
 import { useFetch } from "hieutndev-toolkit";
 
 import { ZodCustomError } from "@/types/zod";
-import { TCreateNewCard } from "@/types/card";
+import { TAddNewCard } from "@/types/card";
 import CustomForm from "@/components/shared/form/custom-form";
 import { IAPIResponse, LIST_COLORS, TColor } from "@/types/global";
 import BankCard from "@/components/shared/bank-card/bank-card";
@@ -27,11 +27,12 @@ import { API_ENDPOINT } from "@/configs/api-endpoint";
 export default function NewCardPage() {
 	const router = useRouter();
 
-	const [newCard, setNewCard] = useState<TCreateNewCard>({
+	const [newCard, setNewCard] = useState<TAddNewCard>({
 		card_name: "",
 		card_balance_init: 0,
 		bank_code: "VIETCOMBANK",
 		card_color: "red",
+		card_number: "",
 	});
 
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
@@ -56,6 +57,7 @@ export default function NewCardPage() {
 			card_name: "",
 			card_balance_init: 0,
 			bank_code: "VIETCOMBANK",
+			card_number: "",
 			card_color: "red",
 		});
 	};
@@ -90,7 +92,7 @@ export default function NewCardPage() {
 		}
 	}, [data, error]);
 
-	const onChangeValue = <K extends keyof TCreateNewCard>(key: K, value: TCreateNewCard[K]) => {
+	const onChangeValue = <K extends keyof TAddNewCard>(key: K, value: TAddNewCard[K]) => {
 		if (getFieldError(validateErrors, key)) {
 			setValidateErrors((prev) => prev.filter((error) => error.instancePath !== `/${key}`));
 		}
@@ -138,6 +140,19 @@ export default function NewCardPage() {
 							value={newCard.card_name}
 							variant={"bordered"}
 							onValueChange={(value) => onChangeValue("card_name", value)}
+						/>
+						<Input
+							isRequired
+							errorMessage={getFieldError(validateErrors, "card_number")?.message}
+							isInvalid={!!getFieldError(validateErrors, "card_number")}
+							label={"Card Number"}
+							labelPlacement={"outside"}
+							name={"card_number"}
+							placeholder={"Enter card number..."}
+							size={"lg"}
+							value={newCard.card_number}
+							variant={"bordered"}
+							onValueChange={(value) => onChangeValue("card_number", value)}
 						/>
 						<Input
 							isRequired

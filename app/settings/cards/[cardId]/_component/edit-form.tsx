@@ -33,6 +33,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 		card_name: "",
 		bank_code: "VIETCOMBANK",
 		card_color: "red",
+		card_number: "",
 	});
 
 	const [validationErrors, setValidationErrors] = useState<ZodCustomError[]>([]);
@@ -53,7 +54,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 
 	const {
 		data: editCardResult,
-		// loading: loadingEditCard,
+		loading: editingCard,
 		error: editCardError,
 		fetch: editCard,
 	} = useFetch<IAPIResponse<TCard>>(`/cards/${cardId}`, {
@@ -77,6 +78,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 				card_name: fetchCardInfoResult.results.card_name,
 				bank_code: fetchCardInfoResult.results.bank_code,
 				card_color: fetchCardInfoResult.results.card_color,
+				card_number: fetchCardInfoResult.results.card_number,
 			});
 		}
 
@@ -148,6 +150,7 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 							<CustomForm
 								className={"flex flex-col gap-4"}
 								formId={"editCardForm"}
+								isLoading={editingCard}
 								loadingText={"Saving..."}
 								submitButtonSize={"lg"}
 								submitButtonText={"Save"}
@@ -166,6 +169,26 @@ export default function EditCardForm({ cardId }: EditCardFormProps) {
 									onValueChange={(e) =>
 										setForm<TUpdateCard>(
 											"card_name",
+											e,
+											validationErrors,
+											setValidationErrors,
+											setCardInfo
+										)
+									}
+								/>
+								<Input
+									isRequired
+									errorMessage={!cardInfo.card_number ? "Missing card number, please fill in the card number." : getFieldError(validationErrors, "card_number")?.message}
+									isInvalid={!!getFieldError(validationErrors, "card_number") || !cardInfo.card_number}
+									label={"Card Number"}
+									labelPlacement={"outside"}
+									placeholder={"Enter card number"}
+									size={"lg"}
+									value={cardInfo.card_number ?? ""}
+									variant={"bordered"}
+									onValueChange={(e) =>
+										setForm<TUpdateCard>(
+											"card_number",
 											e,
 											validationErrors,
 											setValidationErrors,

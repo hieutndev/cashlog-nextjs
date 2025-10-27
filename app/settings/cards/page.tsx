@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { addToast } from "@heroui/toast";
 import { Alert } from "@heroui/alert";
 import { Spinner } from "@heroui/spinner";
+import { Tooltip } from "@heroui/tooltip";
 
 import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import { TCard } from "@/types/card";
@@ -137,6 +138,7 @@ export default function SettingCardsPage() {
 									bankCode={card.bank_code as TBankCode}
 									cardBalance={card.card_balance}
 									cardName={card.card_name}
+									cardNumber={card.card_number}
 									color={card.card_color}
 								/>
 								<div
@@ -159,6 +161,24 @@ export default function SettingCardsPage() {
 										Delete
 									</Button>
 								</div>
+								{!card.card_number && <div className="absolute top-2 right-2 z-50 text-danger">
+									<Tooltip
+										showArrow
+										classNames={{
+											content: "max-w-xs text-center",
+										}}
+										closeDelay={0}
+										color="danger"
+										content="This card is missing card number information. Please update the card details."
+										placement="top"
+										
+									>
+										<div className="p-1 bg-white rounded-3xl">
+											{ICONS.ALERT_CIRCLE.LG}
+										</div>
+									</Tooltip>
+								</div>}
+
 							</div>
 						))
 					) : (

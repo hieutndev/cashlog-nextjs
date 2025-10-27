@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { updateCardBalance } from "./transaction-services";
 
-import { TCard, TUpdateCard, TCreateNewCard } from "@/types/card";
+import { TCard, TUpdateCard, TAddNewCard } from "@/types/card";
 import { dbQuery, mysqlPool } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
 import { ApiError } from "@/types/api-error";
@@ -23,7 +23,8 @@ export const newCardPayload = z.object({
 	card_name: z.string({ message: VALIDATE_MESSAGE.REQUIRED_VALUE }).min(1),
 	card_balance_init: z.number().int().min(0, { message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_ALLOW_ZERO }),
 	card_color: z.enum(LIST_COLORS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
-	bank_code: z.enum(LIST_BANKS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE })
+	bank_code: z.enum(LIST_BANKS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
+	card_number: z.string({ message: VALIDATE_MESSAGE.REQUIRED_VALUE }).min(1),
 });
 
 export const createMultiCardsPayload = z.object({
@@ -36,7 +37,8 @@ export const editCardSchema = z.object({
 		.positive({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO }),
 	card_name: z.string({ message: VALIDATE_MESSAGE.REQUIRED_VALUE }).min(1),
 	card_color: z.enum(LIST_COLORS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
-	bank_code: z.enum(LIST_BANKS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE })
+	bank_code: z.enum(LIST_BANKS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE }),
+	card_number: z.string({ message: VALIDATE_MESSAGE.REQUIRED_VALUE }).min(1),
 });
 
 export const validateCardOwnership = async (cardId: TCard["card_id"], userId: TUser["user_id"]) => {
@@ -70,7 +72,7 @@ export const getAllCardsOfUser = async (userId: string | number): Promise<TCard[
 };
 
 export const addNewCard = async (
-	{ card_name, bank_code, card_balance_init, card_color }: TCreateNewCard,
+	{ card_name, bank_code, card_balance_init, card_color, card_number }: TAddNewCard,
 	userId: string | number
 ) => {
 	const connection = await mysqlPool.getConnection();
@@ -80,8 +82,8 @@ export const addNewCard = async (
 
 		// use the same connection for transactional queries so commit/rollback affect them
 		const [newCardResult] = await connection.execute<ResultSetHeader>(
-			QUERY_STRING.CREATE_NEW_CARD,
-			[card_name, card_balance_init, card_color, bank_code, userId]
+			QUERY_STRING.ADD_NEW_CARD,
+			[card_name, card_balance_init, card_color, bank_code, card_number, userId]
 		);
 
 		const insertId = newCardResult.insertId;
@@ -126,7 +128,7 @@ export const getCardInfoById = async (cardId: number, userId: string | number): 
 
 export const updateCardInfo = async (
 	cardId: number,
-	{ bank_code, card_color, card_name }: TUpdateCard,
+	{ bank_code, card_color, card_name, card_number }: TUpdateCard,
 	userId: string | number
 ) => {
 	let cardInfo: TCard | null = null;
@@ -152,6 +154,7 @@ export const updateCardInfo = async (
 			card_name,
 			card_color,
 			bank_code,
+			card_number,
 			cardId,
 		]);
 	} catch (error: unknown) {
@@ -240,7 +243,7 @@ export const createMultipleCards = async (card_names: string[], user_id: TUser["
 		should_create
 			.filter((_v) => _v)
 			.forEach((card) => {
-				base_query += QUERY_STRING.CREATE_NEW_CARD;
+				base_query += QUERY_STRING.ADD_NEW_CARD;
 				base_values.push([card, 0, randomCardColor(), "CASH", user_id]);
 				was_created_count++;
 

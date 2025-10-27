@@ -13,7 +13,7 @@ export function useCardEndpoint() {
     useFetch<IAPIResponse>(`${API_ENDPOINT.CARDS.BASE}/${cardId}`, { method: 'DELETE', skip: true });
   
   const useSyncCardBalance = () => 
-    useFetch<IAPIResponse>(`${API_ENDPOINT.CARDS.BASE}/sync`, { method: 'POST', skip: true });
+    useFetch<IAPIResponse>(`${API_ENDPOINT.CARDS.BASE}/sync`, { method: 'GET', skip: true });
   
   return { useGetListCards, useDeleteCard, useSyncCardBalance };
 }
