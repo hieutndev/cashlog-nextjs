@@ -31,6 +31,7 @@ interface FinancialAnalysisChartProps {
         income: (number | null)[];
         expenses: (number | null)[];
         savings: (number | null)[];
+        total_assets: (number | null)[];
         months: string[];
     } | null;
     totalAssetData?: {
@@ -40,7 +41,7 @@ interface FinancialAnalysisChartProps {
     error?: string | null;
 }
 
-export default function FinancialAnalysisChart({ data, totalAssetData }: FinancialAnalysisChartProps) {
+export default function FinancialAnalysisChart({ data }: FinancialAnalysisChartProps) {
     const formatCurrency = (value: number) => {
         return `${value.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`;
     };
@@ -58,32 +59,11 @@ export default function FinancialAnalysisChart({ data, totalAssetData }: Financi
         return Math.abs(v);
     });
 
-    // Use total asset data if available, otherwise fall back to savings
-    // totalAssetData now contains monthly aggregated data from the API (one entry per month)
-    const totalAssetLineData: (number | null)[] = totalAssetData && totalAssetData.length > 0
-        ? (data?.months || []).map((monthLabel) => {
-            // Parse the month label (e.g., "Jan", "Feb", etc.) to get the month number
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const monthIndex = monthNames.indexOf(monthLabel);
+    const totalAssetsLineData: (number | null)[] = (data?.total_assets || []).map((v) => {
+        if (v === null || v === undefined) return null;
 
-            if (monthIndex === -1) return null;
-
-            const monthNum = monthIndex + 1;
-            const monthStr = String(monthNum).padStart(2, '0'); // Format as MM
-
-            // Find the data point for this month
-            // totalAssetData is already aggregated by month from the API
-            const monthData = totalAssetData.find(item => {
-                const itemMonth = item.date.substring(5, 7); // Extract MM from YYYY-MM-DD
-                return itemMonth === monthStr;
-            });
-
-            return monthData ? monthData.total_asset : null;
-        })
-        : (data?.savings || []).map((v) => {
-            if (v === null || v === undefined) return null;
-            return Math.abs(v);
-        });
+        return Math.abs(v);
+    });
 
     const chartData = {
         labels: data?.months || [],
@@ -109,7 +89,7 @@ export default function FinancialAnalysisChart({ data, totalAssetData }: Financi
             {
                 type: "line" as const,
                 label: "Total Asset",
-                data: totalAssetLineData,
+                data: totalAssetsLineData,
                 borderColor: "#3b82f6", // Blue color for line
                 backgroundColor: "rgba(59, 130, 246, 0.1)", // Light fill under line
                 borderWidth: 2,

@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
 	const isSpecificTimeEnabled = selectedTimePeriod === "month" || selectedTimePeriod === "year";
 
-	const { useGetDashboardData, useGetTotalAssetFluctuation, useGetCategoryVolume } = useDashboardEndpoint();
+	const { useGetDashboardData, useGetCategoryVolume } = useDashboardEndpoint();
 
 	// Single consolidated API call for all dashboard data
 	const {
@@ -56,15 +56,6 @@ export default function DashboardPage() {
 		error,
 		fetch,
 	} = useGetDashboardData({
-		time_period: selectedTimePeriod,
-		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
-	});
-
-	// Fetch total asset fluctuation data
-	const {
-		data: totalAssetResponse,
-		fetch: fetchTotalAsset,
-	} = useGetTotalAssetFluctuation({
 		time_period: selectedTimePeriod,
 		specific_time: selectedSpecificTime && isSpecificTimeEnabled ? selectedSpecificTime : undefined,
 	});
@@ -98,13 +89,6 @@ export default function DashboardPage() {
 
 	}, [error, data]);
 
-	// Handle total asset data
-	useEffect(() => {
-		if (totalAssetResponse && totalAssetResponse.results) {
-			setTotalAssetData(totalAssetResponse.results);
-		}
-	}, [totalAssetResponse]);
-
 	// Handle category volume data
 	useEffect(() => {
 		if (categoryVolumeResponse && categoryVolumeResponse.results) {
@@ -115,7 +99,6 @@ export default function DashboardPage() {
 	// Fetch dashboard data when time period changes
 	useEffect(() => {
 		fetch();
-		fetchTotalAsset();
 		fetchCategoryVolume();
 	}, [selectedTimePeriod, selectedSpecificTime]);
 
@@ -187,7 +170,7 @@ export default function DashboardPage() {
 			orientation={"vertical"}
 		>
 			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
-				<div className="lg:col-span-4 flex flex-col gap-4 lg:order-1 order-2">
+				<div className="lg:col-span-4 flex flex-col gap-4">
 					<div className="bg-white rounded-3xl">
 						{dashboardData === null ? (
 
@@ -225,12 +208,7 @@ export default function DashboardPage() {
 
 					<Card>
 						<CardBody className={"flex flex-col gap-4 items-center"}>
-							<div className={"w-full flex items-center justify-between"}>
-								<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
-								<Button color="primary" endContent={ICONS.NEXT.MD} variant="light" onPress={onOpenCategoryDetailsModal}>
-									Details
-								</Button>
-							</div>
+							<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
 							<CategoryBreakdownChart
 								data={categoryBreakdown}
 								loading={dashboardData === null}
@@ -240,7 +218,7 @@ export default function DashboardPage() {
 						</CardBody>
 					</Card>
 				</div>
-				<div className="lg:col-span-8 flex flex-col gap-4 lg:order-2 order-1">
+				<div className="lg:col-span-8 flex flex-col gap-4">
 					<Card>
 						<CardBody className={"flex flex-col gap-4"}>
 							<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">

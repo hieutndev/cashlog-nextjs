@@ -333,117 +333,6 @@ export type TCategoryVolume = {
     total_volume: number;
 };
 
-export const getTotalAssetFluctuation = async (
-    userId: string | number,
-    timePeriod: string = 'month',
-    specificTime: number | null = null
-): Promise<TTotalAsset[]> => {
-    try {
-        const { startDate, endDate } = getDateRangeByTimePeriod(timePeriod, specificTime);
-
-        // Calculate initial total assets from ALL initial card balance transactions
-        // These are transactions created when cards are added with initial balances
-        // This sum is independent of the selected time period
-        const initialBalanceQuery = `
-            SELECT SUM(tn.amount) as initial_total_assets
-            FROM transactions_new tn
-            JOIN cards c ON tn.card_id = c.card_id
-            WHERE c.user_id = ?
-                AND tn.description = 'Auto-generated when creating a new card'
-        `;
-        const initialBalanceResult = await dbQuery<RowDataPacket[]>(initialBalanceQuery, [userId]);
-        const initialTotalAssets = (initialBalanceResult[0]?.initial_total_assets as number) || 0;
-
-        console.log(`[getTotalAssetFluctuation] userId=${userId}, startDate=${startDate}, endDate=${endDate}`);
-        console.log(`[getTotalAssetFluctuation] initialTotalAssets=${initialTotalAssets}`);
-
-        // Get all transactions in the date range, ordered by date
-        // Exclude initial balance transactions from cumulative calculation
-        // These are already included in initialTotalAssets
-        const query = `
-            SELECT
-                DATE(tn.date) as date,
-                SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as daily_income,
-                SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as daily_expense
-            FROM transactions_new tn
-            JOIN cards c ON tn.card_id = c.card_id
-            WHERE c.user_id = ?
-                AND tn.date >= ?
-                AND tn.date <= ?
-                AND tn.description != 'Auto-generated when creating a new card'
-            GROUP BY DATE(tn.date)
-            ORDER BY DATE(tn.date) ASC
-        `;
-
-        const dailyData = await dbQuery<RowDataPacket[]>(query, [userId, startDate, endDate]);
-
-        // Calculate cumulative total asset starting from initial total assets
-        // Formula: Total Asset = initialTotalAssets + Σ(income) - Σ(expense)
-        let cumulativeAsset = initialTotalAssets;
-        const dailyResults: TTotalAsset[] = [];
-
-        for (const day of dailyData) {
-            const dailyIncome = (day.daily_income as number) || 0;
-            const dailyExpense = (day.daily_expense as number) || 0;
-
-            cumulativeAsset = cumulativeAsset + dailyIncome - dailyExpense;
-
-            console.log(`[getTotalAssetFluctuation] date=${day.date}, income=${dailyIncome}, expense=${dailyExpense}, cumulative=${cumulativeAsset}`);
-
-            dailyResults.push({
-                date: day.date as string,
-                total_asset: cumulativeAsset,
-            });
-        }
-
-        // Aggregate to monthly data (end-of-month snapshots)
-        // Build a map of year-month to cumulative total asset
-        const monthlyMap = new Map<string, TTotalAsset>();
-
-        for (const dailyResult of dailyResults) {
-            const dateStr = dailyResult.date;
-            const yearMonth = dateStr.substring(0, 7); // YYYY-MM format
-
-            monthlyMap.set(yearMonth, dailyResult); // Keep overwriting to get the last day of each month
-        }
-
-        // Generate all months in the period and fill in missing months with previous month's value
-        const monthlyResults: TTotalAsset[] = [];
-        const startMoment = moment(startDate);
-        const endMoment = moment(endDate);
-
-        let currentMoment = startMoment.clone().startOf('month');
-        let lastKnownAsset = initialTotalAssets; // Start with initial assets
-
-        while (currentMoment.isSameOrBefore(endMoment, 'month')) {
-            const yearMonth = currentMoment.format('YYYY-MM');
-
-            if (monthlyMap.has(yearMonth)) {
-                // Month has transactions, use the actual cumulative value
-                const monthData = monthlyMap.get(yearMonth)!;
-                lastKnownAsset = monthData.total_asset;
-                monthlyResults.push(monthData);
-            } else {
-                // Month has no transactions, carry forward the previous month's value
-                // Use the last day of the month as the date
-                const lastDayOfMonth = currentMoment.clone().endOf('month').format('YYYY-MM-DD');
-                monthlyResults.push({
-                    date: lastDayOfMonth,
-                    total_asset: lastKnownAsset,
-                });
-            }
-
-            currentMoment.add(1, 'month');
-        }
-
-        console.log(`[getTotalAssetFluctuation] Returning ${monthlyResults.length} monthly data points`);
-
-        return monthlyResults;
-    } catch (error: unknown) {
-        throw new Error(error instanceof Error ? error.message : "Error in getTotalAssetFluctuation");
-    }
-};
-
 export const getCategoryVolumeStats = async (
     userId: string | number,
     timePeriod: string = 'month',
@@ -489,7 +378,7 @@ export const getCategoryVolumeStats = async (
     }
 };
 
-export const getMonthlyAnalyticsData = async (userId: string | number) => {
+export const getMonthlyAnalyticsData = async (userId: TUser['user_id']) => {
     try {
         const currentDate = moment();
         const currentYear = currentDate.year();
@@ -499,8 +388,11 @@ export const getMonthlyAnalyticsData = async (userId: string | number) => {
         const income: (number | null)[] = new Array(12).fill(null);
         const expenses: (number | null)[] = new Array(12).fill(null);
         const savings: (number | null)[] = new Array(12).fill(null);
+        const total_assets: (number | null)[] = new Array(12).fill(null);
 
-        // Get data for each month up to current month
+        const initial_balance = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_TOTAL_INITIAL_BALANCE_BY_USER, [userId]);
+        let running_balance = Number((initial_balance[0]?.initial_total_assets) || 0);
+
         for (let month = 1; month <= currentMonth; month++) {
             const startDate = moment({ year: currentYear, month: month - 1 }).startOf('month').format('YYYY-MM-DD');
             const endDate = moment({ year: currentYear, month: month - 1 }).endOf('month').format('YYYY-MM-DD');
@@ -512,12 +404,16 @@ export const getMonthlyAnalyticsData = async (userId: string | number) => {
             income[monthIndex] = monthlyTotals.total_income;
             expenses[monthIndex] = monthlyTotals.total_expense;
             savings[monthIndex] = monthlyTotals.total_income - monthlyTotals.total_expense;
+            total_assets[monthIndex] = running_balance + (monthlyTotals.total_income - monthlyTotals.total_expense);
+            running_balance = total_assets[monthIndex]
         }
+
 
         return {
             income,
             expenses,
             savings,
+            total_assets,
             months: [
                 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'

@@ -1,12 +1,37 @@
 "use client";
 
-import { Chart as ChartJS, ArcElement, Legend } from "chart.js";
+import { Chart as ChartJS, ArcElement, Legend, Plugin } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 
 import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
 
 ChartJS.register(ArcElement, Legend);
+
+// Plugin to render centered text in doughnut chart
+const centerTextPlugin: Plugin = {
+    id: 'centerText',
+    afterDatasetsDraw(chart: any) {
+        const { ctx, chartArea: { left, top, width, height } } = chart;
+        const centerX = left + width / 2;
+        const centerY = top + height / 2;
+
+        // Get the title text from chart options
+        const titleText = (chart.options.plugins?.centerText?.text as string) || '';
+
+        if (!titleText) return;
+
+        ctx.save();
+        ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+        ctx.fillStyle = '#4b5563';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(titleText, centerX, centerY);
+        ctx.restore();
+    }
+};
+
+ChartJS.register(centerTextPlugin);
 
 interface CategoryBreakdownChartProps {
     data: {
@@ -77,7 +102,7 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
                 data: categories.map(cat => cat[dataKey]),
                 backgroundColor: colors.map(color => color + "40"),
                 borderColor: colors,
-                borderWidth: 0.5,
+                borderWidth: 1,
                 hoverBackgroundColor: colors.map(color => color + "80"),
                 hoverBorderColor: colors,
                 hoverBorderWidth: 1.5,
@@ -85,11 +110,12 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
         };
     };
 
-    const createChartOptions = () => ({
+    const createChartOptions = (titleText: string = '') => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
+            centerText: { text: titleText },
             tooltip: {
                 callbacks: {
                     label: function (context: any) {
@@ -109,13 +135,16 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
     const totalVolumeData = createDoughnutChartData(processedVolumeData, 'total_volume');
     const incomeVolumeData = createDoughnutChartData(processedVolumeData, 'total_income');
     const expenseVolumeData = createDoughnutChartData(processedVolumeData, 'total_expense');
-    const chartOptions = createChartOptions();
+
+    const totalVolumeOptions = createChartOptions('Total Vol.');
+    const incomeVolumeOptions = createChartOptions('Income Vol.');
+    const expenseVolumeOptions = createChartOptions('Expense Vol.');
 
     return (
         loading ? <LoadingBlock /> :
             (data.length > 0 || processedVolumeData) ? (
                 <div
-                    className="flex flex-col items-center gap-8 w-full h-full cursor-pointer"
+                    className="flex lg:flex-col flex-row items-center gap-8 w-full h-full cursor-pointer"
                     role="button"
                     tabIndex={0}
                     onClick={onClick}
@@ -127,27 +156,24 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
                 >
                     {/* Main Total Volume Chart */}
                     {totalVolumeData && (
-                        <div className="w-full">
-                            <h4 className="text-sm font-semibold text-gray-600 mb-2 text-center">Total Volume</h4>
+                        <div className="lg:w-full w-1/2">
                             <div className="w-full h-64 p-4">
-                                <Doughnut data={totalVolumeData} options={chartOptions} />
+                                <Doughnut data={totalVolumeData} options={totalVolumeOptions} />
                             </div>
                         </div>
                     )}
 
                     {/* Income and Expense Volume Subcharts */}
                     {incomeVolumeData && expenseVolumeData && (
-                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="w-full flex flex-col lg:grid lg:grid-cols-2 gap-4">
                             <div>
-                                <h4 className="text-sm font-semibold text-green-600 mb-2 text-center">Income Volume</h4>
                                 <div className="w-full h-48 p-2">
-                                    <Doughnut data={incomeVolumeData} options={chartOptions} />
+                                    <Doughnut data={incomeVolumeData} options={incomeVolumeOptions} />
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-red-600 mb-2 text-center">Expense Volume</h4>
                                 <div className="w-full h-48 p-2">
-                                    <Doughnut data={expenseVolumeData} options={chartOptions} />
+                                    <Doughnut data={expenseVolumeData} options={expenseVolumeOptions} />
                                 </div>
                             </div>
                         </div>

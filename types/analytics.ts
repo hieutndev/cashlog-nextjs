@@ -33,6 +33,7 @@ export type TMonthlyAnalyticsResponse = {
     income: (number | null)[];
     expenses: (number | null)[];
     savings: (number | null)[];
+    total_assets: (number | null)[];
     months: string[];
 }
 
