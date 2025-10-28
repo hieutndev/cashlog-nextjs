@@ -33,7 +33,7 @@ interface ParsedTransactionTableProps {
 
 interface EditingCell {
   rowIndex: number;
-  field: "amount" | "date" | "category_id" | null;
+  field: "amount" | "date" | "category_id" | "description" | null;
 }
 
 export default function ParsedTransactionTable({
@@ -100,11 +100,11 @@ export default function ParsedTransactionTable({
     }
   };
 
-  const isEditing = (rowIndex: number, field: "card_id" | "amount" | "date" | "category_id") => {
+  const isEditing = (rowIndex: number, field: "card_id" | "amount" | "date" | "category_id" | "description") => {
     return editingCell.rowIndex === rowIndex && editingCell.field === field;
   };
 
-  const startEditing = (rowIndex: number, field: "amount" | "date" | "category_id") => {
+  const startEditing = (rowIndex: number, field: "amount" | "date" | "category_id" | "description") => {
     setEditingCell({ rowIndex, field });
   };
 
@@ -114,9 +114,11 @@ export default function ParsedTransactionTable({
 
   const columns = [
     { key: "checkbox", label: "" },
+    { key: "type", label: "Type" },
     { key: "amount", label: "Amount" },
     { key: "date", label: "Date" },
     { key: "category", label: "Category" },
+    { key: "description", label: "Description" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -183,6 +185,25 @@ export default function ParsedTransactionTable({
                           </TableCell>
                         );
 
+                      case "type":
+                        return (
+                          <TableCell>
+                            <Button
+                              className="min-w-16"
+                              color={transaction.direction === "in" ? "success" : "danger"}
+                              size="sm"
+                              variant="flat"
+                              onPress={() => {
+                                onTransactionUpdate(rowIndex, {
+                                  direction: transaction.direction === "in" ? "out" : "in"
+                                });
+                              }}
+                            >
+                              {transaction.direction === "in" ? "Income" : "Expense"}
+                            </Button>
+                          </TableCell>
+                        );
+
                       case "amount":
                         return (
                           <TableCell>
@@ -222,7 +243,7 @@ export default function ParsedTransactionTable({
                                   }
                                 }}
                               >
-                                {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
+                                {formatAmount(transaction.amount)}
                               </div>
                             )}
                           </TableCell>
@@ -308,7 +329,6 @@ export default function ParsedTransactionTable({
                                 )}
                               </Select>
                             ) : (
-                              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props, react/jsx-no-comment-textnodes
                               <div
                                 className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
                                 role="button"
@@ -331,6 +351,50 @@ export default function ParsedTransactionTable({
                           </TableCell>
                         );
                       }
+
+                      case "description":
+                        return (
+                          <TableCell>
+                            {isEditing(rowIndex, "description") ? (
+                              <Input
+                                className="min-w-48"
+                                placeholder="Enter description"
+                                size="sm"
+                                type="text"
+                                value={transaction.description ?? ""}
+                                variant="bordered"
+                                onBlur={stopEditing}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") stopEditing();
+                                  if (e.key === "Escape") stopEditing();
+                                }}
+                                onValueChange={(value) =>
+                                  onTransactionUpdate(rowIndex, { description: value })
+                                }
+                              />
+                            ) : (
+                              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
+                              <div
+                                className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors min-w-48"
+                                role="button"
+                                tabIndex={0}
+                                onBlur={() => { }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditing(rowIndex, "description");
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    startEditing(rowIndex, "description");
+                                  }
+                                }}
+                              >
+                                {transaction.description || <span className="text-default-400 italic">Click to add description</span>}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
 
                       case "actions":
                         return (

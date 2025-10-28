@@ -17,27 +17,16 @@ const parseSMSPayload = z.object({
 
 export const POST = async (request: Request) => {
   try {
-    const userId = getFromHeaders<TUser["user_id"]>(request, "x-user-id", 0);
 
-    if (!userId) {
-      return Response.json(
-        {
-          status: "error",
-          message: "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+    const request_body = await request.json();
 
-    const requestBody = await request.json();
-
-    const { is_valid, errors } = zodValidate(parseSMSPayload, requestBody);
+    const { is_valid, errors } = zodValidate(parseSMSPayload, request_body);
 
     if (!is_valid) {
       return handleValidateError(errors);
     }
 
-    const { smsText, bankCode } = requestBody;
+    const { smsText, bankCode } = request_body;
 
     const parseResult = parseBankSMS(smsText, bankCode);
 

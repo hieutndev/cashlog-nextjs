@@ -2,7 +2,7 @@
 import { useFetch } from "hieutndev-toolkit";
 
 import { IAPIResponse } from "@/types/global";
-import { ParseSMSResult } from "@/app/api/_services/sms-parser";
+import { TParseSMSResult } from "@/app/api/_services/sms-parser";
 import { TBankCode } from "@/types/bank";
 
 export interface ParseSMSRequest {
@@ -13,7 +13,7 @@ export interface ParseSMSRequest {
 
 export function useSmsImportEndpoint() {
   const useParseSMS = (body: ParseSMSRequest) =>
-    useFetch<IAPIResponse<ParseSMSResult>>("/transactions/parse-sms", {
+    useFetch<IAPIResponse<TParseSMSResult>>("/transactions/parse-sms", {
       method: "POST",
       body,
       skip: true,

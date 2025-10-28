@@ -167,7 +167,7 @@ export default function ImportTransactionsPage() {
     useEffect(() => {
         if (parseSMSResult?.results) {
             const smsTransactions = parseSMSResult.results.transactions.map((smsT) => ({
-                originalText: smsT.rawSMS,
+                originalText: smsT.raw_sms,
                 card_id: 0,
                 direction: smsT.type,
                 category_id: null,
@@ -175,7 +175,7 @@ export default function ImportTransactionsPage() {
                 amount: smsT.amount,
                 description: smsT.description,
                 parsingStatus: smsT.status as "success" | "error" | "pending",
-                errorMessage: smsT.errorMessage,
+                errorMessage: smsT.message,
             }));
 
             setParsedTxn(smsTransactions);
