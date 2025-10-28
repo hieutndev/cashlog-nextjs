@@ -1,7 +1,7 @@
 import { RxDashboard } from "react-icons/rx";
 import { RiArrowLeftRightFill } from "react-icons/ri";
 import { PiTarget } from "react-icons/pi";
-import { FiSearch, FiSettings } from "react-icons/fi";
+import { FiSearch, FiSettings, FiEye } from "react-icons/fi";
 import { GrFormNextLink, GrFormPreviousLink } from "react-icons/gr";
 import { LuCalendarArrowDown, LuCalendarArrowUp, LuCircleAlert, LuCircleCheck, LuFileUp, LuPlay, LuRefreshCcw, LuLayers } from "react-icons/lu";
 import { IoAnalyticsSharp, IoLogOutOutline } from "react-icons/io5";
@@ -250,6 +250,12 @@ const ICONS = {
 		MD: <LuLayers size={SIZE_ICON.MD} />,
 		LG: <LuLayers size={SIZE_ICON.LG} />,
 		XL: <LuLayers size={SIZE_ICON.XL} />,
+	},
+	VIEW: {
+		SM: <FiEye size={SIZE_ICON.SM} />,
+		MD: <FiEye size={SIZE_ICON.MD} />,
+		LG: <FiEye size={SIZE_ICON.LG} />,
+		XL: <FiEye size={SIZE_ICON.XL} />,
 	}
 };
 

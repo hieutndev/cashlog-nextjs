@@ -7,14 +7,18 @@ import { DatePicker } from "@heroui/date-picker";
 import { Button } from "@heroui/button";
 import { Checkbox } from "@heroui/checkbox";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal";
 import { parseDate } from '@internationalized/date';
 import moment from "moment";
+import Image from "next/image";
 
 import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import { TAddTransaction } from "@/types/transaction";
 import { TCategory } from "@/types/category";
+import { TCard } from "@/types/card";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
+import { getBankLogo } from "@/configs/bank";
 
 
 interface ParsedTransaction extends TAddTransaction {
@@ -29,11 +33,13 @@ interface ParsedTransactionTableProps {
   onTransactionRemove: (index: number) => void;
   selectedTransactions: number[];
   onSelectionChange: (selected: number[]) => void;
+  inputMode: "sms" | "manual";
+  allCards: TCard[];
 }
 
 interface EditingCell {
   rowIndex: number;
-  field: "amount" | "date" | "category_id" | "description" | null;
+  field: "amount" | "date" | "category_id" | "description" | "card_id" | null;
 }
 
 export default function ParsedTransactionTable({
@@ -42,9 +48,13 @@ export default function ParsedTransactionTable({
   onTransactionRemove,
   selectedTransactions,
   onSelectionChange,
+  inputMode,
+  allCards,
 }: ParsedTransactionTableProps) {
   const [listCategories, setListCategories] = useState<TCategory[]>([]);
   const [editingCell, setEditingCell] = useState<EditingCell>({ rowIndex: -1, field: null });
+  const [selectedRawSms, setSelectedRawSms] = useState<string>("");
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const { useGetCategories } = useCategoryEndpoint();
 
@@ -86,6 +96,20 @@ export default function ParsedTransactionTable({
     return category?.category_name || "No category";
   };
 
+  // Get card name by ID with formatted display (logo - name - last 4 digits)
+  const getCardName = (cardId: number) => {
+    if (!cardId) return "No card";
+    const card = allCards.find(c => c.card_id === cardId);
+
+    if (!card) return "No card";
+
+    // Use a default card emoji
+    const logo = <Image alt={card.card_name} height={16} src={getBankLogo(card.bank_code, 1)} width={16} />;
+    const last4 = card.card_number?.slice(-4) ?? null;
+
+    return <div className="min-w-max flex items-center gap-2">{logo} {card.card_name}{last4 ? ` - *${last4}` : ""}</div>;
+  };
+
   const allSelected = transactions.length > 0 && selectedTransactions.length === transactions.length;
   const someSelected = selectedTransactions.length > 0 && !allSelected;
 
@@ -104,7 +128,7 @@ export default function ParsedTransactionTable({
     return editingCell.rowIndex === rowIndex && editingCell.field === field;
   };
 
-  const startEditing = (rowIndex: number, field: "amount" | "date" | "category_id" | "description") => {
+  const startEditing = (rowIndex: number, field: "amount" | "date" | "category_id" | "description" | "card_id") => {
     setEditingCell({ rowIndex, field });
   };
 
@@ -112,8 +136,14 @@ export default function ParsedTransactionTable({
     setEditingCell({ rowIndex: -1, field: null });
   };
 
+  const handleViewRawSms = (rawSms: string) => {
+    setSelectedRawSms(rawSms);
+    onOpen();
+  };
+
   const columns = [
     { key: "checkbox", label: "" },
+    ...(inputMode === "manual" ? [{ key: "card", label: "Card" }] : []),
     { key: "type", label: "Type" },
     { key: "amount", label: "Amount" },
     { key: "date", label: "Date" },
@@ -292,6 +322,90 @@ export default function ParsedTransactionTable({
                           </TableCell>
                         );
 
+                      case "card": {
+                        const cardOptions = allCards.map(card => {
+                          const last4 = card.card_number?.slice(-4) ?? null;
+
+                          return {
+                            card_id: card.card_id,
+                            card_name: card.card_name,
+                            displayName: `${card.card_name}${last4 ? ` - *${last4}` : ""}`,
+                            startIcon: <Image alt={card.card_name} height={16} src={getBankLogo(card.bank_code, 1)} width={16} />
+                          };
+                        });
+
+                        return (
+                          <TableCell>
+                            {isEditing(rowIndex, "card_id") ? (
+                              <Select
+                                className="w-56"
+                                items={cardOptions}
+                                placeholder="Select card"
+                                renderValue={(items) => {
+                                  return (
+                                    <div className="flex items-center gap-2">
+                                      {items.map((item) => {
+                                        const card = cardOptions.find(c => c.card_id.toString() === item.key);
+
+                                        return (
+                                          <div key={item.key} className="flex items-center gap-1">
+                                            {card && card.startIcon}
+                                            {item.rendered}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                }}
+                                selectedKeys={[transaction.card_id?.toString() ?? "0"]}
+                                size="sm"
+                                variant="bordered"
+                                onBlur={stopEditing}
+                                onClick={(e) => e.stopPropagation()}
+
+                                onSelectionChange={(keys) => {
+                                  const key = Array.from(keys)[0] as string;
+
+                                  onTransactionUpdate(rowIndex, {
+                                    card_id: parseInt(key)
+                                  });
+                                  stopEditing();
+                                }}
+                              >
+                                {(card) => (
+                                  <SelectItem
+                                    key={card.card_id.toString()}
+                                    startContent={card.startIcon}
+                                    textValue={card.displayName}
+                                  >
+                                    {card.displayName}
+                                  </SelectItem>
+                                )}
+                              </Select>
+                            ) : (
+                              <div
+                                className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                                role="button"
+                                tabIndex={0}
+                                onBlur={() => { }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditing(rowIndex, "card_id");
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    startEditing(rowIndex, "card_id");
+                                  }
+                                }}
+                              >
+                                {getCardName(transaction.card_id)}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
+                      }
+
                       case "category": {
                         const categoryOptions = [
                           { category_id: -1, category_name: "No category" },
@@ -399,15 +513,26 @@ export default function ParsedTransactionTable({
                       case "actions":
                         return (
                           <TableCell>
-                            <Button
-                              isIconOnly
-                              color="danger"
-                              size="sm"
-                              variant="flat"
-                              onPress={() => onTransactionRemove(rowIndex)}
-                            >
-                              {ICONS.TRASH.SM}
-                            </Button>
+                            <div className="flex items-center gap-2 justify-center">
+                              <Button
+                                isIconOnly
+                                color="primary"
+                                size="sm"
+                                variant="flat"
+                                onPress={() => handleViewRawSms(transaction.originalText)}
+                              >
+                                {ICONS.VIEW.SM}
+                              </Button>
+                              <Button
+                                isIconOnly
+                                color="danger"
+                                size="sm"
+                                variant="flat"
+                                onPress={() => onTransactionRemove(rowIndex)}
+                              >
+                                {ICONS.TRASH.SM}
+                              </Button>
+                            </div>
                           </TableCell>
                         );
 
@@ -421,6 +546,29 @@ export default function ParsedTransactionTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Raw SMS Modal */}
+      <Modal isOpen={isOpen} size="2xl" onOpenChange={onOpenChange}>
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">
+            Raw SMS Message
+          </ModalHeader>
+          <ModalBody>
+            <div className="w-full">
+              <textarea
+                readOnly
+                className="w-full h-48 p-3 border border-default-200 rounded-lg bg-default-50 font-mono text-sm resize-none focus:outline-none"
+                value={selectedRawSms}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onPress={onOpenChange}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

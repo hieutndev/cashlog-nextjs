@@ -4,6 +4,9 @@ import { smsLogger } from "./logger";
 
 import { getBankOptions } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
+import { TCard } from "@/types/card";
+import { TCategory } from "@/types/category";
+import { TAddTransaction } from "@/types/transaction";
 
 // Helper function to get bank name from bank code
 function getBankName(bankCode: TBankCode): string {
@@ -232,7 +235,7 @@ const TPBankParser = (smsText: string, lang: 'vn' | 'en' = 'vn'): TParsedSMSTran
             description: '',
             status: "error",
             message: errorMessage,
-            raw_sms: smsText
+            raw_sms: chunk
           });
           continue;
         }
@@ -245,7 +248,7 @@ const TPBankParser = (smsText: string, lang: 'vn' | 'en' = 'vn'): TParsedSMSTran
           description: '',
           status: "error",
           message: "TPBank Transaction Notification format invalid",
-          raw_sms: smsText
+          raw_sms: chunk
         };
 
         // Line 1: Extract date and time from "(TPBank): 27/10/25;18:44"
@@ -306,7 +309,18 @@ const TPBankParser = (smsText: string, lang: 'vn' | 'en' = 'vn'): TParsedSMSTran
         console.error(`SMS #${i + 1}: Lỗi khi parse -`, error);
 
         // Log parsing exception
-        void smsLogger.logFailure(sms_chunks[i], "/\\(TPBank\\):/", [], errorMessage, bankName);
+        void smsLogger.logFailure(chunk, "/\\(TPBank\\):/", [], errorMessage, bankName);
+
+        results.push({
+          date: '',
+          time: '',
+          type: 'in',
+          amount: 0,
+          description: '',
+          status: "error",
+          message: errorMessage,
+          raw_sms: chunk
+        });
       }
     }
 
@@ -314,86 +328,92 @@ const TPBankParser = (smsText: string, lang: 'vn' | 'en' = 'vn'): TParsedSMSTran
   }
 };
 
-export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSResult {
-  if (!smsText.trim()) {
-    return {
-      transactions: [],
-      summary: { total: 0, successful: 0, errors: 0, duplicates: 0 },
-    };
-  }
+const VietcombankParser = (smsText: string, lang: 'vn' | 'en' = 'vn'): TParsedSMSTransaction[] => {
+  const bankName = getBankName('VIETCOMBANK');
 
-  const lines = smsText.split("\n").filter((line) => line.trim());
-  const transactions: TParsedSMSTransaction[] = [];
+  if (lang === 'en') {
+    const errorMessage = "English parsing not implemented yet";
 
-  if (bankCode === "TPBANK") {
-    transactions.push(...TPBankParser(smsText));
-  }
+    // Log unsupported language error
+    void smsLogger.logFailure(smsText, "N/A", [], errorMessage, bankName);
 
-  if (["VIETCOMBANK"].includes(bankCode)) {
-    for (const line of lines) {
-      const trimmedLine = line.trim();
+    return [
+      {
+        date: '',
+        time: '',
+        type: 'in',
+        amount: 0,
+        description: '',
+        status: "error",
+        message: errorMessage,
+        raw_sms: smsText
+      }
+    ]
+  } else {
+    const lines = smsText.split("\n").filter((line) => line.trim());
+    const results: TParsedSMSTransaction[] = [];
+    const pattern = BANK_SMS_PATTERNS['VIETCOMBANK'];
+
+    if (!pattern) {
+      const errorMessage = "Vietcombank pattern not found";
+
+      void smsLogger.logFailure(smsText, "N/A", [], errorMessage, bankName);
+
+      return [
+        {
+          date: '',
+          time: '',
+          type: 'in',
+          amount: 0,
+          description: '',
+          status: "error",
+          message: errorMessage,
+          raw_sms: smsText
+        }
+      ];
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmedLine = lines[i].trim();
 
       if (!trimmedLine) {
         continue;
       }
 
-      const pattern = BANK_SMS_PATTERNS[bankCode];
-
-      if (!pattern) {
-        const errorMessage = `Unsupported bank code: ${bankCode}`;
-        const errorTransaction: TParsedSMSTransaction = {
-          date: new Date().toISOString(),
-          time: "00:00",
-          type: "out",
-          amount: 0,
-          description: "",
-          status: "error",
-          message: errorMessage,
-          raw_sms: trimmedLine,
-        };
-
-        transactions.push(errorTransaction);
-
-        // Log unsupported bank code error
-        void smsLogger.logFailure(trimmedLine, "N/A", [], errorMessage, getBankName(bankCode));
-
-        continue;
-      }
-
-      const matched = trimmedLine.match(pattern.regex);
-
-      if (!matched) {
-        const errorMessage = "Unrecognized SMS format";
-        const errorTransaction: TParsedSMSTransaction = {
-          date: new Date().toISOString(),
-          time: "00:00",
-          type: "out",
-          amount: 0,
-          description: "",
-          status: "error",
-          message: errorMessage,
-          raw_sms: trimmedLine,
-        };
-
-        transactions.push(errorTransaction);
-
-        // Log regex match failure
-        void smsLogger.logFailure(
-          trimmedLine,
-          pattern.regex.source,
-          [],
-          errorMessage,
-          getBankName(bankCode)
-        );
-
-        continue;
-      }
-
       try {
+        const matched = trimmedLine.match(pattern.regex);
+
+        if (!matched) {
+          const errorMessage = "Unrecognized SMS format";
+          const errorTransaction: TParsedSMSTransaction = {
+            date: new Date().toISOString(),
+            time: "00:00",
+            type: "out",
+            amount: 0,
+            description: "",
+            status: "error",
+            message: errorMessage,
+            raw_sms: trimmedLine,
+          };
+
+          results.push(errorTransaction);
+
+          // Log regex match failure
+          void smsLogger.logFailure(
+            trimmedLine,
+            pattern.regex.source,
+            [],
+            errorMessage,
+            bankName
+          );
+
+          continue;
+        }
+
         const parsed = pattern.parser(matched);
 
         // Log the parsed result immediately
-        void smsLogger.logSuccess(trimmedLine, pattern.regex.source, matched, parsed, getBankName(bankCode));
+        void smsLogger.logSuccess(trimmedLine, pattern.regex.source, matched, parsed, bankName);
 
         const transaction: TParsedSMSTransaction = {
           date: parsed.date || new Date().toISOString(),
@@ -410,7 +430,7 @@ export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSRes
           transaction.status = "error";
           transaction.message = "Invalid amount";
 
-          transactions.push(transaction);
+          results.push(transaction);
 
           // Log validation failure
           void smsLogger.logFailure(
@@ -418,19 +438,19 @@ export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSRes
             pattern.regex.source,
             matched,
             "Invalid amount",
-            getBankName(bankCode)
+            bankName
           );
         } else {
-          transactions.push(transaction);
+          results.push(transaction);
 
           // Log successful parsing
-          void smsLogger.logSuccess(trimmedLine, pattern.regex.source, matched, parsed, getBankName(bankCode));
+          void smsLogger.logSuccess(trimmedLine, pattern.regex.source, matched, parsed, bankName);
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Failed to parse SMS";
 
-        transactions.push({
+        results.push({
           date: new Date().toISOString(),
           time: "00:00",
           type: "out",
@@ -442,9 +462,45 @@ export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSRes
         });
 
         // Log parsing exception
-        void smsLogger.logFailure(trimmedLine, pattern.regex.source, matched, errorMessage, getBankName(bankCode));
+        void smsLogger.logFailure(trimmedLine, pattern.regex.source, [], errorMessage, bankName);
       }
     }
+
+    return results;
+  }
+};
+
+export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSResult {
+  if (!smsText.trim()) {
+    return {
+      transactions: [],
+      summary: { total: 0, successful: 0, errors: 0, duplicates: 0 },
+    };
+  }
+
+  const transactions: TParsedSMSTransaction[] = [];
+
+  if (bankCode === "TPBANK") {
+    transactions.push(...TPBankParser(smsText));
+  } else if (bankCode === "VIETCOMBANK") {
+    transactions.push(...VietcombankParser(smsText));
+  } else {
+    const errorMessage = `Unsupported bank code: ${bankCode}`;
+    const errorTransaction: TParsedSMSTransaction = {
+      date: new Date().toISOString(),
+      time: "00:00",
+      type: "out",
+      amount: 0,
+      description: "",
+      status: "error",
+      message: errorMessage,
+      raw_sms: smsText,
+    };
+
+    transactions.push(errorTransaction);
+
+    // Log unsupported bank code error
+    void smsLogger.logFailure(smsText, "N/A", [], errorMessage, getBankName(bankCode));
   }
 
   const successful = transactions.filter((t) => t.status === "success").length;
@@ -459,6 +515,172 @@ export function parseBankSMS(smsText: string, bankCode: TBankCode): TParseSMSRes
       errors,
       duplicates,
     },
+  };
+}
+
+export interface ParsedManualTransaction extends TAddTransaction {
+  originalText: string;
+  parsingStatus: "pending" | "success" | "error";
+  errorMessage?: string;
+}
+
+export type TParseManualResult = {
+  transactions: ParsedManualTransaction[];
+  summary: {
+    total: number;
+    successful: number;
+    errors: number;
+  };
+};
+
+/**
+ * Parse a single line of pipe-delimited transaction data
+ * Format: card_identifier | amount | date | description | category_name
+ *
+ * Returns a complete transaction object with fallback values for invalid fields.
+ * This function does NOT return early on errors - it continues parsing all fields
+ * and uses fallback values for any invalid data.
+ */
+function parseManualTransactionLine(
+  line: string,
+  cards: TCard[],
+  categories: TCategory[],
+  lineIndex: number
+): ParsedManualTransaction {
+  const trimmedLine = line.trim();
+  const originalText = line;
+
+  // Initialize with fallback values
+  const result: ParsedManualTransaction = {
+    originalText,
+    card_id: 0,
+    direction: "out",
+    category_id: null,
+    date: "",
+    amount: 0,
+    description: "",
+    parsingStatus: "success",
+  };
+
+  // Check if line is empty
+  if (!trimmedLine) {
+    result.parsingStatus = "error";
+    result.errorMessage = `Line ${lineIndex + 1}: Empty line`;
+
+    return result;
+  }
+
+  const parts = trimmedLine.split("|").map((p) => p.trim());
+
+  // Check if line has correct number of parts
+  if (parts.length !== 5) {
+    result.parsingStatus = "error";
+    result.errorMessage = `Line ${lineIndex + 1}: Invalid format. Expected 5 pipe-delimited fields (card_identifier | amount | date | description | category_name), got ${parts.length}`;
+
+    return result;
+  }
+
+  // Parse card_identifier - use fallback 0 if not found
+  const card = findManualCardByIdentifier(parts[0], cards);
+
+  result.card_id = card?.card_id ?? 0;
+
+  // Parse amount - use fallback 0 if invalid
+  const parsedAmount = parseFloat(parts[1]);
+
+  result.amount = isNaN(parsedAmount) ? 0 : Math.abs(parsedAmount);
+
+  // Parse date - use fallback empty string if invalid
+  const dateObj = moment(parts[2], "YYYY-MM-DD", true);
+
+  result.date = dateObj.isValid() ? parts[2] : "";
+
+  // Parse description - use fallback empty string if missing
+  result.description = parts[3] || "";
+
+  // Parse category_id - use fallback null if not found
+  const category = findManualCategoryByName(parts[4], categories);
+
+  result.category_id = category?.category_id ?? null;
+
+  // Determine direction based on original amount sign
+  result.direction = parsedAmount > 0 ? "in" : "out";
+
+  return result;
+}
+
+function findManualCardByIdentifier(
+  identifier: string,
+  cards: TCard[]
+): TCard | null {
+  if (identifier.startsWith("*")) {
+    // Match by last 4 digits
+    const last4 = identifier.substring(1);
+
+    return (
+      cards.find((card) => card.card_number?.endsWith(last4)) || null
+    );
+  } else {
+    // Exact match - try full card number or last 4 digits
+    return (
+      cards.find(
+        (card) =>
+          card.card_number === identifier ||
+          card.card_number?.endsWith(identifier)
+      ) || null
+    );
+  }
+}
+
+/**
+ * Find a category by exact name match
+ */
+function findManualCategoryByName(
+  categoryName: string,
+  allCategories: TCategory[]
+): TCategory | null {
+  return (
+    allCategories.find((cat) => cat.category_name === categoryName) || null
+  );
+}
+
+/**
+ * Validate and parse manual transaction input
+ *
+ * This function processes each line and returns a complete transaction object
+ * with fallback values for any invalid fields. It does NOT fail early - instead,
+ * it continues parsing all fields and collects all errors in the errorMessage.
+ */
+export function parseManualTransactions(
+  input_text: string,
+  cards: TCard[],
+  categories: TCategory[]
+): TParseManualResult {
+  const lines = input_text.split("\n");
+  const results: ParsedManualTransaction[] = [];
+
+  lines.forEach((line, lineIndex) => {
+    // Skip empty lines
+    if (line.trim() === "") {
+      return;
+    }
+
+    // Parse the line with fallback values for all invalid fields
+    const parsed = parseManualTransactionLine(line, cards, categories, lineIndex);
+
+    results.push(parsed);
+  });
+
+  // Calculate summary
+  const summary = {
+    total: results.length,
+    successful: results.filter((t) => t.parsingStatus === "success").length,
+    errors: results.filter((t) => t.parsingStatus === "error").length,
+  };
+
+  return {
+    transactions: results,
+    summary,
   };
 }
 

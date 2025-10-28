@@ -1,16 +1,17 @@
 "use client";
-import { Alert } from "@heroui/alert";
-import { Textarea } from "@heroui/input";
 import { addToast } from "@heroui/toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Button } from "@heroui/button";
-import { Select, SelectItem } from "@heroui/select";
+import { Divider } from "@heroui/divider";
+import { useWindowSize } from "hieutndev-toolkit";
+import moment from "moment";
 
 import Container from "@/components/shared/container/container";
-import BulkEditToolbar from "@/components/transactions/bulk-edit-toolbar";
-import ParsedTransactionTable from "@/components/transactions/parsed-transaction-table";
-import { getBankLogo, getBankOptions } from "@/configs/bank";
+import InputCollectionStep from "@/components/transactions/import-from-sms/steps-wizard/input-collection-step";
+import ReviewEditStep from "@/components/transactions/import-from-sms/steps-wizard/review-edit-step";
+import SuccessConfirmationStep from "@/components/transactions/import-from-sms/steps-wizard/success-confirmation-step";
+import Stepper, { Step } from "@/components/transactions/import-from-xlsx/steps-wizard/stepper";
+import { getBankLogo } from "@/configs/bank";
 import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import { useImportTransactionEndpoint } from "@/hooks/useImportTransactionEndpoint";
@@ -19,7 +20,6 @@ import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import { FilterAndSortItem } from "@/types/global";
 import { TAddTransaction } from "@/types/transaction";
-import { LIST_BANKS, TBankCode } from "@/types/bank";
 
 interface ParsedTransaction extends TAddTransaction {
     originalText: string;
@@ -28,20 +28,51 @@ interface ParsedTransaction extends TAddTransaction {
 }
 
 export default function ImportTransactionsPage() {
-    const [parsedTxn, setParsedTxn] = useState<ParsedTransaction[]>([]);
-    const [selectedTxn, setSelectedTxn] = useState<number[]>([]);
-    const [cardOptions, setCardOptions] = useState<FilterAndSortItem[]>([]);
-    const [categoryOptions, setCategoryOptions] = useState<TCategory[]>([]);
+    const { width } = useWindowSize();
+
+    // Wizard state
+    const [currentStep, setCurrentStep] = useState<number>(1);
+    const [listSteps, setListSteps] = useState<Step[]>([
+        {
+            id: 1,
+            title: "Input Collection",
+            description: "Select bank and enter SMS messages",
+            status: "current",
+        },
+        {
+            id: 2,
+            title: "Review & Edit",
+            description: "Review and customize transactions",
+            status: "pending",
+        },
+        {
+            id: 3,
+            title: "Success",
+            description: "Transactions imported successfully",
+            status: "pending",
+        },
+    ]);
 
     // SMS Import state
+    const [parsedTxn, setParsedTxn] = useState<ParsedTransaction[]>([]);
+
+    useEffect(() => {
+        console.log('parsedTxn', parsedTxn);
+    }, [parsedTxn]);
+
     const [smsText, setSmsText] = useState("");
-    const [selectedBankCode, setSelectedBankCode] = useState<string>("VIETCOMBANK");
-    const [smsCharCount, setSmsCharCount] = useState(0);
+    const [manualText, setManualText] = useState("");
+    const [selectedCardId, setSelectedCardId] = useState<number>(0);
+    const [allCards, setAllCards] = useState<TCard[]>([]);
+    const [cardOptions, setCardOptions] = useState<FilterAndSortItem[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<TCategory[]>([]);
+    const [importedCount, setImportedCount] = useState<number>(0);
+    const [inputMode, setInputMode] = useState<"sms" | "manual">("sms");
 
     const { useGetListCards } = useCardEndpoint();
     const { useGetCategories } = useCategoryEndpoint();
     const { useCreateMultipleTransactions } = useImportTransactionEndpoint();
-    const { useParseSMS } = useSmsImportEndpoint();
+    const { useParseSMS, useParseManual } = useSmsImportEndpoint();
 
     const {
         data: createMultipleResult,
@@ -60,6 +91,10 @@ export default function ImportTransactionsPage() {
         fetch: fetchCategories,
     } = useGetCategories();
 
+    // Get the selected card's bank code
+    const selectedCard = allCards.find(c => c.card_id === selectedCardId);
+    const selectedBankCode = selectedCard?.bank_code || "VIETCOMBANK";
+
     // SMS parsing hook
     const {
         data: parseSMSResult,
@@ -68,11 +103,55 @@ export default function ImportTransactionsPage() {
         fetch: parseSMS,
     } = useParseSMS({ smsText, bankCode: selectedBankCode as any });
 
+    // Manual input parsing hook
+    const {
+        data: parseManualResult,
+        loading: parsingFromManual,
+        error: parseManualError,
+        fetch: parseManual,
+    } = useParseManual({ manualText, parseType: "manual" });
+
+    // Step navigation handler
+    const handleUpdateStep = useCallback(
+        (type: "next" | "back" = "next", times: number = 1) => {
+            const nextStep = type === "next" ? currentStep + times : currentStep - times;
+
+            setCurrentStep(nextStep);
+
+            setListSteps((prevSteps) =>
+                prevSteps.map((step) => {
+                    if (nextStep !== listSteps.length) {
+                        if (step.id < nextStep) {
+                            return {
+                                ...step,
+                                status: "completed",
+                            };
+                        } else if (step.id === nextStep) {
+                            return {
+                                ...step,
+                                status: "current",
+                            };
+                        } else {
+                            return {
+                                ...step,
+                                status: "pending",
+                            };
+                        }
+                    } else {
+                        return {
+                            ...step,
+                            status: "completed",
+                        };
+                    }
+                })
+            );
+        },
+        [currentStep, listSteps]
+    );
 
 
-
-
-    const parseSMSTransactions = () => {
+    // Handler for parsing SMS
+    const handleParseSMS = () => {
         if (!smsText.trim()) {
             addToast({
                 color: "warning",
@@ -83,37 +162,50 @@ export default function ImportTransactionsPage() {
             return;
         }
 
+        setInputMode("sms");
         parseSMS();
     };
 
+    // Handler for parsing manual input
+    const handleParseManualInput = () => {
+        if (!manualText.trim()) {
+            addToast({
+                color: "warning",
+                title: "Empty Input",
+                description: "Please enter transaction data to parse",
+            });
 
+            return;
+        }
 
+        setInputMode("manual");
+        parseManual();
+    };
+
+    // Handler for moving to step 2 after parsing
+    const handleParseSuccess = () => {
+        handleUpdateStep("next");
+    };
+
+    // Handler for updating a transaction
     const handleUpdateTxn = (index: number, updates: Partial<TAddTransaction>) => {
         setParsedTxn(prev =>
             prev.map((t, i) => (i === index ? { ...t, ...updates } : t))
         );
     };
 
-    const handleBulkUpdate = (updates: Partial<TAddTransaction>) => {
-        if (selectedTxn.length === 0) return;
-
-        setParsedTxn(prev =>
-            prev.map((t, i) =>
-                selectedTxn.includes(i) ? { ...t, ...updates } : t
-            )
-        );
-    };
-
+    // Handler for removing a transaction
     const handleRemoveTxn = (index: number) => {
         setParsedTxn(prev => prev.filter((_, i) => i !== index));
-        setSelectedTxn(prev => prev.filter(i => i !== index));
     };
 
-    const handleSelectionChange = (selected: number[]) => {
-        setSelectedTxn(selected);
+    // Handler for selection change
+    const handleSelectionChange = (_selected: number[]) => {
+        // This is handled in ReviewEditStep
     };
 
-    const handleSubmit = () => {
+    // Handler for importing transactions
+    const handleImport = () => {
         const validTransactions = parsedTxn.filter(
             t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0
         );
@@ -128,21 +220,58 @@ export default function ImportTransactionsPage() {
             return;
         }
 
+        setImportedCount(validTransactions.length);
+
         createMultipleTransactions({
             body: {
-                list_transactions: validTransactions.map(({ originalText: _originalText, parsingStatus: _parsingStatus, errorMessage: _errorMessage, ...transaction }) => transaction),
+                list_transactions: validTransactions.map(({ originalText: _originalText, parsingStatus: _parsingStatus, errorMessage: _errorMessage, ...transaction }) => {
+                    transaction.date = moment(transaction.date, 'YYYY-MM-DD').toISOString();
+
+                    return transaction
+                }),
             },
         });
     };
 
+    // Handler for starting a new import
+    const handleNewImport = () => {
+        setParsedTxn([]);
+        setSmsText("");
+        setManualText("");
+        setCurrentStep(1);
+        setListSteps([
+            {
+                id: 1,
+                title: "Input Collection",
+                description: "Select bank and enter SMS messages",
+                status: "current",
+            },
+            {
+                id: 2,
+                title: "Review & Edit",
+                description: "Review and customize transactions",
+                status: "pending",
+            },
+            {
+                id: 3,
+                title: "Success",
+                description: "Transactions imported successfully",
+                status: "pending",
+            },
+        ]);
+    };
+
+    // Fetch cards and categories on mount
     useEffect(() => {
         fetchCards();
         fetchCategories();
     }, []);
 
+    // Handle cards fetch result
     useEffect(() => {
-        if (fetchCardsResult) {
-            setCardOptions(fetchCardsResult?.results?.map((card: TCard) => ({
+        if (fetchCardsResult?.results) {
+            setAllCards(fetchCardsResult.results);
+            setCardOptions(fetchCardsResult.results.map((card: TCard) => ({
                 key: card.card_id.toString(),
                 label: card.card_name,
                 startIcon: (
@@ -154,21 +283,27 @@ export default function ImportTransactionsPage() {
                         width={1200}
                     />
                 ),
-            })) ?? [])
+            })));
+            // Set the first card as default if available
+            if (fetchCardsResult.results.length > 0) {
+                setSelectedCardId(fetchCardsResult.results[0].card_id);
+            }
         }
     }, [fetchCardsResult]);
 
+    // Handle categories fetch result
     useEffect(() => {
         if (fetchCategoriesResult) {
             setCategoryOptions(fetchCategoriesResult.results ?? []);
         }
     }, [fetchCategoriesResult]);
 
+    // Handle SMS parsing result
     useEffect(() => {
         if (parseSMSResult?.results) {
             const smsTransactions = parseSMSResult.results.transactions.map((smsT) => ({
                 originalText: smsT.raw_sms,
-                card_id: 0,
+                card_id: selectedCardId, // Auto-assign the selected card
                 direction: smsT.type,
                 category_id: null,
                 date: smsT.date,
@@ -179,26 +314,73 @@ export default function ImportTransactionsPage() {
             }));
 
             setParsedTxn(smsTransactions);
-            setSmsText("");
             addToast({
                 color: "success",
                 title: "SMS Parsed",
                 description: `Successfully parsed ${parseSMSResult.results.summary.successful} transactions`,
             });
-        }
 
+            // Move to step 2
+            handleParseSuccess();
+        }
 
         if (parseSMSError) {
             const parseError = JSON.parse(parseSMSError);
 
+            // Check if this is an unsupported bank error
+            const isUnsupportedBankError = parseError.message?.includes("SMS parsing is not supported");
+
+            addToast({
+                color: "danger",
+                title: isUnsupportedBankError ? "Bank Not Supported" : "Error",
+                description: parseError.message || "Failed to parse SMS",
+            });
+
+            // Don't proceed to next step on error - user stays on current page
+            // This prevents navigation when bank is unsupported
+        }
+    }, [parseSMSResult, parseSMSError, selectedCardId]);
+
+    // Handle manual input parsing result
+    useEffect(() => {
+        if (parseManualResult?.results) {
+            const manualTransactions = parseManualResult.results.transactions.map((manualT) => ({
+                originalText: manualT.originalText,
+                card_id: manualT.card_id,
+                direction: manualT.direction,
+                category_id: manualT.category_id,
+                date: manualT.date,
+                amount: manualT.amount,
+                description: manualT.description,
+                parsingStatus: manualT.parsingStatus as "success" | "error" | "pending",
+                errorMessage: manualT.errorMessage,
+            }));
+
+            setParsedTxn(manualTransactions);
+            addToast({
+                color: "success",
+                title: "Manual Input Parsed",
+                description: `Successfully parsed ${parseManualResult.results.summary.successful} transactions`,
+            });
+
+            // Move to step 2
+            handleParseSuccess();
+        }
+
+        if (parseManualError) {
+            const parseError = JSON.parse(parseManualError);
+
             addToast({
                 color: "danger",
                 title: "Error",
-                description: parseError.message || "Failed to parse SMS",
+                description: parseError.message || "Failed to parse manual input",
             });
-        }
-    }, [parseSMSResult, parseSMSError]);
 
+            // Don't proceed to next step on error - user stays on current page
+        }
+    }, [parseManualResult, parseManualError]);
+
+    // Handle import result
     useEffect(() => {
         if (createMultipleResult) {
             addToast({
@@ -207,9 +389,8 @@ export default function ImportTransactionsPage() {
                 description: createMultipleResult.message,
             });
 
-            setParsedTxn([]);
-            setSelectedTxn([]);
-            setSmsText("");
+            // Move to step 3 (success)
+            handleUpdateStep("next");
         }
 
         if (createMultipleError) {
@@ -223,141 +404,49 @@ export default function ImportTransactionsPage() {
         }
     }, [createMultipleResult, createMultipleError]);
 
-    useEffect(() => {
-        setParsedTxn([]);
-        setSelectedTxn([]);
-    }, []);
-
-    const hasValidTransactions = parsedTxn.some(
-        t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0
-    );
-
     return (
-        <Container
-            gapSize={8}
-            orientation={"vertical"}
-        >
+        <Container gapSize={8} orientation={"vertical"}>
+            <Stepper isDot={width < 640} steps={listSteps} />
+            <Divider />
 
-            <div className="w-full flex flex-row gap-4">
-                <div className="w-1/3 flex flex-col gap-4 border-r pr-4">
-                    <Alert
-                        color="primary"
-                        description={smsText.length > 0 ?
-                            "Review and edit the parsed transactions below before submitting."
-                            : "Paste SMS messages from your bank and we'll parse them automatically."}
-                        title={`Found ${parsedTxn.length} transactions`}
-                    />
+            {currentStep === 1 && (
+                <InputCollectionStep
+                    cardOptions={cardOptions}
+                    cards={allCards}
+                    isLoading={parsingFromSMS || parsingFromManual}
+                    manualText={manualText}
+                    selectedCardId={selectedCardId}
+                    smsText={smsText}
+                    onCardIdChange={setSelectedCardId}
+                    onManualInputSubmit={handleParseManualInput}
+                    onManualTextChange={setManualText}
+                    onNext={handleParseSMS}
+                    onSmsTextChange={setSmsText}
+                />
+            )}
 
-                    <div className="w-full flex flex-col gap-2">
-                        <Select
-                            label="Select Bank"
-                            labelPlacement="outside"
-                            placeholder="Choose a bank"
-                            renderValue={(items) => {
-                                return (<div className="flex items-center gap-2">
-                                    {items.map((item) => (
-                                        <div
-                                            key={item.key}
-                                            className="flex items-center gap-1"
-                                        >
-                                            <Image
-                                                alt={`card ${item.key} bank logo`}
-                                                className={"w-4"}
-                                                height={1200}
-                                                src={getBankLogo(item.key as TBankCode, 1)}
-                                                width={1200}
-                                            />
-                                            {item.rendered}
-                                        </div>
-                                    ))}
-                                </div>)
-                            }}
-                            selectedKeys={[selectedBankCode]}
-                            variant="bordered"
-                            onChange={(e) => setSelectedBankCode(e.target.value)}
-                        >
-                            {LIST_BANKS.map((bank) => (
-                                <SelectItem key={bank}
-                                    startContent={
-                                        <Image
-                                            alt={`card ${bank} bank logo`}
-                                            className={"w-4"}
-                                            height={1200}
-                                            src={getBankLogo(bank, 1)}
-                                            width={1200}
-                                        />
-                                    }
-                                >
-                                    {getBankOptions.find(o => o.key === bank)?.value || bank}
-                                </SelectItem>
-                            ))}
-                        </Select>
-                        <Textarea
-                            description={`${smsCharCount} characters`}
-                            label="SMS Messages"
-                            labelPlacement="outside"
-                            maxRows={20}
-                            minRows={6}
-                            placeholder="Paste SMS messages from your bank here. One message per line."
-                            value={smsText}
-                            variant="bordered"
-                            onValueChange={(value) => {
-                                setSmsText(value);
-                                setSmsCharCount(value.length);
-                            }}
-                        />
-                        <Button
-                            color="primary"
-                            isDisabled={!smsText.trim() || parsingFromSMS}
-                            isLoading={parsingFromSMS}
-                            onPress={parseSMSTransactions}
-                        >
-                            {parsingFromSMS ? "Parsing..." : "Parse SMS"}
-                        </Button>
-                    </div>
-                </div>
-                <div className="w-2/3 flex flex-col gap-4">
-
-                    {selectedTxn.length > 0 && (
-                        <BulkEditToolbar
-                            listCards={cardOptions}
-                            listCategories={categoryOptions}
-                            selectedCount={selectedTxn.length}
-                            onBulkUpdate={handleBulkUpdate}
-                        />
-                    )}
-
-                    <ParsedTransactionTable
-                        selectedTransactions={selectedTxn}
-                        transactions={parsedTxn}
-                        onSelectionChange={handleSelectionChange}
-                        onTransactionRemove={handleRemoveTxn}
-                        onTransactionUpdate={handleUpdateTxn}
-                    />
-
-
-                </div>
-            </div>
-
-
-            <div className="w-full flex justify-between items-center">
-                <div className="text-sm text-default-500">
-                    {hasValidTransactions
-                        ? `${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} valid transactions ready to submit`
-                        : "No valid transactions to submit"
-                    }
-                </div>
-                <Button
-                    color="success"
-                    isDisabled={!hasValidTransactions || creatingMultiple}
+            {currentStep === 2 && (
+                <ReviewEditStep
+                    allCards={allCards}
+                    cardOptions={cardOptions}
+                    categoryOptions={categoryOptions}
+                    inputMode={inputMode}
                     isLoading={creatingMultiple}
-                    onPress={handleSubmit}
-                >
-                    {creatingMultiple ? "Creating..." : `Create ${parsedTxn.filter(t => t.parsingStatus === "success" && t.amount > 0 && t.card_id > 0).length} Transactions`}
-                </Button>
-            </div>
+                    transactions={parsedTxn}
+                    onBack={() => handleUpdateStep("back")}
+                    onImport={handleImport}
+                    onSelectionChange={handleSelectionChange}
+                    onTransactionRemove={handleRemoveTxn}
+                    onTransactionUpdate={handleUpdateTxn}
+                />
+            )}
 
+            {currentStep === 3 && (
+                <SuccessConfirmationStep
+                    transactionCount={importedCount}
+                    onNewImport={handleNewImport}
+                />
+            )}
         </Container>
-
     );
 }
