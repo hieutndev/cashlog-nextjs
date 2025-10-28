@@ -5,19 +5,21 @@ import { addToast } from "@heroui/toast";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@heroui/button";
+import { Select, SelectItem } from "@heroui/select";
 
 import Container from "@/components/shared/container/container";
 import BulkEditToolbar from "@/components/transactions/bulk-edit-toolbar";
 import ParsedTransactionTable from "@/components/transactions/parsed-transaction-table";
-import { getBankLogo } from "@/configs/bank";
+import { getBankLogo, getBankOptions } from "@/configs/bank";
 import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useImportTransactionEndpoint } from "@/hooks/useImportTransactionEndpoint";
+import { useSmsImportEndpoint } from "@/hooks/useSmsImportEndpoint";
 import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import { FilterAndSortItem } from "@/types/global";
 import { TAddTransaction } from "@/types/transaction";
+import { LIST_BANKS, TBankCode } from "@/types/bank";
 
 interface ParsedTransaction extends TAddTransaction {
     originalText: string;
@@ -26,15 +28,20 @@ interface ParsedTransaction extends TAddTransaction {
 }
 
 export default function ImportTransactionsPage() {
-    const [inputText, setInputText] = useState("");
     const [parsedTxn, setParsedTxn] = useState<ParsedTransaction[]>([]);
-    const [isParsing, setIsParsing] = useState(false);
     const [selectedTxn, setSelectedTxn] = useState<number[]>([]);
     const [cardOptions, setCardOptions] = useState<FilterAndSortItem[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<TCategory[]>([]);
+
+    // SMS Import state
+    const [smsText, setSmsText] = useState("");
+    const [selectedBankCode, setSelectedBankCode] = useState<string>("VIETCOMBANK");
+    const [smsCharCount, setSmsCharCount] = useState(0);
+
     const { useGetListCards } = useCardEndpoint();
     const { useGetCategories } = useCategoryEndpoint();
     const { useCreateMultipleTransactions } = useImportTransactionEndpoint();
+    const { useParseSMS } = useSmsImportEndpoint();
 
     const {
         data: createMultipleResult,
@@ -53,254 +60,33 @@ export default function ImportTransactionsPage() {
         fetch: fetchCategories,
     } = useGetCategories();
 
-    // Detect card from transaction text by matching card names and numbers
-    const detectCardFromText = (text: string, cards: TCard[]): number => {
-        const lowerText = text.toLowerCase();
+    // SMS parsing hook
+    const {
+        data: parseSMSResult,
+        loading: parsingFromSMS,
+        error: parseSMSError,
+        fetch: parseSMS,
+    } = useParseSMS({ smsText, bankCode: selectedBankCode as any });
 
-        // Try to match card names (exact or partial match)
-        for (const card of cards) {
-            const cardNameLower = card.card_name.toLowerCase();
 
-            // Check for exact card name match
-            if (lowerText.includes(cardNameLower)) {
-                return card.card_id;
-            }
 
-            // Check for partial match (first few words of card name)
-            const cardNameWords = cardNameLower.split(/\s+/);
 
-            if (cardNameWords.length > 0 && lowerText.includes(cardNameWords[0])) {
-                return card.card_id;
-            }
+
+    const parseSMSTransactions = () => {
+        if (!smsText.trim()) {
+            addToast({
+                color: "warning",
+                title: "Empty SMS",
+                description: "Please enter SMS text to parse",
+            });
+
+            return;
         }
 
-        // Try to match card numbers (last 4 digits)
-        const cardNumberMatch = text.match(/(\d{4})/);
-
-        if (cardNumberMatch) {
-            const lastFourDigits = cardNumberMatch[1];
-
-            for (const card of cards) {
-                if (card.card_number.endsWith(lastFourDigits)) {
-                    return card.card_id;
-                }
-            }
-        }
-
-        // Try to match full card numbers
-        const fullCardNumberMatch = text.match(/(\d{13,19})/);
-
-        if (fullCardNumberMatch) {
-            const cardNumber = fullCardNumberMatch[1];
-
-            for (const card of cards) {
-                if (card.card_number === cardNumber) {
-                    return card.card_id;
-                }
-            }
-        }
-
-        return 0; // No card detected
+        parseSMS();
     };
 
-    const parseTransactions = async () => {
-        if (!bankNotificationTexts.trim()) return;
 
-        setIsParsing(true);
-        const lines = bankNotificationTexts.split('\n').filter(line => line.trim());
-
-        const transactions: ParsedTransaction[] = lines.map(line => ({
-            originalText: line.trim(),
-            card_id: 0, // Will be set by user or auto-detected
-            direction: "out", // Default to out, will be detected
-            category_id: null,
-            date: new Date().toISOString(),
-            amount: 0,
-            description: "",
-            parsingStatus: "pending" as const,
-        }));
-
-        setParsedTxn(transactions);
-
-        // Parse each transaction
-        for (let i = 0; i < transactions.length; i++) {
-            try {
-                const parsed = await parseTransactionText(transactions[i].originalText);
-
-                // Auto-detect card from text
-                const detectedCardId = detectCardFromText(transactions[i].originalText, fetchCardsResult?.results ?? []);
-
-                setParsedTxn(prev =>
-                    prev.map((t, index) =>
-                        index === i
-                            ? {
-                                ...t,
-                                ...parsed,
-                                card_id: detectedCardId || parsed.card_id || 0,
-                                parsingStatus: "success" as const
-                              }
-                            : t
-                    )
-                );
-            } catch {
-                setParsedTxn(prev =>
-                    prev.map((t, index) =>
-                        index === i
-                            ? { ...t, parsingStatus: "error" as const, errorMessage: "Failed to parse transaction" }
-                            : t
-                    )
-                );
-            }
-        }
-
-        setIsParsing(false);
-    };
-
-    const bankNotificationTexts = useDebounce(inputText, 500);
-
-    useEffect(() => {
-        // parseTransactions();
-    }, [bankNotificationTexts]);
-
-    useEffect(() => {
-        const handlePasteAnywhere = (event: ClipboardEvent) => {
-            const text = event.clipboardData?.getData('text');
-
-            if (text) {
-                const modifiedText = text.replace(/\n/g, ' ');
-
-                setInputText((prev) => prev + modifiedText + '\n');
-                event.preventDefault();
-            }
-        };
-
-        window.addEventListener('paste', handlePasteAnywhere);
-
-        return () => {
-            window.removeEventListener('paste', handlePasteAnywhere);
-        };
-    }, []);
-
-    const parseAmount = (amountStr: string): number => {
-        let cleanStr = amountStr.replace(/,/g, '').replace(/\s/g, '').toUpperCase();
-        const multipliers: { [key: string]: number } = {
-            'K': 1000,
-            'M': 1000000,
-            'B': 1000000000,
-            'T': 1000000000000,
-        };
-
-        for (const [suffix, multiplier] of Object.entries(multipliers)) {
-            if (cleanStr.includes(suffix)) {
-                const parts = cleanStr.split(suffix);
-                const beforeSuffix = parseFloat(parts[0]) || 0;
-                const afterSuffix = parseFloat(parts[1]) || 0;
-
-                return Math.round(beforeSuffix * multiplier + afterSuffix);
-            }
-        }
-
-        // No suffix, just parse as number
-        return parseInt(cleanStr) || 0;
-    };
-
-    // Parse date from text (supports formats like DD/MM, DD/MM/YYYY, DD-MM-YYYY)
-    const parseDate = (text: string): string => {
-        const currentYear = new Date().getFullYear();
-
-        // Pattern: DD/MM/YYYY or DD-MM-YYYY
-        const fullDateMatch = text.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-
-        if (fullDateMatch) {
-            const [, day, month, year] = fullDateMatch;
-
-            return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`).toISOString();
-        }
-
-        // Pattern: DD/MM or DD-MM (assume current year)
-        const shortDateMatch = text.match(/(\d{1,2})[\/\-](\d{1,2})/);
-
-        if (shortDateMatch) {
-            const [, day, month] = shortDateMatch;
-
-            return new Date(`${currentYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`).toISOString();
-        }
-
-        // Default to current date
-        return new Date().toISOString();
-    };
-
-    // Simple regex-based parsing for common bank patterns
-    const parseTransactionText = async (text: string): Promise<Partial<TAddTransaction>> => {
-        // Common Vietnamese bank notification patterns
-        const patterns = [
-            // Pattern: "TK 1234: -500,000VND luc 10:30 15/10. SD: 1,500,000VND"
-            {
-                regex: /TK\s*\d+:\s*([+-]?)([\d,\.]+[KkMmTt]?)\s*VND.*?(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{4})?)/i,
-                handler: (match: RegExpMatchArray) => ({
-                    amount: parseAmount(match[2]),
-                    direction: (match[1] === '+' ? "in" : "out") as "in" | "out",
-                    description: `Transaction from ${text.substring(0, 50)}...`,
-                    date: parseDate(match[3]),
-                })
-            },
-            // Pattern: "Chuyen khoan den: 500,000VND" or "Chuyen khoan den: 50k"
-            {
-                regex: /Chuyen khoan den:\s*([\d,\.]+[KkMmTt]?)\s*VND/i,
-                handler: (match: RegExpMatchArray) => ({
-                    amount: parseAmount(match[1]),
-                    direction: "out" as "in" | "out",
-                    description: "Chuyển khoản đi",
-                    date: parseDate(text),
-                })
-            },
-            // Pattern: "Nhan chuyen khoan: 1,000,000VND" or "Nhan chuyen khoan: 1M"
-            {
-                regex: /Nhan chuyen khoan:\s*([\d,\.]+[KkMmTt]?)\s*VND/i,
-                handler: (match: RegExpMatchArray) => ({
-                    amount: parseAmount(match[1]),
-                    direction: "in" as "in" | "out",
-                    description: "Nhận chuyển khoản",
-                    date: parseDate(text),
-                })
-            },
-            // Pattern: Simple amount detection with VND
-            {
-                regex: /([+-]?)([\d,\.]+[KkMmTt]?)\s*VND/i,
-                handler: (match: RegExpMatchArray) => ({
-                    amount: parseAmount(match[2]),
-                    direction: (match[1] === '+' ? "in" : "out") as "in" | "out",
-                    description: text.substring(0, 100),
-                    date: parseDate(text),
-                })
-            },
-            // Pattern: Simple amount detection without VND
-            {
-                regex: /([+-]?)([\d,\.]+[KkMmTt]?)/i,
-                handler: (match: RegExpMatchArray) => ({
-                    amount: parseAmount(match[2]),
-                    direction: (match[1] === '+' ? "in" : "out") as "in" | "out",
-                    description: text.substring(0, 100),
-                    date: parseDate(text),
-                })
-            }
-        ];
-
-        for (const pattern of patterns) {
-            const match = text.match(pattern.regex);
-
-            if (match) {
-                return pattern.handler(match);
-            }
-        }
-
-        return {
-            amount: 0,
-            direction: "out" as "in" | "out",
-            description: text.substring(0, 100),
-            date: new Date().toISOString(),
-        };
-    };
 
     const handleUpdateTxn = (index: number, updates: Partial<TAddTransaction>) => {
         setParsedTxn(prev =>
@@ -379,6 +165,41 @@ export default function ImportTransactionsPage() {
     }, [fetchCategoriesResult]);
 
     useEffect(() => {
+        if (parseSMSResult?.results) {
+            const smsTransactions = parseSMSResult.results.transactions.map((smsT) => ({
+                originalText: smsT.rawSMS,
+                card_id: 0,
+                direction: smsT.type,
+                category_id: null,
+                date: smsT.date,
+                amount: smsT.amount,
+                description: smsT.description,
+                parsingStatus: smsT.status as "success" | "error" | "pending",
+                errorMessage: smsT.errorMessage,
+            }));
+
+            setParsedTxn(smsTransactions);
+            setSmsText("");
+            addToast({
+                color: "success",
+                title: "SMS Parsed",
+                description: `Successfully parsed ${parseSMSResult.results.summary.successful} transactions`,
+            });
+        }
+
+
+        if (parseSMSError) {
+            const parseError = JSON.parse(parseSMSError);
+
+            addToast({
+                color: "danger",
+                title: "Error",
+                description: parseError.message || "Failed to parse SMS",
+            });
+        }
+    }, [parseSMSResult, parseSMSError]);
+
+    useEffect(() => {
         if (createMultipleResult) {
             addToast({
                 color: "success",
@@ -386,9 +207,9 @@ export default function ImportTransactionsPage() {
                 description: createMultipleResult.message,
             });
 
-            setInputText("");
             setParsedTxn([]);
             setSelectedTxn([]);
+            setSmsText("");
         }
 
         if (createMultipleError) {
@@ -403,7 +224,6 @@ export default function ImportTransactionsPage() {
     }, [createMultipleResult, createMultipleError]);
 
     useEffect(() => {
-        setInputText("");
         setParsedTxn([]);
         setSelectedTxn([]);
     }, []);
@@ -422,28 +242,77 @@ export default function ImportTransactionsPage() {
                 <div className="w-1/3 flex flex-col gap-4 border-r pr-4">
                     <Alert
                         color="primary"
-                        description={inputText.length > 0 ?
+                        description={smsText.length > 0 ?
                             "Review and edit the parsed transactions below before submitting."
-                            : "Try pasting your bank notification texts and see how we parse them automatically."}
+                            : "Paste SMS messages from your bank and we'll parse them automatically."}
                         title={`Found ${parsedTxn.length} transactions`}
                     />
+
                     <div className="w-full flex flex-col gap-2">
-                        <Textarea
-                            label="Bank Notification Texts"
+                        <Select
+                            label="Select Bank"
                             labelPlacement="outside"
-                            minRows={6}
-                            placeholder={'Paste bank notification texts here. Example: TK 1234: -500,000VND luc 10:30 15/10'}
-                            value={inputText}
+                            placeholder="Choose a bank"
+                            renderValue={(items) => {
+                                return (<div className="flex items-center gap-2">
+                                    {items.map((item) => (
+                                        <div
+                                            key={item.key}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <Image
+                                                alt={`card ${item.key} bank logo`}
+                                                className={"w-4"}
+                                                height={1200}
+                                                src={getBankLogo(item.key as TBankCode, 1)}
+                                                width={1200}
+                                            />
+                                            {item.rendered}
+                                        </div>
+                                    ))}
+                                </div>)
+                            }}
+                            selectedKeys={[selectedBankCode]}
                             variant="bordered"
-                            onValueChange={setInputText}
+                            onChange={(e) => setSelectedBankCode(e.target.value)}
+                        >
+                            {LIST_BANKS.map((bank) => (
+                                <SelectItem key={bank}
+                                    startContent={
+                                        <Image
+                                            alt={`card ${bank} bank logo`}
+                                            className={"w-4"}
+                                            height={1200}
+                                            src={getBankLogo(bank, 1)}
+                                            width={1200}
+                                        />
+                                    }
+                                >
+                                    {getBankOptions.find(o => o.key === bank)?.value || bank}
+                                </SelectItem>
+                            ))}
+                        </Select>
+                        <Textarea
+                            description={`${smsCharCount} characters`}
+                            label="SMS Messages"
+                            labelPlacement="outside"
+                            maxRows={20}
+                            minRows={6}
+                            placeholder="Paste SMS messages from your bank here. One message per line."
+                            value={smsText}
+                            variant="bordered"
+                            onValueChange={(value) => {
+                                setSmsText(value);
+                                setSmsCharCount(value.length);
+                            }}
                         />
                         <Button
                             color="primary"
-                            isDisabled={!inputText.trim() || isParsing}
-                            isLoading={isParsing}
-                            onPress={parseTransactions}
+                            isDisabled={!smsText.trim() || parsingFromSMS}
+                            isLoading={parsingFromSMS}
+                            onPress={parseSMSTransactions}
                         >
-                            {isParsing ? "Parsing..." : "Parse Transactions"}
+                            {parsingFromSMS ? "Parsing..." : "Parse SMS"}
                         </Button>
                     </div>
                 </div>

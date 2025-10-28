@@ -13,7 +13,7 @@ import { useFetch } from "hieutndev-toolkit";
 import CustomForm from "@/components/shared/form/custom-form";
 import BankCard from "@/components/shared/bank-card/bank-card";
 import { IAPIResponse, LIST_COLORS, TColor } from "@/types/global";
-import { ListBankCode } from "@/configs/bank";
+import { getBankOptions } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import { getFieldError } from "@/utils/get-field-error";
 import { TCard, TAddNewCard, TUpdateCard } from "@/types/card";
@@ -271,7 +271,7 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 										onChangeValue("bank_code", e.target.value as TBankCode)
 									}
 								>
-									{ListBankCode.map((bank) => (
+									{getBankOptions.map((bank) => (
 										<SelectItem key={bank.key}>{bank.value}</SelectItem>
 									))}
 								</Select>

@@ -10,10 +10,8 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { parseDate } from '@internationalized/date';
 import moment from "moment";
 
-import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import { TAddTransaction } from "@/types/transaction";
-import { TCard } from "@/types/card";
 import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { SITE_CONFIG } from "@/configs/site-config";
@@ -35,7 +33,7 @@ interface ParsedTransactionTableProps {
 
 interface EditingCell {
   rowIndex: number;
-  field: "card_id" | "amount" | "date" | "category_id" | null;
+  field: "amount" | "date" | "category_id" | null;
 }
 
 export default function ParsedTransactionTable({
@@ -45,17 +43,10 @@ export default function ParsedTransactionTable({
   selectedTransactions,
   onSelectionChange,
 }: ParsedTransactionTableProps) {
-  const [listCard, setListCard] = useState<TCard[]>([]);
   const [listCategories, setListCategories] = useState<TCategory[]>([]);
   const [editingCell, setEditingCell] = useState<EditingCell>({ rowIndex: -1, field: null });
-  const { useGetListCards } = useCardEndpoint();
-  const { useGetCategories } = useCategoryEndpoint();
 
-  // Fetch cards
-  const {
-    data: fetchCardsResult,
-    fetch: fetchCards,
-  } = useGetListCards();
+  const { useGetCategories } = useCategoryEndpoint();
 
   // Fetch categories
   const {
@@ -64,15 +55,9 @@ export default function ParsedTransactionTable({
   } = useGetCategories();
 
   useEffect(() => {
-    fetchCards();
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    if (fetchCardsResult) {
-      setListCard(fetchCardsResult.results ?? []);
-    }
-  }, [fetchCardsResult]);
 
   useEffect(() => {
     if (fetchCategoriesResult) {
@@ -91,13 +76,6 @@ export default function ParsedTransactionTable({
   // Format amount with currency
   const formatAmount = (amount: number) => {
     return `${amount.toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`;
-  };
-
-  // Get card name by ID
-  const getCardName = (cardId: number) => {
-    const card = listCard.find(c => c.card_id === cardId);
-
-    return card?.card_name || "Select card";
   };
 
   // Get category name by ID
@@ -126,7 +104,7 @@ export default function ParsedTransactionTable({
     return editingCell.rowIndex === rowIndex && editingCell.field === field;
   };
 
-  const startEditing = (rowIndex: number, field: "card_id" | "amount" | "date" | "category_id") => {
+  const startEditing = (rowIndex: number, field: "amount" | "date" | "category_id") => {
     setEditingCell({ rowIndex, field });
   };
 
@@ -136,7 +114,6 @@ export default function ParsedTransactionTable({
 
   const columns = [
     { key: "checkbox", label: "" },
-    { key: "card", label: "Card" },
     { key: "amount", label: "Amount" },
     { key: "date", label: "Date" },
     { key: "category", label: "Category" },
@@ -163,12 +140,12 @@ export default function ParsedTransactionTable({
         </div>
       )}
 
-      <div className="border border-default-200 rounded-lg overflow-hidden">
+      <div className="">
         <Table
           isHeaderSticky
-          removeWrapper
+          // shadow="none"
           aria-label="Parsed transactions table"
-          className="max-h-96 overflow-auto"
+          className="max-h-96"
         >
           <TableHeader columns={columns}>
             {(column) => (
@@ -194,238 +171,188 @@ export default function ParsedTransactionTable({
 
               return (
                 <TableRow key={`row-${rowIndex}`}>
-                {(columnKey) => {
-                  switch (columnKey) {
-                    case "checkbox":
-                      return (
-                        <TableCell>
-                          <Checkbox
-                            isSelected={selectedTransactions.includes(rowIndex)}
-                            onValueChange={(isSelected) => handleSelectionChange(rowIndex, isSelected)}
-                          />
-                        </TableCell>
-                      );
-
-                    case "card":
-                      return (
-                        <TableCell>
-                          {isEditing(rowIndex, "card_id") ? (
-                            <Select
-                              className="w-40"
-                              items={listCard}
-                              placeholder="Select card"
-                              selectedKeys={[transaction.card_id?.toString() ?? "0"]}
-                              size="sm"
-                              variant="bordered"
-                              onBlur={stopEditing}
-                              onClick={(e) => e.stopPropagation()}
-                              onSelectionChange={(keys) => {
-                                const key = Array.from(keys)[0] as string;
-
-                                onTransactionUpdate(rowIndex, { card_id: parseInt(key) || 0 });
-                                stopEditing();
-                              }}
-                            >
-                              {(card) => (
-                                <SelectItem key={card.card_id.toString()} textValue={card.card_name}>
-                                  {card.card_name}
-                                </SelectItem>
-                              )}
-                            </Select>
-                          ) : (
-                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-                            <div
-                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
-                              onBlur={() => {}}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEditing(rowIndex, "card_id");
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  startEditing(rowIndex, "card_id");
-                                }
-                              }}
-                              role="button"
-                              tabIndex={0}
-                            >
-                              {getCardName(transaction.card_id)}
-                            </div>
-                          )}
-                        </TableCell>
-                      );
-
-                    case "amount":
-                      return (
-                        <TableCell>
-                          {isEditing(rowIndex, "amount") ? (
-                            <Input
-                              className="w-32"
-                              endContent={SITE_CONFIG.CURRENCY_STRING}
-                              placeholder="0"
-                              size="sm"
-                              type="number"
-                              value={transaction.amount?.toString() ?? "0"}
-                              variant="bordered"
-                              onBlur={stopEditing}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") stopEditing();
-                                if (e.key === "Escape") stopEditing();
-                              }}
-                              onValueChange={(e) =>
-                                onTransactionUpdate(rowIndex, { amount: parseInt(e) || 0 })
-                              }
+                  {(columnKey) => {
+                    switch (columnKey) {
+                      case "checkbox":
+                        return (
+                          <TableCell>
+                            <Checkbox
+                              isSelected={selectedTransactions.includes(rowIndex)}
+                              onValueChange={(isSelected) => handleSelectionChange(rowIndex, isSelected)}
                             />
-                          ) : (
-                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
-                            <div
-                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
-                              role="button"
-                              tabIndex={0}
-                              onBlur={() => {}}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEditing(rowIndex, "amount");
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
+                          </TableCell>
+                        );
+
+                      case "amount":
+                        return (
+                          <TableCell>
+                            {isEditing(rowIndex, "amount") ? (
+                              <Input
+                                className="w-32"
+                                endContent={SITE_CONFIG.CURRENCY_STRING}
+                                placeholder="0"
+                                size="sm"
+                                type="number"
+                                value={transaction.amount?.toString() ?? "0"}
+                                variant="bordered"
+                                onBlur={stopEditing}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") stopEditing();
+                                  if (e.key === "Escape") stopEditing();
+                                }}
+                                onValueChange={(e) =>
+                                  onTransactionUpdate(rowIndex, { amount: parseInt(e) || 0 })
+                                }
+                              />
+                            ) : (
+                              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
+                              <div
+                                className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                                role="button"
+                                tabIndex={0}
+                                onBlur={() => { }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   startEditing(rowIndex, "amount");
-                                }
-                              }}
-                            >
-                              {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
-                            </div>
-                          )}
-                        </TableCell>
-                      );
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    startEditing(rowIndex, "amount");
+                                  }
+                                }}
+                              >
+                                {transaction.direction === "in" ? "+ " : "- "}{formatAmount(transaction.amount)}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
 
-                    case "date":
-                      return (
-                        <TableCell>
-                          {isEditing(rowIndex, "date") ? (
-                            <DatePicker
-                              aria-label="Date"
-                              className="w-40"
-                              hideTimeZone
-                              showMonthAndYearPickers
-                              size="sm"
-                              value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
-                              variant="bordered"
-                              onChange={(date) => {
-                                onTransactionUpdate(rowIndex, {
-                                  date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
-                                });
-                                stopEditing();
-                              }}
-                            />
-                          ) : (
-                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
-                            <div
-                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
-                              role="button"
-                              tabIndex={0}
-                              onBlur={() => {}}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEditing(rowIndex, "date");
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
+                      case "date":
+                        return (
+                          <TableCell>
+                            {isEditing(rowIndex, "date") ? (
+                              <DatePicker
+                                hideTimeZone
+                                showMonthAndYearPickers
+                                aria-label="Date"
+                                className="w-40"
+                                size="sm"
+                                value={parseDate(moment(transaction.date).format("YYYY-MM-DD"))}
+                                variant="bordered"
+                                onChange={(date) => {
+                                  onTransactionUpdate(rowIndex, {
+                                    date: new Date(date?.toString()!).toISOString() || new Date().toISOString()
+                                  });
+                                  stopEditing();
+                                }}
+                              />
+                            ) : (
+                              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props
+                              <div
+                                className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                                role="button"
+                                tabIndex={0}
+                                onBlur={() => { }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   startEditing(rowIndex, "date");
-                                }
-                              }}
-                            >
-                              {moment(transaction.date).format("DD/MM/YYYY")}
-                            </div>
-                          )}
-                        </TableCell>
-                      );
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    startEditing(rowIndex, "date");
+                                  }
+                                }}
+                              >
+                                {moment(transaction.date).format("DD/MM/YYYY")}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
 
-                    case "category": {
-                      const categoryOptions = [
-                        { category_id: -1, category_name: "No category" },
-                        ...listCategories
-                      ];
+                      case "category": {
+                        const categoryOptions = [
+                          { category_id: -1, category_name: "No category" },
+                          ...listCategories
+                        ];
 
-                      return (
-                        <TableCell>
-                          {isEditing(rowIndex, "category_id") ? (
-                            <Select
-                              className="w-40"
-                              items={categoryOptions}
-                              placeholder="Select category"
-                              selectedKeys={[transaction.category_id?.toString() ?? "-1"]}
-                              size="sm"
-                              variant="bordered"
-                              onBlur={stopEditing}
-                              onClick={(e) => e.stopPropagation()}
-                              onSelectionChange={(keys) => {
-                                const key = Array.from(keys)[0] as string;
+                        return (
+                          <TableCell>
+                            {isEditing(rowIndex, "category_id") ? (
+                              <Select
+                                className="w-40"
+                                items={categoryOptions}
+                                placeholder="Select category"
+                                selectedKeys={[transaction.category_id?.toString() ?? "-1"]}
+                                size="sm"
+                                variant="bordered"
+                                onBlur={stopEditing}
+                                onClick={(e) => e.stopPropagation()}
+                                onSelectionChange={(keys) => {
+                                  const key = Array.from(keys)[0] as string;
 
-                                onTransactionUpdate(rowIndex, {
-                                  category_id: key === "-1" ? null : parseInt(key)
-                                });
-                                stopEditing();
-                              }}
-                            >
-                              {(category) => (
-                                <SelectItem
-                                  key={category.category_id.toString()}
-                                  textValue={category.category_name}
-                                >
-                                  {category.category_name}
-                                </SelectItem>
-                              )}
-                            </Select>
-                          ) : (
-                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props, react/jsx-no-comment-textnodes
-                            <div
-                              className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
-                              role="button"
-                              tabIndex={0}
-                              onBlur={() => {}}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEditing(rowIndex, "category_id");
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
+                                  onTransactionUpdate(rowIndex, {
+                                    category_id: key === "-1" ? null : parseInt(key)
+                                  });
+                                  stopEditing();
+                                }}
+                              >
+                                {(category) => (
+                                  <SelectItem
+                                    key={category.category_id.toString()}
+                                    textValue={category.category_name}
+                                  >
+                                    {category.category_name}
+                                  </SelectItem>
+                                )}
+                              </Select>
+                            ) : (
+                              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, react/jsx-sort-props, react/jsx-no-comment-textnodes
+                              <div
+                                className="cursor-pointer px-2 py-1 rounded hover:bg-default-100 transition-colors"
+                                role="button"
+                                tabIndex={0}
+                                onBlur={() => { }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   startEditing(rowIndex, "category_id");
-                                }
-                              }}
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    startEditing(rowIndex, "category_id");
+                                  }
+                                }}
+                              >
+                                {getCategoryName(transaction.category_id)}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
+                      }
+
+                      case "actions":
+                        return (
+                          <TableCell>
+                            <Button
+                              isIconOnly
+                              color="danger"
+                              size="sm"
+                              variant="flat"
+                              onPress={() => onTransactionRemove(rowIndex)}
                             >
-                              {getCategoryName(transaction.category_id)}
-                            </div>
-                          )}
-                        </TableCell>
-                      );
+                              {ICONS.TRASH.SM}
+                            </Button>
+                          </TableCell>
+                        );
+
+                      default:
+                        return <TableCell>-</TableCell>;
                     }
-
-                    case "actions":
-                      return (
-                        <TableCell>
-                          <Button
-                            isIconOnly
-                            color="danger"
-                            size="sm"
-                            variant="flat"
-                            onPress={() => onTransactionRemove(rowIndex)}
-                          >
-                            {ICONS.TRASH.SM}
-                          </Button>
-                        </TableCell>
-                      );
-
-                    default:
-                      return <TableCell>-</TableCell>;
-                  }
-                }}
-              </TableRow>
-            );
+                  }}
+                </TableRow>
+              );
             }}
           </TableBody>
         </Table>
