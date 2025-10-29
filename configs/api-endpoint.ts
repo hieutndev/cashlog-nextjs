@@ -15,6 +15,8 @@ export const API_ENDPOINT = {
         BASE: '/transactions',
         BY_ID: (transactionId: string) => `/transactions/${transactionId}`,
         BY_QUERY: (transactionId: string) => `/transactions?transaction_id=${transactionId}`,
+        CREATES: '/transactions/creates',
+        OPENAI: '/transactions/openai',
     },
     CATEGORIES: {
         BASE: '/categories',
@@ -22,6 +24,10 @@ export const API_ENDPOINT = {
     USERS: {
         SIGN_UP: '/users/sign-up',
         SIGN_IN: '/users/sign-in',
+    },
+    ANALYTICS: {
+        TOTAL_ASSET: '/analytics/total-asset',
+        CATEGORY_VOLUME: '/analytics/category-volume',
     },
     RECURRINGS: {
         BASE: '/recurrings',

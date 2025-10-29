@@ -2,7 +2,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 import moment from "moment";
 
-import { REQUIRED_HEADERS, TCrudTransaction, TTransaction } from "@/types/transaction";
+import { REQUIRED_HEADERS, TAddTransaction, TTransaction } from "@/types/transaction";
 import { dbQuery } from "@/libs/mysql";
 import { QUERY_STRING } from "@/configs/query-string";
 import { formatMYSQLDate } from "@/utils/text-transform";
@@ -33,7 +33,7 @@ export const addMultipleTransactionsPayload = z.object({
 });
 
 export const addNewTransaction = async (
-	{ card_id, direction, amount, date, description, category_id }: TCrudTransaction,
+	{ card_id, direction, amount, date, description, category_id }: TAddTransaction,
 	user_id: TUser["user_id"]
 ) => {
 
@@ -54,7 +54,7 @@ export const addNewTransaction = async (
 
 };
 
-export const createMultipleTransaction = async (list_transactions: TCrudTransaction[], user_id: TUser["user_id"]) => {
+export const createMultipleTransaction = async (list_transactions: TAddTransaction[], user_id: TUser["user_id"]) => {
 	let success_count = 0;
 	const errors: any[] = [];
 
@@ -306,7 +306,7 @@ export const deleteTransaction = async (transactionId: TTransaction["transaction
 
 export const updateTransaction = async (
 	transaction_id: TTransaction["transaction_id"],
-	{ date, description, category_id, card_id, direction, amount }: TCrudTransaction,
+	{ date, description, category_id, card_id, direction, amount }: TAddTransaction,
 	user_id: TUser["user_id"]
 ) => {
 

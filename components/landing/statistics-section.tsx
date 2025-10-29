@@ -2,12 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useFetch } from "hieutndev-toolkit";
 
 import LandingSectionHeader from "./landing-section-header";
 
-import { API_ENDPOINT } from "@/configs/api-endpoint";
-import { IAPIResponse } from "@/types/global";
+import { useLandingEndpoint } from "@/hooks/useLandingEndpoint";
 
 interface StatisticCardProps {
 	title: string;
@@ -70,17 +68,18 @@ function StatisticCard({ title, value, suffix = "", icon }: StatisticCardProps) 
 
 export default function StatisticsSection() {
 	const [stats, setStats] = useState({ total_users: 0, total_cards: 0, total_transactions: 0, total_recurrings: 0 });
+	const { useGetStatistics } = useLandingEndpoint();
 
-	const { data, loading, error } = useFetch<IAPIResponse<{
-		total_users: number;
-		total_cards: number;
-		total_transactions: number;
-		total_recurrings: number;
-	}>>(API_ENDPOINT.LANDING_PAGE.BASE)
+	const { data, loading, error } = useGetStatistics();
 
 	useEffect(() => {
 		if (data && data.results) {
-			setStats(data.results);
+			setStats({
+				total_users: data.results.total_users,
+				total_cards: data.results.total_cards,
+				total_transactions: data.results.total_transactions,
+				total_recurrings: 0 // Default value since API doesn't return this
+			});
 		}
 	}, [data, error]);
 

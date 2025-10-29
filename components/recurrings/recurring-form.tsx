@@ -2,7 +2,6 @@
 
 import type { ZodCustomError } from "@/types/zod";
 import type { TCard } from "@/types/card";
-import type { IAPIResponse } from "@/types/global";
 import type { TCategory } from "@/types/category";
 import type { TFrequencyType, TRecurringDirection, TFrequencyConfig, TAdjustmentType, TRecurringResponse, TRecurringForm } from "@/types/recurring";
 
@@ -17,10 +16,12 @@ import { Chip } from "@heroui/chip";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { DatePicker } from "@heroui/date-picker";
 import clsx from "clsx";
-import { useFetch } from "hieutndev-toolkit";
 import { Textarea } from "@heroui/input";
 import { CheckboxGroup, Checkbox } from "@heroui/checkbox";
 
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
+import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
+import { useRecurringFormEndpoint } from "@/hooks/useRecurringFormEndpoint";
 import CustomForm from "@/components/shared/form/custom-form";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
@@ -191,6 +192,9 @@ export default function RecurringForm({ mode, initialData, onSuccess, recurringI
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [listCard, setListCard] = useState<TCard[]>([]);
 	const [listCategories, setListCategories] = useState<TCategory[]>([]);
+	const { useGetListCards } = useCardEndpoint();
+	const { useGetCategories } = useCategoryEndpoint();
+	const { useCreateRecurring, useUpdateRecurring } = useRecurringFormEndpoint();
 
 	const [formData, setFormData] = useState<TRecurringForm>({
 		recurring_name: "",
@@ -211,25 +215,21 @@ export default function RecurringForm({ mode, initialData, onSuccess, recurringI
 		data: fetchCardsResult,
 		// loading: loadingCards,
 		error: errorCards,
-	} = useFetch<IAPIResponse<TCard[]>>("/cards");
+	} = useGetListCards();
 
 	const {
 		data: fetchCategoriesResult,
 		error: errorCategories,
-	} = useFetch<IAPIResponse<TCategory[]>>("/categories");
+	} = useGetCategories();
 
-	const apiEndpoint = mode === "create" ? "/recurrings" : `/recurrings/${recurringId}`;
-	const apiMethod = mode === "create" ? "POST" : "PUT";
+	const createHook = useCreateRecurring(formData);
+	const updateHook = useUpdateRecurring(recurringId ?? "", formData);
 
 	const {
 		data: submitResult,
 		error: submitError,
 		fetch: submitForm,
-	} = useFetch<IAPIResponse>(apiEndpoint, {
-		method: apiMethod,
-		body: formData,
-		skip: true,
-	});
+	} = mode === "create" ? createHook : updateHook;
 
 	const handleSubmit = async () => {
 		await submitForm();

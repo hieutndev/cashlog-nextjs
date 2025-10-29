@@ -8,8 +8,8 @@ export const QUERY_STRING = {
 	GET_CARD_INFO_BY_NAME: `SELECT *
                     FROM cards
                     WHERE card_name = ? AND user_id = ?;`,
-	CREATE_NEW_CARD: `INSERT INTO cards(card_name, card_balance, card_color, bank_code, user_id)
-                      VALUES (?, ?, ?, ?, ?);`,
+	ADD_NEW_CARD: `INSERT INTO cards(card_name, card_balance, card_color, bank_code, card_number, user_id)
+                      VALUES (?, ?, ?, ?, ?, ?);`,
 	DELETE_CARD: `
         DELETE
         FROM cards
@@ -17,7 +17,8 @@ export const QUERY_STRING = {
 	UPDATE_CARD_INFO: `UPDATE cards
                        SET card_name  = ?,
                            card_color = ?,
-                           bank_code  = ?
+                           bank_code  = ?,
+                           card_number = ?
                        WHERE card_id = ?;`,
 	GET_TOTAL_BALANCE_OF_USER: `select sum(card_balance) as total_balance
                                 from cards
@@ -159,8 +160,10 @@ export const QUERY_STRING = {
                                     ORDER BY total DESC`,
 
 	// Optimized analytics queries for better performance
+	// All queries exclude initial balance transactions (description = 'Auto-generated when creating a new card')
+	// to prevent double-counting since initial balances are already reflected in card_balance field
 	GET_DAILY_ANALYTICS_BY_USER_ID: `
-		SELECT 
+		SELECT
 			DATE(tn.date) as date,
 			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
 			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
@@ -169,12 +172,13 @@ export const QUERY_STRING = {
 		WHERE c.user_id = ?
 			AND tn.date >= ?
 			AND tn.date <= ?
+			AND tn.description != 'Auto-generated when creating a new card'
 		GROUP BY DATE(tn.date)
 		ORDER BY DATE(tn.date)
 	`,
 
 	GET_WEEKLY_ANALYTICS_BY_USER_ID: `
-		SELECT 
+		SELECT
 			YEARWEEK(tn.date, 1) as week,
 			YEAR(tn.date) as year,
 			WEEK(tn.date, 1) as week_number,
@@ -185,12 +189,13 @@ export const QUERY_STRING = {
 		WHERE c.user_id = ?
 			AND tn.date >= ?
 			AND tn.date <= ?
+			AND tn.description != 'Auto-generated when creating a new card'
 		GROUP BY YEARWEEK(tn.date, 1), YEAR(tn.date), WEEK(tn.date, 1)
 		ORDER BY YEARWEEK(tn.date, 1)
 	`,
 
 	GET_MONTHLY_ANALYTICS_BY_USER_ID: `
-		SELECT 
+		SELECT
 			YEAR(tn.date) as year,
 			MONTH(tn.date) as month,
 			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
@@ -200,12 +205,13 @@ export const QUERY_STRING = {
 		WHERE c.user_id = ?
 			AND tn.date >= ?
 			AND tn.date <= ?
+			AND tn.description != 'Auto-generated when creating a new card'
 		GROUP BY YEAR(tn.date), MONTH(tn.date)
 		ORDER BY YEAR(tn.date), MONTH(tn.date)
 	`,
 
 	GET_YEARLY_ANALYTICS_BY_USER_ID: `
-		SELECT 
+		SELECT
 			YEAR(tn.date) as year,
 			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
 			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
@@ -214,12 +220,13 @@ export const QUERY_STRING = {
 		WHERE c.user_id = ?
 			AND tn.date >= ?
 			AND tn.date <= ?
+			AND tn.description != 'Auto-generated when creating a new card'
 		GROUP BY YEAR(tn.date)
 		ORDER BY YEAR(tn.date)
 	`,
 
 	GET_PERIOD_TOTALS_BY_USER_ID: `
-		SELECT 
+		SELECT
 			SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as total_income,
 			SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as total_expense
 		FROM transactions_new tn
@@ -227,6 +234,7 @@ export const QUERY_STRING = {
 		WHERE c.user_id = ?
 			AND tn.date >= ?
 			AND tn.date <= ?
+			AND tn.description != 'Auto-generated when creating a new card'
 	`,
 
 	GET_RECURRINGS_DETAILS: `SELECT 
@@ -493,5 +501,10 @@ WHERE
 FROM
   recurring_instances
 WHERE
-  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ? AND card_id = ?)`
+  recurring_id IN (SELECT recurring_id FROM recurrings WHERE user_id = ? AND card_id = ?)`,
+	GET_TOTAL_INITIAL_BALANCE_BY_USER: `SELECT SUM(tn.amount) as initial_total_assets
+            FROM transactions_new tn
+            JOIN cards c ON tn.card_id = c.card_id
+            WHERE c.user_id = ?
+                AND tn.description = 'Auto-generated when creating a new card'`,
 };

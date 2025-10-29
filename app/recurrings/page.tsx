@@ -7,17 +7,17 @@ import clsx from "clsx";
 import moment from "moment";
 import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
-import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 import { useDisclosure } from "@heroui/modal";
 
-import { IAPIResponse } from "@/types/global";
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
+import { useRecurringEndpoint } from "@/hooks/useRecurringEndpoint";
 import { TCard } from "@/types/card";
 import ICONS from "@/configs/icons";
 import { BREAK_POINT } from "@/configs/break-point";
-import { TCompleteInstanceFormData, TRecurringInstance, TRecurringInstanceProjection, TRecurringInstancesResponse, TRecurringInstanceStatus } from "@/types/recurring";
+import { TCompleteInstanceFormData, TRecurringInstance, TRecurringInstanceProjection, TRecurringInstanceStatus } from "@/types/recurring";
 import { API_ENDPOINT } from "@/configs/api-endpoint";
 import CustomModal from "@/components/shared/custom-modal/custom-modal";
 import RecurringInstanceForm from "@/components/recurrings/recurring-instance-form";
@@ -27,6 +27,8 @@ import SelectCardRadioGroup from "@/components/shared/select-card-radio-group/se
 export default function RecurringPage() {
     const router = useRouter();
     const { width } = useWindowSize();
+    const { useGetRecurringInstances, useSkipInstance, useCreateTransactionFromInstance } = useRecurringEndpoint();
+    const { useGetListCards } = useCardEndpoint();
 
     const [recurringStats, setRecurringStats] = useState([
         { label: "Total Instances", value: "0", color: "primary" },
@@ -40,7 +42,7 @@ export default function RecurringPage() {
     const {
         data: fetchCardResults,
         error: fetchCardError,
-    } = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE);
+    } = useGetListCards();
 
     const [listCards, setListCards] = useState<TCard[]>([]);
     const [selectedCard, setSelectedCard] = useState<number | null>(null);
@@ -70,16 +72,7 @@ export default function RecurringPage() {
         loading: fetchingInstances,
         error: fetchInstancesError,
         fetch: fetchInstances
-    } = useFetch<IAPIResponse<TRecurringInstancesResponse>>(
-        API_ENDPOINT.RECURRINGS.INSTANCES,
-        {
-            card_id: selectedCard,
-        },
-        {
-            method: "GET",
-            skip: true,
-        }
-    );
+    } = useGetRecurringInstances(selectedCard ? { card_id: selectedCard } : undefined);
 
     useEffect(() => {
         if (selectedCard !== null) {
@@ -180,10 +173,7 @@ export default function RecurringPage() {
 
     /* HANDLE CREATE TRANSACTION */
 
-    const { data: createTransactionResult, error: createTransactionError, loading: creatingTransaction, fetch: createTransaction } = useFetch<IAPIResponse>(API_ENDPOINT.RECURRINGS.INSTANCE_CREATE_TRANSACTION(selectedInstance?.instance_id?.toString() ?? '-1'), {
-        method: 'POST',
-        skip: true,
-    })
+    const { data: createTransactionResult, error: createTransactionError, loading: creatingTransaction, fetch: createTransaction } = useCreateTransactionFromInstance(selectedInstance?.instance_id ?? -1);
 
     useEffect(() => {
         if (createTransactionResult) {
@@ -214,10 +204,7 @@ export default function RecurringPage() {
         error: skipInstanceError,
         loading: skippingInstance,
         fetch: skipInstance
-    } = useFetch<IAPIResponse>(API_ENDPOINT.RECURRINGS.INSTANCE_SKIP(selectedInstance?.instance_id?.toString() ?? '-1'), {
-        method: 'POST',
-        skip: true,
-    })
+    } = useSkipInstance(selectedInstance?.instance_id ?? -1);
 
     useEffect(() => {
         if (skipInstanceResult) {

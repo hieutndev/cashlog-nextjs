@@ -1,7 +1,8 @@
 import { handleError } from "@/app/api/_helpers/handle-error";
 import { getFromHeaders } from "@/app/api/_helpers/get-from-headers";
-import { getTransactionById, updateTransaction } from "@/app/api/_services/transaction-services";
+import { deleteTransaction, getTransactionById, updateTransaction } from "@/app/api/_services/transaction-services";
 import { TUser } from "@/types/user";
+import { ApiError } from "@/types/api-error";
 
 interface TransactionDetailsRouteProps {
     params: Promise<{ transaction_id: string }>
@@ -40,6 +41,28 @@ export const PUT = async (request: Request, { params }: TransactionDetailsRouteP
             message: "Update transaction details successfully"
         });
 
+    } catch (error: unknown) {
+        return handleError(error);
+    }
+}
+
+export const DELETE = async (request: Request, { params }: TransactionDetailsRouteProps) => {
+    try {
+
+        const user_id = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
+        const { transaction_id } = await params;
+
+        if (!transaction_id) {
+            return handleError(new ApiError("Transaction ID is required", 404));
+        }
+
+
+        if (await deleteTransaction(Number(transaction_id), user_id)) {
+            return Response.json({
+                status: "success",
+                message: "Delete transaction successfully"
+            });
+        }
     } catch (error: unknown) {
         return handleError(error);
     }

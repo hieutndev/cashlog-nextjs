@@ -48,3 +48,5 @@ WARP.md
 
 database/
 .github/copilot-instructions.md
+logs/parsed-sms.log
+.augment/rules/dont-create-markdown.md

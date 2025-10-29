@@ -2,9 +2,10 @@
 
 ## Architecture Overview
 
-**CashLog** is a Next.js 15 financial tracking application using the App Router with a layered API architecture. The codebase follows a strict separation of concerns pattern (documented in `ARCHITECTURE.md` and `REFACTORING_PATTERN.md`).
+**CashLog** is a Next.js 15 financial tracking application using the App Router with a layered API architecture. The codebase follows a strict separation of concerns pattern with clear boundaries between route handlers, services, and database layers.
 
 ### Core Technology Stack
+
 - **Framework**: Next.js 15 with App Router, React 18, TypeScript
 - **Database**: MySQL 2 with connection pooling (`mysqlPool` in `libs/mysql.ts`)
 - **UI**: HeroUI v2 components, Tailwind CSS, Framer Motion
@@ -31,17 +32,19 @@ Types (types/*)
 ## Database Access Patterns
 
 ### Standard Query Pattern
-```typescript
-import { dbQuery } from '@/libs/mysql';
-import { QUERY_STRING } from '@/configs/query-string';
 
-const results = await dbQuery<RowDataPacket[]>(
-  QUERY_STRING.GET_ALL_ITEMS,
-  [userId, filter]
-);
+```typescript
+import { dbQuery } from "@/libs/mysql";
+import { QUERY_STRING } from "@/configs/query-string";
+
+const results = await dbQuery<RowDataPacket[]>(QUERY_STRING.GET_ALL_ITEMS, [
+  userId,
+  filter,
+]);
 ```
 
 ### Transaction Pattern (Exception to dbQuery rule)
+
 ```typescript
 const connection = await mysqlPool.getConnection();
 try {
@@ -63,7 +66,7 @@ try {
 
 All API routes follow this exact pattern:
 
-```typescript
+````typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { getFromHeaders } from '../_helpers/get-from-headers';
 import { handleError, handleValidateError } from '../_helpers/handle-error';
@@ -73,17 +76,17 @@ import { serviceFunction, validationSchema } from './service-file';
 export async function GET(request: NextRequest) {
   try {
     const userId = getFromHeaders<TUser['user_id']>(request, 'x-user-id', 0);
-    
+
     // Extract params
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Validate
     const { is_valid, errors } = zodValidate(validationSchema, data);
     if (!is_valid) return handleValidateError(errors);
-    
+
     // Call service
     const results = await serviceFunction(userId, params);
-    
+
     return NextResponse.json({
       status: "success",
       message: "Operation completed",
@@ -102,8 +105,9 @@ throw new ApiError('error message', 400);
 
 // correct (route handlers should return the handled error)
 return handleError(new ApiError('error message', 400));
-```
-```
+````
+
+````
 
 ### Response Format Standards
 - **Success**: `{ status: "success", message: string, results: T }`
@@ -116,7 +120,7 @@ The middleware (`middleware.ts`) intercepts protected routes, validates JWT toke
 
 ```typescript
 const userId = getFromHeaders<TUser['user_id']>(request, 'x-user-id', 0);
-```
+````
 
 Protected routes are defined in `middleware.ts` config matcher (cards, transactions, categories, analytics, recurrings).
 
@@ -128,8 +132,14 @@ Use Zod schemas defined in service files:
 // In *-services.ts
 export const createItemPayload = z.object({
   name: z.string().min(1, { message: VALIDATE_MESSAGE.REQUIRED_VALUE }),
-  amount: z.number().positive({ message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO }),
-  direction: z.enum(['in', 'out'], { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE })
+  amount: z
+    .number()
+    .positive({
+      message: VALIDATE_MESSAGE.REQUIRE_POSITIVE_NUMBER_NOT_ALLOW_ZERO,
+    }),
+  direction: z.enum(["in", "out"], {
+    message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE,
+  }),
 });
 
 // In route.ts
@@ -156,12 +166,12 @@ export async function getAllItems(
 ): Promise<TItem[]> {
   let query = QUERY_STRING.GET_ALL_ITEMS;
   const params: any[] = [userId];
-  
+
   if (filters.status) {
-    query += ' AND status = ?';
+    query += " AND status = ?";
     params.push(filters.status);
   }
-  
+
   return await dbQuery<TItem[]>(query, params);
 }
 ```
@@ -171,12 +181,48 @@ Common patterns: `getAllXByUser`, `getXById`, `createX`, `updateX`, `deleteX`. S
 ## Module Structure
 
 Each API module (`app/api/[module]/`) contains:
+
 - `route.ts` - Main CRUD endpoints
 - `[id]/route.ts` - Single resource operations
 - `*-services.ts` - Business logic functions
 - `_helpers/` - Shared utilities (don't expose in API)
 
 Example: `app/api/recurrings/` has the most complete implementation following this architecture.
+
+## Frontend Patterns
+
+### Custom Hooks for API Calls
+
+Each resource has a dedicated hook using `hieutndev-toolkit`'s `useFetch`:
+
+```typescript
+// hooks/useCardEndpoint.ts
+export function useCardEndpoint() {
+  const useGetListCards = () =>
+    useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE, { method: "GET" });
+
+  const useDeleteCard = (cardId: number) =>
+    useFetch<IAPIResponse>(`${API_ENDPOINT.CARDS.BASE}/${cardId}`, {
+      method: "DELETE",
+      skip: true,
+    });
+
+  return { useGetListCards, useDeleteCard };
+}
+```
+
+**Pattern**: Hook functions prefixed with `use*` return specific fetchers for each operation. Components call these hooks to access data/mutations.
+
+### Component Organization
+
+- `components/[resource]/` - Resource-specific components (transactions, cards, categories, recurrings)
+- `components/shared/` - Reusable UI components
+- `components/dashboard/` - Dashboard-specific visualizations
+- `components/providers/` - Context providers
+
+### UI Library
+
+Uses **HeroUI v2** (custom fork of NextUI) with Tailwind CSS. Import components from `@heroui/*` packages.
 
 ## API Endpoint Constants
 
@@ -191,7 +237,7 @@ export const API_ENDPOINT = {
   CARDS: {
     ADD_NEW_CARD: "/cards",
     GET_ALL_CARDS: "/cards",
-    GET_CARD_INFO: (cardId: TCard['card_id']) => `/cards/${cardId}`,
+    GET_CARD_INFO: (cardId: TCard["card_id"]) => `/cards/${cardId}`,
   },
 };
 ```
@@ -201,26 +247,54 @@ Note: For cases like `GET_CARD_INFO` where a dynamic parameter is passed, the pa
 ## Development Workflow
 
 ### Running the App
+
 ```powershell
 yarn dev          # Development with Turbopack
 yarn build        # Production build (uses 4GB memory allocation)
+yarn build:local  # Local build without memory allocation
 yarn start        # Production server
 yarn lint         # ESLint with auto-fix
+```
+
+### Environment Variables Required
+
+Create a `.env.local` file with:
+
+```bash
+# Database (MySQL 2)
+DB_HOST=localhost
+DB_USER=your_user
+DB_PASS=your_password
+DB_NAME=cashlog
+
+# Authentication
+JWT_SECRET=your_jwt_secret
+PWD_SECRET=10  # bcrypt salt rounds
+
+# Optional: External Services
+HIEUTNDEVCOM_SERVER_API_URL=https://your-server.com  # For bill extraction feature
+DEEPSEEK_API_KEY=your_key  # For OpenAI transaction parsing
+NEXT_PUBLIC_EST_YEAR=2025  # Dashboard year filter
 ```
 
 ## Environment & Local Conventions
 
 - Do not create test files or `.md` summary files.
 - The user uses **Yarn** and **PowerShell 7** commands.
+- Project uses Yarn v1.22.22 (see `packageManager` in package.json)
 
 ### Common Tasks
+
 - **Add SQL query**: Update `QUERY_STRING` in `configs/query-string.ts`
-- **New API endpoint**: Create route handler → service function → add types → add SQL
+- **New API endpoint**: Create route handler → service function → add types → add SQL → update `configs/api-endpoint.ts`
 - **Validation**: Define Zod schema in service file, use `zodValidate` in route
+- **Import transactions**: Use `parseExcelFile` from `libs/parseExcelFile.ts` for Excel parsing
+- **Bank integration**: See `configs/bank.ts` for supported banks (MBB, Techcombank, Momo, etc.)
 
 ## Recurring Transactions Feature
 
 The `recurrings` module is the reference implementation. Key concepts:
+
 - **Recurrings**: Template for repeating transactions
 - **Instances**: Individual scheduled occurrences
 - Complex frequency logic (daily, weekly, monthly, yearly with configs)
@@ -232,14 +306,18 @@ The `recurrings` module is the reference implementation. Key concepts:
 - `middleware.ts` - Auth & user context injection
 - `libs/mysql.ts` - Database connection pool & helpers
 - `configs/query-string.ts` - ALL SQL queries (900+ lines)
+- `configs/api-endpoint.ts` - All API endpoint definitions (centralized routing)
+- `configs/bank.ts` - Supported banks and logo mapping
 - `types/recurring.ts` - Most complex type definitions
+- `libs/parseExcelFile.ts` - Excel file parsing utility
 - `app/api/_helpers/` - Error handling, header parsing, validation
-- `ARCHITECTURE.md` - Architecture diagrams
-- `REFACTORING_PATTERN.md` - Step-by-step refactoring guide with code examples
+- `app/api/_services/` - Shared service functions (extract-bill, transaction utilities)
+- `hooks/use*Endpoint.ts` - Frontend data fetching hooks using `hieutndev-toolkit`'s `useFetch`
 
 ## Code Quality Rules
 
 ✅ **DO:**
+
 - Use `dbQuery` helper for all single queries
 - Put all SQL in `QUERY_STRING`
 - Define Zod schemas in service files
@@ -250,6 +328,7 @@ The `recurrings` module is the reference implementation. Key concepts:
 - Keep connections only for transactions (with proper try/finally release)
 
 ❌ **DON'T:**
+
 - Write SQL directly in route handlers
 - Create new connection pools
 - Put business logic in route handlers
@@ -257,7 +336,7 @@ The `recurrings` module is the reference implementation. Key concepts:
 - Use inline validation without Zod
 - Forget to release database connections in transactions
 - Mix service logic with HTTP concerns
- - Throw ApiError from route handlers; instead return errors with the central helper: `return handleError(new ApiError(...))`
+- Throw ApiError from route handlers; instead return errors with the central helper: `return handleError(new ApiError(...))`
 
 ## Special Considerations
 

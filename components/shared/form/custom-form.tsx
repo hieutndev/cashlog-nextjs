@@ -52,12 +52,12 @@ export default function CustomForm({
 		if (submittingRef.current) return;
 		submittingRef.current = true;
 		onSubmit?.();
-		// Safety: clear guard after 3 seconds if isLoading isn't toggled
+		// Safety: clear guard after 300ms if isLoading isn't toggled
 		clearGuardTimer();
 		guardTimerRef.current = window.setTimeout(() => {
 			submittingRef.current = false;
 			guardTimerRef.current = null;
-		}, 3000);
+		}, 300);
 	};
 
 	useEffect(() => {

@@ -7,6 +7,8 @@ export type TCategoryBreakdown = {
   category: string;
   color: string;
   total: number;
+  income?: number;
+  expense?: number;
 };
 
 export type TDashboardData = {

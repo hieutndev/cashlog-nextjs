@@ -3,7 +3,6 @@
 import type { ZodCustomError } from "@/types/zod";
 
 import { useEffect, useState } from "react";
-import { useFetch } from "hieutndev-toolkit";
 import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { DatePicker } from "@heroui/date-picker";
@@ -14,8 +13,8 @@ import moment from "moment";
 import CustomForm from "../shared/form/custom-form";
 import LoadingBlock from "../shared/loading-block/loading-block";
 
-import { API_ENDPOINT } from "@/configs/api-endpoint";
-import { IAPIResponse } from "@/types/global";
+import { useRecurringInstanceEndpoint } from "@/hooks/useRecurringInstanceEndpoint";
+import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import { TCompleteInstanceFormData, TRecurringInstance } from "@/types/recurring";
 import { TCategory } from "@/types/category";
 import { setForm } from "@/utils/set-form";
@@ -36,23 +35,15 @@ export default function RecurringInstanceForm({ instanceId, onSubmit, isLoading 
         notes: "",
         category_id: undefined,
     });
+    const { useGetCategories } = useCategoryEndpoint();
+    const { useGetInstanceById } = useRecurringInstanceEndpoint();
 
     // Fetch instance data
-    const { data, error, fetch: fetchInstance, loading } = useFetch<IAPIResponse<TRecurringInstance>>(
-        API_ENDPOINT.RECURRINGS.INSTANCES_BY_ID(instanceId),
-        {
-            skip: true,
-        }
-    );
+    const { data, error, fetch: fetchInstance, loading } = useGetInstanceById(instanceId);
 
     // Fetch categories
     const [listCategories, setListCategories] = useState<TCategory[]>([]);
-    const { data: categoriesData, error: categoriesError, fetch: fetchCategories } = useFetch<IAPIResponse<TCategory[]>>(
-        API_ENDPOINT.CATEGORIES.BASE,
-        {
-            skip: true,
-        }
-    );
+    const { data: categoriesData, error: categoriesError, fetch: fetchCategories } = useGetCategories();
 
 
     useEffect(() => {

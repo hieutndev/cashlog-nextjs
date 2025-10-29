@@ -2,7 +2,7 @@ import { TBankCode } from "@/types/bank";
 
 const basePath = "images/bank_logo";
 
-export const ListBankCode: { key: TBankCode; value: string }[] = [
+export const getBankOptions: { key: TBankCode; value: string }[] = [
   {
     key: "MBB",
     value: "MB Bank"

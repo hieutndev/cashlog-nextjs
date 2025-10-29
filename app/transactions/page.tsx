@@ -13,12 +13,14 @@ import { useDisclosure } from "@heroui/modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
 import { Input } from "@heroui/input";
-import { useFetch, useWindowSize } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 import moment from "moment";
 
-import CrudTransactionModal from "@/components/transactions/transaction-form-modal";
-import { API_ENDPOINT } from "@/configs/api-endpoint";
-import { IAPIResponse, IDataTable, IPagination } from "@/types/global";
+import { useTransactionEndpoint } from "@/hooks/useTransactionEndpoint";
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
+import SingleTxnModal from "@/components/transactions/single-txn-modal";
+import MultipleTxnModal from "@/components/transactions/multiple-txn-modal";
+import { FilterAndSortItem, IDataTable, IPagination } from "@/types/global";
 import { useDebounce } from "@/hooks/useDebounce";
 import ICONS from "@/configs/icons";
 import { TCard } from "@/types/card";
@@ -28,16 +30,14 @@ import { TTransaction, TTransactionWithCardAndCategory } from "@/types/transacti
 import { sliceText } from "@/utils/string";
 import { SITE_CONFIG } from "@/configs/site-config";
 
-type FilterAndSortItem = {
-	key: string;
-	label: string;
-	startIcon?: React.ReactElement;
-};
+
 
 export default function TransactionsPage() {
 	const { width } = useWindowSize();
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const { useGetTransactions, useDeleteTransaction } = useTransactionEndpoint();
+	const { useGetListCards } = useCardEndpoint();
 
 	const sortSelection: FilterAndSortItem[] = [
 		{
@@ -86,41 +86,24 @@ export default function TransactionsPage() {
 	const [transactionTypeSelected, setTransactionTypeSelected] = useState<"out" | "in" | "">("");
 
 	// HANDLE FETCH TRANSACTION
-	const transactionUrl = useMemo(() => {
-		const params = new URLSearchParams();
-
-		params.set("page", currentPage.toString());
-		params.set("limit", limit.toString());
-
-		if (debouncedSearchQuery.trim()) {
-			params.set("search", debouncedSearchQuery.trim());
-		}
-
-		if (cardSelected) {
-			params.set("cardId", cardSelected);
-		}
-
-		if (transactionTypeSelected) {
-			params.set("transactionType", transactionTypeSelected);
-		}
-
-		if (sortSelected) {
-			params.set("sortBy", sortSelected);
-		}
-
-		return `${API_ENDPOINT.TRANSACTIONS.BASE}?${params.toString()}`;
-	}, [currentPage, limit, debouncedSearchQuery, cardSelected, transactionTypeSelected, sortSelected]);
+	const txnParams = useMemo(() => ({
+		page: currentPage,
+		limit,
+		search: debouncedSearchQuery.trim() || undefined,
+		cardId: cardSelected || undefined,
+		transactionType: transactionTypeSelected || undefined,
+		sortBy: sortSelected || undefined,
+	}), [currentPage, limit, debouncedSearchQuery, cardSelected, transactionTypeSelected, sortSelected]);
 
 	const {
-		data: fetchTransactionResults,
-		loading: fetchingTransactions,
-		fetch: fetchTransactions,
-	} = useFetch<IAPIResponse<TTransactionWithCardAndCategory[]>>(transactionUrl);
+		data: allTxn,
+		loading: retrievingTxn,
+		fetch: getTxn,
+	} = useGetTransactions(txnParams);
 
-	// Fetch data when URL changes
 	useEffect(() => {
-		fetchTransactions();
-	}, [transactionUrl]);
+		getTxn();
+	}, [txnParams]);
 
 	const [dataTable, setDataTable] = useState<IDataTable<TTransactionWithCardAndCategory>>({
 		columns: [
@@ -129,21 +112,17 @@ export default function TransactionsPage() {
 			{ key: "description", label: "Description" },
 			{ key: "category_name", label: "Category" },
 			{ key: "date", label: "Transaction Date" },
-			// { key: "direction", label: "Transaction Type" },
-			// { key: "direction", label: "Direction" },
 		],
 		rows: [],
 	});
 
-	// Reset to page 1 when filters change
 	useEffect(() => {
 		setCurrentPage(1);
 	}, [sortSelected, cardSelected, transactionTypeSelected, debouncedSearchQuery]);
 
-	// Update data table when fetch results change
 	useEffect(() => {
-		if (fetchTransactionResults?.results) {
-			const formattedData = fetchTransactionResults.results.map((transaction) => ({
+		if (allTxn && allTxn?.results) {
+			const formattedData = allTxn.results.map((transaction) => ({
 				...transaction,
 				date: new Date(transaction.date).toLocaleString(),
 			}));
@@ -154,16 +133,13 @@ export default function TransactionsPage() {
 			}));
 		}
 
-		if (fetchTransactionResults?.pagination) {
-			console.log("fetchTransactionResults.pagination", fetchTransactionResults.pagination);
-			setPagination(fetchTransactionResults.pagination);
+		if (allTxn?.pagination) {
+			setPagination(allTxn.pagination);
 		}
-	}, [fetchTransactionResults]);
+	}, [allTxn]);
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
-
-		// Update URL to preserve current state
 		const params = new URLSearchParams(searchParams.toString());
 
 		params.set("page", page.toString());
@@ -184,7 +160,7 @@ export default function TransactionsPage() {
 
 		if (value.trim()) {
 			params.set("search", value.trim());
-			params.set("page", "1"); // Reset to page 1 when searching
+			params.set("page", "1");
 		} else {
 			params.delete("search");
 		}
@@ -194,28 +170,23 @@ export default function TransactionsPage() {
 
 	const handleSortChange = (value: string) => {
 		setSortSelected(value);
-		// Page will be reset to 1 by the useEffect hook
 	};
 
 	const handleCardFilterChange = (value: string) => {
 		setCardSelected(value);
-		// Page will be reset to 1 by the useEffect hook
 	};
 
 	const handleTransactionTypeChange = (value: "out" | "in" | "") => {
 		setTransactionTypeSelected(value);
-		// Page will be reset to 1 by the useEffect hook
 	};
 
-	// HANDLE FETCH CARD
+	const [cardOptions, setCardOptions] = useState<FilterAndSortItem[]>([]);
 
-	const [listCards, setListCards] = useState<FilterAndSortItem[]>([]);
-
-	const { data: fetchCardResults } = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE);
+	const { data: allCards } = useGetListCards();
 
 	useEffect(() => {
-		setListCards(
-			fetchCardResults?.results?.map((card) => ({
+		setCardOptions(
+			allCards?.results?.map((card: TCard) => ({
 				key: card.card_id.toString(),
 				label: card.card_name,
 				startIcon: (
@@ -229,74 +200,70 @@ export default function TransactionsPage() {
 				),
 			})) ?? []
 		);
-	}, [fetchCardResults]);
+	}, [allCards]);
 
-	// HANDLE DELETE TRANSACTION
-	const [selectedTransaction, setSelectedTransaction] = useState<TTransactionWithCardAndCategory | null>(null);
+	const [selectedTxn, setSelectedTxn] = useState<TTransactionWithCardAndCategory | null>(null);
 
 	const {
-		data: deleteTransactionResults,
-		error: errorDeleteTransaction,
-		fetch: deleteTransaction,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_QUERY(selectedTransaction?.transaction_id.toString() ?? ''), {
-		method: "DELETE",
-		skip: true,
-	});
+		data: deleteTxnResult,
+		error: deleteTxnError,
+		fetch: deleteTxn,
+	} = useDeleteTransaction(selectedTxn?.transaction_id ?? -1);
 
 	useEffect(() => {
-		if (deleteTransactionResults) {
-			fetchTransactions();
+		if (deleteTxnResult) {
+			getTxn();
 			addToast({
 				title: "Success",
-				description: deleteTransactionResults.message,
+				description: deleteTxnResult.message,
 				color: "success",
 			});
-			setSelectedTransaction(null);
+			setSelectedTxn(null);
 		}
 
-		if (errorDeleteTransaction) {
+		if (deleteTxnError) {
 			addToast({
 				title: "Error",
-				description: JSON.parse(errorDeleteTransaction).message,
+				description: JSON.parse(deleteTxnError).message,
 				color: "danger",
 			});
 		}
-	}, [deleteTransactionResults, errorDeleteTransaction]);
+	}, [deleteTxnResult, deleteTxnError]);
 
 	useEffect(() => {
-		if (selectedTransaction) {
-			deleteTransaction();
+		if (selectedTxn) {
+			deleteTxn();
 		}
-	}, [selectedTransaction]);
+	}, [selectedTxn]);
 
-	// HANDLE OPEN NEW TRANSACTION MODAL
+	const { isOpen: isOpenModalAddSingleTxn, onOpen: onOpenModalAddSingleTxn, onOpenChange: onModalAddSingleTxnChange } = useDisclosure();
 
-	const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-	// HANDLE OPEN UPDATE TRANSACTION MODAL
+	const { isOpen: isOpenModalAddMultipleTxn, onOpen: onOpenModalAddMultipleTxn, onOpenChange: onModalAddMultipleTxnChange } = useDisclosure();
 
 	const [defaultData, setDefaultData] = useState<TTransaction | null>(null);
 	const [modalMode, setModalMode] = useState<"create" | "update">("create");
 
-	const handleUpdate = (item: TTransaction) => {
+	const handleUpdateTxn = (item: TTransaction) => {
 		setDefaultData(item);
 		setModalMode("update");
-		onOpen();
+		onOpenModalAddSingleTxn();
 	};
 
-	const handleCreateTransaction = () => {
+	const handleAddTxn = () => {
 		setDefaultData(null);
 		setModalMode("create");
-		onOpen();
+		onOpenModalAddSingleTxn();
 	};
 
+	const handleAddMultipleTxn = () => {
+		onOpenModalAddMultipleTxn();
+	};
+
+
 	return (
-		<section className={"w-full flex flex-col gap-4"}>
+		<section className={"w-full flex flex-col gap-4 "}>
 			<div
-				className={clsx("flex gap-4", {
-					"justify-between items-center": width > BREAK_POINT.SM,
-					"flex-col items-start": width <= BREAK_POINT.SM,
-				})}
+				className={clsx("flex gap-4 sm:flex-row sm:justify-between sm:items-center flex-col items-start")}
 			>
 				<h3 className={"text-2xl font-semibold"}>Transaction History</h3>
 				<div className={"flex items-center gap-2 md:flex-wrap md:flex-row flex-row-reverse"}>
@@ -310,9 +277,17 @@ export default function TransactionsPage() {
 					</Button>
 					<Button
 						color={"primary"}
+						startContent={ICONS.BULK.MD}
+						variant={"light"}
+						onPress={() => router.push("/transactions/add-multiple-transactions")}
+					>
+						{width < BREAK_POINT.MD ? "Add Multiple" : "Add Multiple Transactions"}
+					</Button>
+					<Button
+						color={"primary"}
 						startContent={ICONS.NEW.MD}
 						variant={"solid"}
-						onPress={handleCreateTransaction}
+						onPress={handleAddTxn}
 					>
 						New Transaction
 					</Button>
@@ -355,7 +330,7 @@ export default function TransactionsPage() {
 					</Select>
 					<Select
 						className={"w-full lg:w-60"}
-						items={listCards}
+						items={cardOptions}
 						label={"Filter by card"}
 						labelPlacement={"outside"}
 						placeholder={"All Cards"}
@@ -444,149 +419,14 @@ export default function TransactionsPage() {
 					onValueChange={handleSearchChange}
 				/>
 			</div>
-			{fetchingTransactions ? (
-				<div
-					className={
-						"flex items-center justify-center h-[70vh] bg-white shadow-sm rounded-xl border border-gray-100"
-					}
-				>
-					<Spinner size={"lg"}>Loading...</Spinner>
-				</div>
-			) : (
-				<>
-					<Table
-						isHeaderSticky
-						aria-label={"Transactions table"}
-						bottomContent={
-							width >= BREAK_POINT.MD &&
-							pagination.totalPages > 1 && (
-								<div className="flex justify-center mt-4">
-									<Pagination
-										showControls
-										showShadow
-										color="primary"
-										page={pagination.page}
-										total={pagination.totalPages}
-										onChange={handlePageChange}
-									/>
-								</div>
-							)
-						}
-						className={clsx("xl:h-[80vh] h-full")}
-						selectionMode={"single"}
-					>
-						<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
-							{(column) => (
-								<TableColumn
-									key={column.key}
-									align={
-										["category_name", "date", "amount"].includes(column.key) ? "center" : "start"
-									}
-								>
-									{column.label}
-								</TableColumn>
-							)}
-						</TableHeader>
-						<TableBody
-							emptyContent={fetchingTransactions ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"}
-							items={dataTable.rows}
-						>
-							{(item) => (
-								<TableRow
-									key={item.transaction_id}
-									className={clsx({
-										"text-success": item.direction === "in",
-										"text-danger": item.direction === "out",
-									})}
-								>
-									{(columnKey) => {
-										switch (columnKey) {
-											case "card_name":
-												return (
-													<TableCell className={"capitalize min-w-max"}>
-														<div className={"flex items-center gap-2"}>
-															<Image
-																alt={`Logo bank`}
-																className={"w-4"}
-																height={1200}
-																src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
-																width={1200}
-															/>
-															<p>{getKeyValue(item, columnKey)}</p>
-														</div>
-													</TableCell>
-												);
 
-											case "amount":
-												return (
-													<TableCell className={"capitalize min-w-max"}>
-														{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`}
-													</TableCell>
-												);
 
-											case "description":
-												return (
-													<TableCell className={"min-w-max text-wrap"}>
-														{sliceText(getKeyValue(item, columnKey), 30)}
-													</TableCell>
-												);
-
-											case "category_name":
-												return (
-													<TableCell className={"capitalize min-w-max"}>
-														{getKeyValue(item, columnKey) ? (
-															<Chip
-																classNames={{
-																	base: `background-${getKeyValue(item, "category_color")} text-white w-max h-max px-2 py-1.5`,
-																	content: `ellipsis max-w-[20ch]`,
-																}}
-															>
-																{sliceText(getKeyValue(item, columnKey), 20)}
-															</Chip>
-														) : (
-															""
-														)}
-													</TableCell>
-												);
-
-											case "date":
-												return (
-													<TableCell className={"min-w-max capitalize text-center"}>
-														{moment(getKeyValue(item, columnKey)).format("DD/MM/YYYY")}
-													</TableCell>
-												);
-
-											case "action":
-												return (
-													<TableCell className={"min-w-max"}>
-														<Button
-															isIconOnly
-															color={"warning"}
-															variant={"light"}
-															onPress={() => handleUpdate(item)}
-														>
-															{ICONS.EDIT.MD}
-														</Button>
-														<Button
-															isIconOnly
-															color={"danger"}
-															variant={"light"}
-															onPress={() => setSelectedTransaction(item)}
-														>
-															{ICONS.TRASH.MD}
-														</Button>
-													</TableCell>
-												);
-
-											default:
-												return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
-										}
-									}}
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-					{width < BREAK_POINT.MD && pagination.totalPages > 1 && (
+			<Table
+				isHeaderSticky
+				aria-label={"Transactions table"}
+				bottomContent={
+					width >= BREAK_POINT.MD &&
+					pagination.totalPages > 1 && (
 						<div className="flex justify-center mt-4">
 							<Pagination
 								showControls
@@ -597,16 +437,153 @@ export default function TransactionsPage() {
 								onChange={handlePageChange}
 							/>
 						</div>
+					)
+				}
+				className={clsx("xl:h-[80vh] h-full")}
+				selectionMode={"single"}
+			>
+				<TableHeader columns={[...dataTable.columns, { key: "action", label: "" }]}>
+					{(column) => (
+						<TableColumn
+							key={column.key}
+							align={
+								["category_name", "date", "amount"].includes(column.key) ? "center" : "start"
+							}
+						>
+							{column.label}
+						</TableColumn>
 					)}
-				</>
+				</TableHeader>
+				<TableBody
+					emptyContent={dataTable.rows.length === 0 && retrievingTxn ? <Spinner size={"lg"}>Loading...</Spinner> : "No data"}
+					items={dataTable.rows}
+				>
+					{(item) => (
+						<TableRow
+							key={item.transaction_id}
+							className={clsx({
+								"text-success": item.direction === "in",
+								"text-danger": item.direction === "out",
+							})}
+						>
+							{(columnKey) => {
+								switch (columnKey) {
+									case "card_name":
+										return (
+											<TableCell className={"capitalize min-w-max"}>
+												<div className={"flex items-center gap-2"}>
+													<Image
+														alt={`Logo bank`}
+														className={"w-4"}
+														height={1200}
+														src={getBankLogo(getKeyValue(item, "bank_code"), 1)}
+														width={1200}
+													/>
+													<p>{getKeyValue(item, columnKey)}</p>
+												</div>
+											</TableCell>
+										);
+
+									case "amount":
+										return (
+											<TableCell className={"capitalize min-w-max"}>
+												{`${item.direction === "in" ? "+" : "-"}${getKeyValue(item, columnKey).toLocaleString()}${SITE_CONFIG.CURRENCY_STRING}`}
+											</TableCell>
+										);
+
+									case "description":
+										return (
+											<TableCell className={"min-w-max text-wrap"}>
+												{sliceText(getKeyValue(item, columnKey), 30)}
+											</TableCell>
+										);
+
+									case "category_name":
+										return (
+											<TableCell className={"capitalize min-w-max"}>
+												{getKeyValue(item, columnKey) ? (
+													<Chip
+														classNames={{
+															base: `background-${getKeyValue(item, "category_color")} text-white w-max h-max px-2 py-1.5`,
+															content: `ellipsis max-w-[20ch]`,
+														}}
+													>
+														{sliceText(getKeyValue(item, columnKey), 20)}
+													</Chip>
+												) : (
+													""
+												)}
+											</TableCell>
+										);
+
+									case "date":
+										return (
+											<TableCell className={"min-w-max capitalize text-center"}>
+												{moment(getKeyValue(item, columnKey)).format("DD/MM/YYYY")}
+											</TableCell>
+										);
+
+									case "action":
+										const isInit = getKeyValue(item, "description") === "Auto-generated when creating a new card";
+
+										if (isInit) {
+											return <TableCell className={"min-w-max"}>&nbsp;</TableCell>;
+										}
+
+										return <TableCell className={"min-w-max"}>
+											<Button
+												isIconOnly
+												color={"warning"}
+												variant={"light"}
+												onPress={() => handleUpdateTxn(item)}
+											>
+												{ICONS.EDIT.MD}
+											</Button>
+											<Button
+												isIconOnly
+												color={"danger"}
+												variant={"light"}
+												onPress={() => setSelectedTxn(item)}
+											>
+												{ICONS.TRASH.MD}
+											</Button>
+										</TableCell>
+											;
+
+									default:
+										return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
+								}
+							}}
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+			{width < BREAK_POINT.MD && pagination.totalPages > 1 && (
+				<div className="flex justify-center mt-4">
+					<Pagination
+						showControls
+						showShadow
+						color="primary"
+						page={pagination.page}
+						total={pagination.totalPages}
+						onChange={handlePageChange}
+					/>
+				</div>
 			)}
 
-			<CrudTransactionModal
+
+			<SingleTxnModal
 				defaultData={defaultData}
-				isOpen={isOpen}
+				isOpen={isOpenModalAddSingleTxn}
 				mode={modalMode}
-				onOpenChange={onOpenChange}
-				onSuccess={() => fetchTransactions()}
+				onOpenChange={onModalAddSingleTxnChange}
+				onSuccess={() => getTxn()}
+			/>
+
+			<MultipleTxnModal
+				isOpen={isOpenModalAddMultipleTxn}
+				onOpenChange={onModalAddMultipleTxnChange}
+				onSuccess={() => getTxn()}
 			/>
 		</section>
 	);

@@ -12,9 +12,10 @@ interface BankCardProps {
 	color: TColor;
 	bankCode?: TBankCode;
 	className?: string;
+	cardNumber?: string;
 }
 
-export default function BankCard({ cardName, cardBalance, color, bankCode = "VIETCOMBANK", className }: BankCardProps) {
+export default function BankCard({ cardName, cardBalance, color, bankCode = "VIETCOMBANK", className, cardNumber }: BankCardProps) {
 
 	return (
 		<div
@@ -36,10 +37,7 @@ export default function BankCard({ cardName, cardBalance, color, bankCode = "VIE
 			/>
 			<div className="relative w-full h-full flex items-end">
 				<div className="flex flex-col gap-2">
-					{/* large faded balance behind the name */}
-
-					{/* card name above the faded balance */}
-					<p className="text-left text-md uppercase font-semibold">{cardName}</p>
+					<p className="text-left text-md uppercase font-semibold">{cardName} {cardNumber && `- ${cardNumber}`}</p>
 					<h1 className="text-4xl font-bold text-white z-0 pointer-events-none">
 						{cardBalance.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
 					</h1>

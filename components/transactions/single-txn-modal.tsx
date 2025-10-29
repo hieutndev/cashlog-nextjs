@@ -14,15 +14,16 @@ import { Select, SelectItem } from "@heroui/select";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import moment from "moment";
-import { useFetch, useWindowSize } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
+import { useCardEndpoint } from "@/hooks/useCardEndpoint";
+import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
+import { useTransactionFormEndpoint } from "@/hooks/useTransactionFormEndpoint";
 import CustomModal from "@/components/shared/custom-modal/custom-modal";
-import { API_ENDPOINT } from "@/configs/api-endpoint";
 import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
-import { TCrudTransaction as TCrudTransaction, TTransaction } from "@/types/transaction";
+import { TAddTransaction as TAddTransaction, TTransaction } from "@/types/transaction";
 import TransactionType from "@/components/transactions/transaction-type";
-import { IAPIResponse } from "@/types/global";
 import { TCard } from "@/types/card";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
@@ -41,7 +42,7 @@ interface CrudTransactionModalProps {
 	mode?: "create" | "update";
 }
 
-export default function CrudTransactionModal({
+export default function SingleTxnModal({
 	isOpen,
 	onOpenChange,
 	onSuccess,
@@ -50,6 +51,9 @@ export default function CrudTransactionModal({
 }: CrudTransactionModalProps) {
 	const router = useRouter();
 	const { width } = useWindowSize();
+	const { useGetListCards } = useCardEndpoint();
+	const { useGetCategories } = useCategoryEndpoint();
+	const { useCreateTransaction, useUpdateTransaction } = useTransactionFormEndpoint();
 
 	// HANDLE FETCH CARD
 	const [listCard, setListCard] = useState<TCard[]>([]);
@@ -59,9 +63,7 @@ export default function CrudTransactionModal({
 		loading: loadingCards,
 		error: fetchCardsError,
 		fetch: fetchCards,
-	} = useFetch<IAPIResponse<TCard[]>>(API_ENDPOINT.CARDS.BASE, {
-		skip: true,
-	});
+	} = useGetListCards();
 
 	useEffect(() => {
 		if (fetchCardsResult) {
@@ -77,7 +79,7 @@ export default function CrudTransactionModal({
 	}, [fetchCardsResult, fetchCardsError]);
 
 	// HANDLE CREATE NEW TRANSACTION
-	const [transactionInfo, setTransactionInfo] = useState<TCrudTransaction>({
+	const [transactionInfo, setTransactionInfo] = useState<TAddTransaction>({
 		card_id: 0,
 		direction: "in",
 		category_id: null,
@@ -93,22 +95,14 @@ export default function CrudTransactionModal({
 		loading: creatingTransaction,
 		error: createTransactionError,
 		fetch: createTransaction,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BASE, {
-		method: "POST",
-		body: transactionInfo,
-		skip: true,
-	});
+	} = useCreateTransaction(transactionInfo);
 
 	const {
 		data: updateTransactionResult,
 		loading: updatingTransaction,
 		error: updateTransactionError,
 		fetch: updateTransaction,
-	} = useFetch<IAPIResponse>(API_ENDPOINT.TRANSACTIONS.BY_ID(defaultData?.transaction_id.toString() ?? ""), {
-		method: "PUT",
-		body: transactionInfo,
-		skip: true,
-	});
+	} = useUpdateTransaction(defaultData?.transaction_id.toString() ?? "", transactionInfo);
 
 	useEffect(() => {
 		if (updateTransactionResult) {
@@ -207,9 +201,7 @@ export default function CrudTransactionModal({
 		error: fetchCategoriesError,
 		fetch: fetchCategories,
 		// loading: fetchingCategories,
-	} = useFetch<IAPIResponse<TCategory[]>>(API_ENDPOINT.CATEGORIES.BASE, {
-		skip: true,
-	});
+	} = useGetCategories();
 
 	useEffect(() => {
 		if (fetchCategoriesResult) {
@@ -263,8 +255,6 @@ export default function CrudTransactionModal({
 
 	useEffect(() => {
 		if (defaultData) {
-			console.log("🚀 ~ useEffect ~ defaultData:", defaultData)
-
 			setTransactionInfo({
 				card_id: defaultData.card_id,
 				direction: defaultData.direction,
@@ -277,7 +267,7 @@ export default function CrudTransactionModal({
 	}, [defaultData]);
 
 	return (
-		<CustomModal isOpen={isOpen} title={mode === "create" ? "Add New Transaction" : "Edit Transaction"} onOpenChange={onOpenChange}>
+		<CustomModal isOpen={isOpen} size={"5xl"} title={mode === "create" ? "Add New Transaction" : "Edit Transaction"} onOpenChange={onOpenChange}>
 			<section className={"flex flex-col gap-4"}>
 				<div className={clsx("w-full flex justify-center gap-2")}>
 					{loadingCards ? (
@@ -300,7 +290,7 @@ export default function CrudTransactionModal({
 									loading={loadingCards}
 									value={transactionInfo.card_id ?? 0}
 									onValueChange={(e) =>
-										setForm<TCrudTransaction>(
+										setForm<TAddTransaction>(
 											"card_id",
 											+e,
 											validateErrors,
@@ -319,7 +309,7 @@ export default function CrudTransactionModal({
 									label={"Transaction Type"}
 									value={transactionInfo.direction}
 									onValueChange={(e) => {
-										setForm<TCrudTransaction>(
+										setForm<TAddTransaction>(
 											"direction",
 											e,
 											validateErrors,
@@ -407,7 +397,7 @@ export default function CrudTransactionModal({
 										value={transactionInfo.amount?.toString() ?? 0}
 										variant={"bordered"}
 										onValueChange={(e) =>
-											setForm<TCrudTransaction>(
+											setForm<TAddTransaction>(
 												"amount",
 												+e,
 												validateErrors,
@@ -450,7 +440,7 @@ export default function CrudTransactionModal({
 									value={transactionInfo.description?.toString()}
 									variant={"bordered"}
 									onValueChange={(e) =>
-										setForm<TCrudTransaction>(
+										setForm<TAddTransaction>(
 											"description",
 											e,
 											validateErrors,

@@ -89,3 +89,9 @@ export interface IDataTable<T> {
   }[];
   rows: T[];
 }
+
+export type FilterAndSortItem = {
+  key: string;
+  label: string;
+  startIcon?: React.ReactElement;
+};

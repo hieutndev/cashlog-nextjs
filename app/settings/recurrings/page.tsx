@@ -9,12 +9,11 @@ import { useRouter } from "next/navigation";
 import { Chip } from "@heroui/chip";
 import clsx from "clsx";
 import { Spinner } from "@heroui/spinner";
-import { useFetch } from "hieutndev-toolkit";
 import { useWindowSize } from "hieutndev-toolkit";
 import moment from "moment";
 
+import { useRecurringSettingsEndpoint } from "@/hooks/useRecurringSettingsEndpoint";
 import { TRecurringResponse } from "@/types/recurring";
-import { IAPIResponse } from "@/types/global";
 import { getBankLogo } from "@/configs/bank";
 import { TBankCode } from "@/types/bank";
 import ICONS from "@/configs/icons";
@@ -24,6 +23,7 @@ import { SITE_CONFIG } from "@/configs/site-config";
 export default function SettingRecurringPage() {
 	const router = useRouter();
 	const { width } = useWindowSize();
+	const { useGetRecurrings, useDeleteRecurring } = useRecurringSettingsEndpoint();
 
 	const [listRecurrings, setListRecurrings] = useState<TRecurringResponse[]>([]);
 	const [selectedRecurring, setSelectedRecurring] = useState<TRecurringResponse | null>(null);
@@ -33,7 +33,7 @@ export default function SettingRecurringPage() {
 		loading: loadingRecurring,
 		error: errorRecurring,
 		fetch: fetchRecurrings,
-	} = useFetch<IAPIResponse<TRecurringResponse[]>>("/recurrings");
+	} = useGetRecurrings();
 
 	useEffect(() => {
 		if (fetchRecurringResult?.results) {
@@ -65,13 +65,7 @@ export default function SettingRecurringPage() {
 		data: deleteResult,
 		error: deleteError,
 		fetch: deleteRecurring,
-	} = useFetch<IAPIResponse>(
-		selectedRecurring ? `/recurrings/${selectedRecurring.recurring_id}?deleteInstances=false&keepCompletedTransactions=true` : "",
-		{
-			method: "DELETE",
-			skip: true,
-		}
-	);
+	} = useDeleteRecurring(selectedRecurring?.recurring_id ?? -1, false, true);
 
 	useEffect(() => {
 		if (selectedRecurring) {

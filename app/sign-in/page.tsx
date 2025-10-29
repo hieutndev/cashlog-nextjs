@@ -7,19 +7,19 @@ import { useState, useEffect } from "react";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { useFetch, useWindowSize } from "hieutndev-toolkit";
+import { useWindowSize } from "hieutndev-toolkit";
 
+import { useAuthEndpoint } from "@/hooks/useAuthEndpoint";
 import { ZodCustomError } from "@/types/zod";
-import { API_ENDPOINT } from "@/configs/api-endpoint";
 import CustomForm from "@/components/shared/form/custom-form";
-import { IAPIResponse } from "@/types/global";
-import { TSignIn, TSignInResponse } from "@/types/user";
+import { TSignIn } from "@/types/user";
 import { setForm } from "@/utils/set-form";
 import { getFieldError } from "@/utils/get-field-error";
 import { BREAK_POINT } from "@/configs/break-point";
 
 export default function SignInPage() {
 	const router = useRouter();
+	const { useSignIn } = useAuthEndpoint();
 
 	const { width } = useWindowSize();
 
@@ -39,11 +39,7 @@ export default function SignInPage() {
 		loading: signingIn,
 		error: signInError,
 		fetch: signIn,
-	} = useFetch<IAPIResponse<TSignInResponse>>(API_ENDPOINT.USERS.SIGN_IN, {
-		method: "POST",
-		body: signInForm,
-		skip: true,
-	});
+	} = useSignIn(signInForm);
 
 	const handleSubmit = () => {
 		signIn();
@@ -60,7 +56,7 @@ export default function SignInPage() {
 			setCookie("username", signInResponse.results.username, { maxAge: 60 * 60 * 24, path: "/" });
 
 			// navigate after provider updated
-			router.push("/overview");
+			router.push("/dashboard");
 		}
 
 		if (signInError) {
