@@ -33,7 +33,7 @@ export default function HorizontalNav() {
 
 	return (
 		<section
-			className={clsx("w-full flex justify-between items-center py-4 border-b", {
+			className={clsx("lg:hidden z-50 sticky top-0 bg-white w-full flex justify-between items-center py-4 border-b", {
 				"px-8": width > BREAK_POINT.LG,
 				"px-4": width <= BREAK_POINT.LG,
 			})}
@@ -45,7 +45,7 @@ export default function HorizontalNav() {
 			>
 				<Navbar
 					classNames={{
-						wrapper: "px-4",
+						wrapper: "px-4"
 					}}
 					isMenuOpen={isMenuOpen}
 					onMenuOpenChange={setIsMenuOpen}

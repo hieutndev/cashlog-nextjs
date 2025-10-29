@@ -17,13 +17,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<div className={"w-screen h-screen flex flex-col"}>
 			<div
-				className={clsx("w-screen h-full", {
+				className={clsx("relative w-screen h-full", {
 					"grid grid-cols-12": width > BREAK_POINT.XL,
 					flex: width <= BREAK_POINT.XL,
 				})}
 			>
 				<div
-					className={clsx("relative h-100", {
+					className={clsx("z-50 relative h-100", {
 						"col-span-2": width > BREAK_POINT.XL,
 						"w-max": width <= BREAK_POINT.XL,
 						hidden: width <= BREAK_POINT.LG,
@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 					<Sidebar />
 				</div>
 				<div
-					className={clsx("flex flex-col gap-4 max-h-screen overflow-auto", {
+					className={clsx("lg:pt-8 z-100 flex flex-col gap-4 max-h-screen overflow-auto", {
 						"col-span-10": width > BREAK_POINT.XL,
 						"w-full": width <= BREAK_POINT.XL,
 					})}

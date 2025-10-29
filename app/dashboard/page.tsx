@@ -14,7 +14,7 @@ import { useDisclosure } from "@heroui/modal";
 import { useDashboardEndpoint } from "@/hooks/useDashboardEndpoint";
 import Container from "@/components/shared/container/container";
 import { CardSwiper } from "@/components/dashboard/card-swiper/card-swiper";
-import CategoryBreakdownChart from "@/components/dashboard/chartjs/category-breakdown-chart";
+import TransactionVolumeChart from "@/components/dashboard/chartjs/transaction-volume-chart";
 import FinancialAnalysisChart from "@/components/dashboard/chartjs/financial-analysis-chart";
 import CategoryDetailsModal from "@/components/dashboard/category-details-modal";
 import { MAP_ICON } from "@/configs/map-icons";
@@ -157,7 +157,8 @@ export default function DashboardPage() {
 	};
 
 	return (
-		<Container className={"!p-0"}
+		<Container
+			className={"p-4 bg-white rounded-2xl shadow-[0_3px_10px_rgb(0,0,0,0.2)]"}
 			orientation={"vertical"}
 		>
 			<div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -166,10 +167,10 @@ export default function DashboardPage() {
 						<CardSwiper cards={cards} loading={dashboardData === null} />
 					</div>
 
-					<Card>
+					<Card className="bg-transparent" shadow="sm">
 						<CardBody className={"flex flex-col gap-4 items-center"}>
 							<h3 className="text-xl font-semibold text-center text-gray-400/50">Transaction Volume</h3>
-							<CategoryBreakdownChart
+							<TransactionVolumeChart
 								data={categoryBreakdown}
 								loading={dashboardData === null}
 								volumeData={categoryVolumeData}
@@ -179,7 +180,7 @@ export default function DashboardPage() {
 					</Card>
 				</div>
 				<div className="lg:col-span-8 flex flex-col gap-4">
-					<Card>
+					<Card className="bg-transparent" shadow="sm">
 						<CardBody className={"flex flex-col gap-4"}>
 							<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
 								<h3 className="text-xl font-semibold text-center text-gray-400/50">Financial Analysis</h3>
@@ -254,7 +255,7 @@ export default function DashboardPage() {
 					</Card>
 
 
-					<Card>
+					<Card className="bg-transparent" shadow="sm">
 						<CardBody className="flex flex-col items-center justify-center max-h-88 overflow-hidden">
 							{dashboardData === null
 								? <LoadingBlock />
@@ -274,136 +275,128 @@ export default function DashboardPage() {
 					</Card>
 
 					{/* Recent Transaction Section */}
-					<Card>
+					<Card className="bg-transparent" shadow="sm">
 						<CardBody className={"flex flex-col gap-4"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Recent Activity</h3>
-							{dashboardData === null
-								? <LoadingBlock />
-								:
-								<Table
-									isHeaderSticky
-									removeWrapper
-									aria-label="Recent transactions table"
-									classNames={{
-										th: "bg-gray-100/10 text-gray-600 font-bold text-xs uppercase",
-										td: "py-4",
-									}}
-								>
-									<TableHeader>
-										<TableColumn>Date</TableColumn>
-										<TableColumn>Description</TableColumn>
-										<TableColumn>Status</TableColumn>
-										<TableColumn align="end">Amount</TableColumn>
-									</TableHeader>
-									<TableBody
-										emptyContent={
+							<Table
+								isHeaderSticky
+								removeWrapper
+								aria-label="Recent transactions table"
+							>
+								<TableHeader>
+									<TableColumn>Date</TableColumn>
+									<TableColumn>Description</TableColumn>
+									<TableColumn>Status</TableColumn>
+									<TableColumn align="end">Amount</TableColumn>
+								</TableHeader>
+								<TableBody
+									emptyContent={
+										dashboardData === null
+											? <LoadingBlock className={"!min-h-32"} />
+											:
 											<div>
 												<p>You have not added any transactions to the system. </p>
 												<Button>Add New Transaction</Button>
 											</div>
-										}
-										items={recentTransactions}
-									>
-										{(transaction) => (
-											<TableRow key={transaction.transaction_id}>
-												<TableCell>
-													<span className="text-gray-600">
-														{moment(transaction.date).format("DD/MM/YYYY")}
-													</span>
-												</TableCell>
-												<TableCell>
-													<div className="font-medium">{transaction.description}</div>
-												</TableCell>
-												<TableCell>
-													<Chip
-														className="capitalize"
-														color="success"
-														size="sm"
-														variant="flat"
-													>
-														Success
-													</Chip>
-												</TableCell>
-												<TableCell>
-													<span className={clsx("", {
-														"text-success": transaction.direction === "in",
-														"text-danger": transaction.direction === "out"
-													})}>
-														{transaction.direction === "in" ? "+ " : "- "}
-														{transaction.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
-													</span>
-												</TableCell>
-											</TableRow>
-										)}
-									</TableBody>
-								</Table>
-							}
+									}
+									items={recentTransactions}
+								>
+									{(transaction) => (
+										<TableRow key={transaction.transaction_id}>
+											<TableCell>
+												<span className="text-gray-600">
+													{moment(transaction.date).format("DD/MM/YYYY")}
+												</span>
+											</TableCell>
+											<TableCell>
+												<div className="font-medium">{transaction.description}</div>
+											</TableCell>
+											<TableCell>
+												<Chip
+													className="capitalize"
+													color="success"
+													size="sm"
+													variant="flat"
+												>
+													Success
+												</Chip>
+											</TableCell>
+											<TableCell className="min-w-max">
+												<span className={clsx("min-w-max", {
+													"text-success": transaction.direction === "in",
+													"text-danger": transaction.direction === "out"
+												})}>
+													{transaction.direction === "in" ? "+ " : "- "}
+													{transaction.amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
+												</span>
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
 						</CardBody>
 					</Card>
 
-					<Card>
+					<Card className="bg-transparent" shadow="sm">
 						<CardBody className={"flex flex-col gap-6"}>
 							<h3 className="font-semibold text-xl text-left text-gray-400/50">Upcoming Transactions</h3>
-							{dashboardData === null
-								? <LoadingBlock />
-								: (
-									<Table
-										isHeaderSticky
-										removeWrapper
-										aria-label="Upcoming transactions table"
-										classNames={{
-											th: "bg-gray-100/10 text-gray-600 font-bold text-xs uppercase",
-											td: "py-4",
-										}}
-									>
-										<TableHeader>
-											<TableColumn>Scheduled Date</TableColumn>
-											<TableColumn>Name</TableColumn>
-											<TableColumn>From Card</TableColumn>
-											<TableColumn>Status</TableColumn>
-											<TableColumn align="end">Amount</TableColumn>
-										</TableHeader>
-										<TableBody
-											items={upcomingRecurrings?.instances.slice(0, 5) || []}
-										>
-											{(instance) => (
-												<TableRow key={instance.instance_id}>
-													<TableCell>
-														<span className="text-gray-600">
-															{moment(instance.scheduled_date).format("DD/MM/YYYY")}
-														</span>
-													</TableCell>
-													<TableCell>
-														<div className="font-medium">{instance.recurring_name || "Recurring"}</div>
-													</TableCell>
+							<Table
+								isHeaderSticky
+								removeWrapper
+								aria-label="Upcoming transactions table"
+							>
+								<TableHeader>
+									<TableColumn>Scheduled Date</TableColumn>
+									<TableColumn>Name</TableColumn>
+									<TableColumn>From Card</TableColumn>
+									<TableColumn>Status</TableColumn>
+									<TableColumn align="end">Amount</TableColumn>
+								</TableHeader>
+								<TableBody
+									emptyContent={
+										dashboardData === null
+											? <LoadingBlock className={"!min-h-32"} />
+											: <p>No upcoming transactions found.</p>
+									}
+									items={upcomingRecurrings?.instances.slice(0, 5) || []}
+								>
+									{(instance) => (
+										<TableRow key={instance.instance_id}>
+											<TableCell>
+												<span className="text-gray-600">
+													{moment(instance.scheduled_date).format("DD/MM/YYYY")}
+												</span>
+											</TableCell>
+											<TableCell>
+												<div className="font-medium">{instance.recurring_name || "Recurring"}</div>
+											</TableCell>
 
-													<TableCell>
-														<span className="text-gray-600">{instance.card_name || "-"}</span>
-													</TableCell>
-													<TableCell>
-														<Chip
-															className="capitalize"
-															color="warning"
-															size="sm"
-															variant="flat"
-														>
-															Pending
-														</Chip>
-													</TableCell>
-													<TableCell>
-														<span className={clsx("", {
-															"text-success": instance.direction === "in",
-															"text-danger": instance.direction === "out"
-														})}>
-															{instance.direction === "in" ? "+" : "- "}
-															{instance.scheduled_amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
-														</span>
-													</TableCell>
-												</TableRow>
-											)}
-										</TableBody>
-									</Table>
-								)}
+											<TableCell>
+												<span className="text-gray-600">{instance.card_name || "-"}</span>
+											</TableCell>
+											<TableCell>
+												<Chip
+													className="capitalize"
+													color="warning"
+													size="sm"
+													variant="flat"
+												>
+													Pending
+												</Chip>
+											</TableCell>
+											<TableCell>
+												<span className={clsx("", {
+													"text-success": instance.direction === "in",
+													"text-danger": instance.direction === "out"
+												})}>
+													{instance.direction === "in" ? "+" : "- "}
+													{instance.scheduled_amount.toLocaleString()}{SITE_CONFIG.CURRENCY_STRING}
+												</span>
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
 						</CardBody>
 					</Card>
 				</div>

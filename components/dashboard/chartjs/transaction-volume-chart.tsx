@@ -33,7 +33,7 @@ const centerTextPlugin: Plugin = {
 
 ChartJS.register(centerTextPlugin);
 
-interface CategoryBreakdownChartProps {
+interface TransactionVolumeChartProps {
     data: {
         category: string;
         color: string;
@@ -51,7 +51,7 @@ interface CategoryBreakdownChartProps {
     onClick?: () => void;
 }
 
-export default function CategoryBreakdownChart({ data: _data, volumeData, loading = false, onClick }: CategoryBreakdownChartProps) {
+export default function TransactionVolumeChart({ data: _data, volumeData, loading = false, onClick }: TransactionVolumeChartProps) {
     // Process volume data to get top 5 categories + Others
     const processVolumeData = (vol: typeof volumeData) => {
         if (!vol || vol.length === 0) return null;
@@ -168,7 +168,7 @@ export default function CategoryBreakdownChart({ data: _data, volumeData, loadin
     return (
         loading ? <LoadingBlock /> : (
             <div
-                className="flex lg:flex-col flex-row items-center gap-8 w-full h-full cursor-pointer"
+                className="flex flex-col items-center gap-8 w-full h-full cursor-pointer"
                 role="button"
                 tabIndex={0}
                 onClick={onClick}
@@ -178,25 +178,14 @@ export default function CategoryBreakdownChart({ data: _data, volumeData, loadin
                     }
                 }}
             >
-                {/* Main Total Volume Chart - Always render */}
-                <div className="lg:w-full w-1/2">
-                    <div className="w-full h-64 p-4">
-                        <Doughnut data={totalVolumeData} options={totalVolumeOptions} />
-                    </div>
+                <div className="h-64 p-2">
+                    <Doughnut data={totalVolumeData} options={totalVolumeOptions} />
                 </div>
-
-                {/* Income and Expense Volume Subcharts - Always render */}
-                <div className="w-full flex flex-col lg:grid lg:grid-cols-2 gap-4">
-                    <div>
-                        <div className="w-full h-48 p-2">
-                            <Doughnut data={incomeVolumeData} options={incomeVolumeOptions} />
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full h-48 p-2">
-                            <Doughnut data={expenseVolumeData} options={expenseVolumeOptions} />
-                        </div>
-                    </div>
+                <div className="h-64 p-2">
+                    <Doughnut data={incomeVolumeData} options={incomeVolumeOptions} />
+                </div>
+                <div className="h-64 p-2">
+                    <Doughnut data={expenseVolumeData} options={expenseVolumeOptions} />
                 </div>
             </div>
         )
