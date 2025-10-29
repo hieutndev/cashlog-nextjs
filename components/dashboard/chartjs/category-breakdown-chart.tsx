@@ -51,21 +51,21 @@ interface CategoryBreakdownChartProps {
     onClick?: () => void;
 }
 
-export default function CategoryBreakdownChart({ data, volumeData, loading = false, onClick }: CategoryBreakdownChartProps) {
+export default function CategoryBreakdownChart({ data: _data, volumeData, loading = false, onClick }: CategoryBreakdownChartProps) {
     // Process volume data to get top 5 categories + Others
     const processVolumeData = (vol: typeof volumeData) => {
         if (!vol || vol.length === 0) return null;
 
-        const sorted = [...vol].sort((a, b) => b.total_volume - a.total_volume);
+        const sorted = [...vol].sort((a, b) => Number(b.total_volume) - Number(a.total_volume));
         const top5 = sorted.slice(0, 5);
         const others = sorted.slice(5);
 
         const processedData = [...top5];
 
         if (others.length > 0) {
-            const othersTotal = others.reduce((sum, cat) => sum + cat.total_volume, 0);
-            const othersIncome = others.reduce((sum, cat) => sum + cat.total_income, 0);
-            const othersExpense = others.reduce((sum, cat) => sum + cat.total_expense, 0);
+            const othersTotal = others.reduce((sum, cat) => sum + Number(cat.total_volume), 0);
+            const othersIncome = others.reduce((sum, cat) => sum + Number(cat.total_income), 0);
+            const othersExpense = others.reduce((sum, cat) => sum + Number(cat.total_expense), 0);
 
             processedData.push({
                 category_id: null,
@@ -83,7 +83,21 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
     const processedVolumeData = processVolumeData(volumeData);
 
     const createDoughnutChartData = (categories: typeof processedVolumeData, dataKey: 'total_volume' | 'total_income' | 'total_expense') => {
-        if (!categories) return null;
+        // Always return chart data structure, even if categories is null/empty
+        if (!categories || categories.length === 0) {
+            return {
+                labels: ['No Data'],
+                datasets: [{
+                    data: [0.000000001],
+                    backgroundColor: ['#e5e7eb40'],
+                    borderColor: ['#e5e7eb'],
+                    borderWidth: 1,
+                    hoverBackgroundColor: ['#e5e7eb80'],
+                    hoverBorderColor: ['#e5e7eb'],
+                    hoverBorderWidth: 1.5,
+                }],
+            };
+        }
 
         const colorMap: Record<string, string> = {
             red: "#ef4444", orange: "#f97316", amber: "#f59e0b", yellow: "#eab308",
@@ -136,55 +150,55 @@ export default function CategoryBreakdownChart({ data, volumeData, loading = fal
     const incomeVolumeData = createDoughnutChartData(processedVolumeData, 'total_income');
     const expenseVolumeData = createDoughnutChartData(processedVolumeData, 'total_expense');
 
-    const totalVolumeOptions = createChartOptions('Total Vol.');
-    const incomeVolumeOptions = createChartOptions('Income Vol.');
-    const expenseVolumeOptions = createChartOptions('Expense Vol.');
+    // Determine chart titles based on zero values with proper null/undefined checks
+    const totalVolumeTitle = (processedVolumeData && processedVolumeData[0] && processedVolumeData[0].total_volume === 0)
+        ? 'Zero Vol.'
+        : 'Total Vol.';
+    const incomeVolumeTitle = (processedVolumeData && processedVolumeData[0] && processedVolumeData[0].total_income === 0)
+        ? 'Zero Vol.'
+        : 'Income Vol.';
+    const expenseVolumeTitle = (processedVolumeData && processedVolumeData[0] && processedVolumeData[0].total_expense === 0)
+        ? 'Zero Vol.'
+        : 'Expense Vol.';
+
+    const totalVolumeOptions = createChartOptions(totalVolumeTitle);
+    const incomeVolumeOptions = createChartOptions(incomeVolumeTitle);
+    const expenseVolumeOptions = createChartOptions(expenseVolumeTitle);
 
     return (
-        loading ? <LoadingBlock /> :
-            (data.length > 0 || processedVolumeData) ? (
-                <div
-                    className="flex lg:flex-col flex-row items-center gap-8 w-full h-full cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    onClick={onClick}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            onClick?.();
-                        }
-                    }}
-                >
-                    {/* Main Total Volume Chart */}
-                    {totalVolumeData && (
-                        <div className="lg:w-full w-1/2">
-                            <div className="w-full h-64 p-4">
-                                <Doughnut data={totalVolumeData} options={totalVolumeOptions} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Income and Expense Volume Subcharts */}
-                    {incomeVolumeData && expenseVolumeData && (
-                        <div className="w-full flex flex-col lg:grid lg:grid-cols-2 gap-4">
-                            <div>
-                                <div className="w-full h-48 p-2">
-                                    <Doughnut data={incomeVolumeData} options={incomeVolumeOptions} />
-                                </div>
-                            </div>
-                            <div>
-                                <div className="w-full h-48 p-2">
-                                    <Doughnut data={expenseVolumeData} options={expenseVolumeOptions} />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ) : (
-                <div className="flex items-center justify-center h-64 text-gray-500">
-                    <div className="text-center">
-                        <p className="text-lg font-medium">No category data available</p>
-                        <p className="text-sm">Start adding transactions with categories to see the breakdown</p>
+        loading ? <LoadingBlock /> : (
+            <div
+                className="flex lg:flex-col flex-row items-center gap-8 w-full h-full cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={onClick}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        onClick?.();
+                    }
+                }}
+            >
+                {/* Main Total Volume Chart - Always render */}
+                <div className="lg:w-full w-1/2">
+                    <div className="w-full h-64 p-4">
+                        <Doughnut data={totalVolumeData} options={totalVolumeOptions} />
                     </div>
-                </div>)
+                </div>
+
+                {/* Income and Expense Volume Subcharts - Always render */}
+                <div className="w-full flex flex-col lg:grid lg:grid-cols-2 gap-4">
+                    <div>
+                        <div className="w-full h-48 p-2">
+                            <Doughnut data={incomeVolumeData} options={incomeVolumeOptions} />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full h-48 p-2">
+                            <Doughnut data={expenseVolumeData} options={expenseVolumeOptions} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     );
 }

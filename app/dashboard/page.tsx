@@ -168,7 +168,7 @@ export default function DashboardPage() {
 
 					<Card>
 						<CardBody className={"flex flex-col gap-4 items-center"}>
-							<h3 className="text-xl font-semibold text-center text-gray-400/50">Category Breakdown</h3>
+							<h3 className="text-xl font-semibold text-center text-gray-400/50">Transaction Volume</h3>
 							<CategoryBreakdownChart
 								data={categoryBreakdown}
 								loading={dashboardData === null}
@@ -185,6 +185,7 @@ export default function DashboardPage() {
 								<h3 className="text-xl font-semibold text-center text-gray-400/50">Financial Analysis</h3>
 								<div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
 									<Select
+										disallowEmptySelection
 										classNames={{
 											base: "w-full sm:w-40",
 										}}
@@ -198,6 +199,7 @@ export default function DashboardPage() {
 									</Select>
 
 									<Select
+										disallowEmptySelection
 										classNames={{
 											base: "w-full sm:w-40",
 										}}
