@@ -59,7 +59,7 @@
 		"crypto": "^1.0.1",
 		"formidable": "^3.5.4",
 		"framer-motion": "^12.23.22",
-		"hieutndev-toolkit": "^0.4.0",
+		"hieutndev-toolkit": "^0.5.1",
 		"intl-messageformat": "^10.5.0",
 		"jose": "^6.0.11",
 		"jsonwebtoken": "^9.0.2",

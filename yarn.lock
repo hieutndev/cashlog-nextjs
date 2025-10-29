@@ -3876,10 +3876,10 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-hieutndev-toolkit@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/hieutndev-toolkit/-/hieutndev-toolkit-0.4.0.tgz#6e7ad329bb32368125d075362497f4ae80d13713"
-  integrity sha512-Iv+7BNKFiqetzxxghw5OZkn39TjesKV4MYWLWWL1AkcRyjOULJC4l1duyQISxHKuePa6mwjwKwuDa2peDhZn5Q==
+hieutndev-toolkit@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/hieutndev-toolkit/-/hieutndev-toolkit-0.5.1.tgz#c88fcb0614aeafd4bc121aceca662fccf1b8dfbe"
+  integrity sha512-TyCk8MWSFg14FnDu+80Pdl3uMQ5sha/PA4YdlhzkNJXRjXaaYWJrb//Ecv7fgPxKjnWO1CLdpwXCmq8/0oVnDA==
   dependencies:
     cookies-next "^6.0.0"
 

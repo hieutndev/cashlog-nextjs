@@ -81,7 +81,7 @@ export default function SignInPage() {
 					alt={"Cashlog Logo"}
 					className={clsx("w-40 sm:w-2/5 sm:px-0 sm:py-0 md:w-2/5 lg:w-full")}
 					height={1200}
-					src={width  >= BREAK_POINT.SM ? "/cashlog_icontext_vertical.png": "/cashlog_icon.png"}
+					src={width >= BREAK_POINT.SM ? "/cashlog_icontext_vertical.png" : "/cashlog_icon.png"}
 					width={1200}
 				/>
 			</div>

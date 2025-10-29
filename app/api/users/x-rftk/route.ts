@@ -9,16 +9,18 @@ export const GET = async (request: Request) => {
     try {
 
         // get x-rftk from request headers
-        const xRftk = request.headers.get("x-rftk");
+        const x_rftk = request.headers.get("x-rftk");
 
-        if (!xRftk) {
+        if (!x_rftk) {
             return handleError(new ApiError('x-rftk header is required', 403));
         }
 
         return NextResponse.json({
             status: "success",
             message: "New access token generated successfully",
-            results: await getNewAccessToken(xRftk),
+            results: {
+                access_token: await getNewAccessToken(x_rftk)
+            },
         })
 
 
