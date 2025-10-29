@@ -524,26 +524,31 @@ export default function TransactionsPage() {
 										);
 
 									case "action":
-										return (
-											<TableCell className={"min-w-max"}>
-												<Button
-													isIconOnly
-													color={"warning"}
-													variant={"light"}
-													onPress={() => handleUpdateTxn(item)}
-												>
-													{ICONS.EDIT.MD}
-												</Button>
-												<Button
-													isIconOnly
-													color={"danger"}
-													variant={"light"}
-													onPress={() => setSelectedTxn(item)}
-												>
-													{ICONS.TRASH.MD}
-												</Button>
-											</TableCell>
-										);
+										const isInit = getKeyValue(item, "description") === "Auto-generated when creating a new card";
+
+										if (isInit) {
+											return <TableCell className={"min-w-max"}>&nbsp;</TableCell>;
+										}
+
+										return <TableCell className={"min-w-max"}>
+											<Button
+												isIconOnly
+												color={"warning"}
+												variant={"light"}
+												onPress={() => handleUpdateTxn(item)}
+											>
+												{ICONS.EDIT.MD}
+											</Button>
+											<Button
+												isIconOnly
+												color={"danger"}
+												variant={"light"}
+												onPress={() => setSelectedTxn(item)}
+											>
+												{ICONS.TRASH.MD}
+											</Button>
+										</TableCell>
+											;
 
 									default:
 										return <TableCell>{getKeyValue(item, columnKey)}</TableCell>;
