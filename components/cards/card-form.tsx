@@ -31,7 +31,7 @@ interface CardFormProps {
 
 type CardFormData = TAddNewCard | TUpdateCard;
 
-export default function CardForm({ mode, cardId, initialData, onSuccess }: CardFormProps) {
+export default function CardForm({ mode, cardId, onSuccess }: CardFormProps) {
 	const { useAddNewCard, useUpdateCard } = useCardEndpoint();
 
 	const [cardData, setCardData] = useState<CardFormData>({
@@ -44,7 +44,6 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [createMoreCard, setCreateMoreCard] = useState<boolean>(false);
-	const [loadingCardInfo, setLoadingCardInfo] = useState(false);
 
 	// Fetch card info for edit mode
 	const {
@@ -102,7 +101,6 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 					color: "danger",
 				});
 			}
-			setLoadingCardInfo(false);
 		}
 	}, [fetchCardInfoResult, fetchCardInfoError]);
 

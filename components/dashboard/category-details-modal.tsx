@@ -21,8 +21,6 @@ const categoryColumns = [
     { key: "expense", label: "Total Expense" },
 ];
 
-type SortOption = "income" | "expense";
-
 export default function CategoryDetailsModal({
     isOpen,
     onOpenChange,

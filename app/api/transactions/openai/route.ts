@@ -1,13 +1,13 @@
-import OpenAI from "openai";
+// import OpenAI from "openai";
 
 import { handleError } from "../../_helpers/handle-error";
 
 import { ApiError } from "@/types/api-error";
 
-const openAI = new OpenAI({
-  baseURL: "https://api.deepseek.com",
-  apiKey: process.env.DEEPSEEK_API_KEY
-});
+// const openAI = new OpenAI({
+//   baseURL: "https://api.deepseek.com",
+//   apiKey: process.env.DEEPSEEK_API_KEY
+// });
 
 // export const POST = async (request: Request) => {
 //   try {

@@ -22,7 +22,6 @@ import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
 import AnalyticBlock from "@/components/dashboard/analytic-block/analytic-block";
 import { TDashboardData } from "@/types/dashboard";
-import ICONS from "@/configs/icons";
 
 const EST_YEAR = process.env.NEXT_PUBLIC_EST_YEAR ? parseInt(process.env.NEXT_PUBLIC_EST_YEAR) : 2025;
 
@@ -33,7 +32,6 @@ export default function DashboardPage() {
 	});
 
 	const [dashboardData, setDashboardData] = useState<TDashboardData | null>(null);
-	const [totalAssetData, setTotalAssetData] = useState<any>(null);
 	const [categoryVolumeData, setCategoryVolumeData] = useState<any>(null);
 
 	// Modal state for category details
@@ -267,7 +265,6 @@ export default function DashboardPage() {
 												? JSON.parse(error).message
 												: null
 										}
-										totalAssetData={totalAssetData}
 									/>
 								</>
 							}

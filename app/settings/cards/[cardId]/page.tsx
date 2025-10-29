@@ -54,5 +54,5 @@ function CardFormWrapper({ cardIdPromise, onSuccess }: CardFormWrapperProps) {
 		return null;
 	}
 
-	return <CardForm mode="edit" cardId={cardId} onSuccess={onSuccess} />;
+	return <CardForm cardId={cardId} mode="edit" onSuccess={onSuccess} />;
 }

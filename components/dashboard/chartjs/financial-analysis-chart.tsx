@@ -34,10 +34,6 @@ interface FinancialAnalysisChartProps {
         total_assets: (number | null)[];
         months: string[];
     } | null;
-    totalAssetData?: {
-        date: string;
-        total_asset: number;
-    }[] | null;
     error?: string | null;
 }
 

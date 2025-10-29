@@ -38,8 +38,8 @@ export default function SuccessConfirmationStep({
           <div className={"flex items-center gap-4"}>
             <Button
               color={"default"}
-              variant="bordered"
               size={"lg"}
+              variant="bordered"
               onPress={onNewImport}
             >
               Import More

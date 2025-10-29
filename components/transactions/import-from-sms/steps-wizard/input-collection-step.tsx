@@ -69,18 +69,18 @@ export default function InputCollectionStep({
       {/* Input Mode Toggle */}
       <div className="w-full flex gap-2 max-w-2xl">
         <Button
-          variant={inputMode === "sms" ? "flat" : "bordered"}
-          color={inputMode === "sms" ? "primary" : "default"}
-          onPress={() => setInputMode("sms")}
           className="flex-1"
+          color={inputMode === "sms" ? "primary" : "default"}
+          variant={inputMode === "sms" ? "flat" : "bordered"}
+          onPress={() => setInputMode("sms")}
         >
           SMS Import
         </Button>
         <Button
-          variant={inputMode === "manual" ? "flat" : "bordered"}
-          color={inputMode === "manual" ? "primary" : "default"}
-          onPress={() => setInputMode("manual")}
           className="flex-1"
+          color={inputMode === "manual" ? "primary" : "default"}
+          variant={inputMode === "manual" ? "flat" : "bordered"}
+          onPress={() => setInputMode("manual")}
         >
           Manual Input
         </Button>
