@@ -86,7 +86,6 @@ export default function CardForm({ mode, cardId, onSuccess }: CardFormProps) {
 				card_number: fetchCardInfoResult.results.card_number,
 				card_balance: fetchCardInfoResult.results.card_balance,
 			});
-			setLoadingCardInfo(false);
 		}
 
 		if (fetchCardInfoError) {
