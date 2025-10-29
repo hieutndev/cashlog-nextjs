@@ -15,8 +15,6 @@ export type TCard = {
   updated_at: string;
 };
 
-export type TAddNewCard = Omit<TCard, "card_id" | "card_balance" | "created_at" | "updated_at" | "user_id"> & {
-  card_balance_init: number;
-};
+export type TAddNewCard = Omit<TCard, "card_id" | "created_at" | "updated_at" | "user_id">;
 
-export type TUpdateCard = Omit<TCard, "card_id" | "card_balance" | "created_at" | "updated_at" | "user_id">;
+export type TUpdateCard = TAddNewCard;

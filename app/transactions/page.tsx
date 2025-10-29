@@ -19,7 +19,6 @@ import moment from "moment";
 import { useTransactionEndpoint } from "@/hooks/useTransactionEndpoint";
 import { useCardEndpoint } from "@/hooks/useCardEndpoint";
 import SingleTxnModal from "@/components/transactions/single-txn-modal";
-import MultipleTxnModal from "@/components/transactions/multiple-txn-modal";
 import { FilterAndSortItem, IDataTable, IPagination } from "@/types/global";
 import { useDebounce } from "@/hooks/useDebounce";
 import ICONS from "@/configs/icons";
@@ -238,8 +237,6 @@ export default function TransactionsPage() {
 
 	const { isOpen: isOpenModalAddSingleTxn, onOpen: onOpenModalAddSingleTxn, onOpenChange: onModalAddSingleTxnChange } = useDisclosure();
 
-	const { isOpen: isOpenModalAddMultipleTxn, onOpen: onOpenModalAddMultipleTxn, onOpenChange: onModalAddMultipleTxnChange } = useDisclosure();
-
 	const [defaultData, setDefaultData] = useState<TTransaction | null>(null);
 	const [modalMode, setModalMode] = useState<"create" | "update">("create");
 
@@ -253,10 +250,6 @@ export default function TransactionsPage() {
 		setDefaultData(null);
 		setModalMode("create");
 		onOpenModalAddSingleTxn();
-	};
-
-	const handleAddMultipleTxn = () => {
-		onOpenModalAddMultipleTxn();
 	};
 
 
@@ -577,12 +570,6 @@ export default function TransactionsPage() {
 				isOpen={isOpenModalAddSingleTxn}
 				mode={modalMode}
 				onOpenChange={onModalAddSingleTxnChange}
-				onSuccess={() => getTxn()}
-			/>
-
-			<MultipleTxnModal
-				isOpen={isOpenModalAddMultipleTxn}
-				onOpenChange={onModalAddMultipleTxnChange}
 				onSuccess={() => getTxn()}
 			/>
 		</section>

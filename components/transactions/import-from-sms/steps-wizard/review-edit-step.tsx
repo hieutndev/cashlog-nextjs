@@ -87,10 +87,10 @@ export default function ReviewEditStep({
         )}
 
         <ParsedTransactionTable
+          allCards={allCards}
+          inputMode={inputMode}
           selectedTransactions={selectedTxn}
           transactions={transactions}
-          inputMode={inputMode}
-          allCards={allCards}
           onSelectionChange={handleSelectionChange}
           onTransactionRemove={onTransactionRemove}
           onTransactionUpdate={onTransactionUpdate}

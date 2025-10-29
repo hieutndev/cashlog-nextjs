@@ -34,22 +34,13 @@ type CardFormData = TAddNewCard | TUpdateCard;
 export default function CardForm({ mode, cardId, initialData, onSuccess }: CardFormProps) {
 	const { useAddNewCard, useUpdateCard } = useCardEndpoint();
 
-	const [cardData, setCardData] = useState<CardFormData>(
-		mode === "create"
-			? {
-					card_name: "",
-					card_balance_init: 0,
-					bank_code: "VIETCOMBANK",
-					card_color: "red",
-					card_number: "",
-				}
-			: {
-					card_name: "",
-					bank_code: "VIETCOMBANK",
-					card_color: "red",
-					card_number: "",
-				}
-	);
+	const [cardData, setCardData] = useState<CardFormData>({
+		card_name: "",
+		card_balance: 0,
+		bank_code: "VIETCOMBANK",
+		card_color: "red",
+		card_number: "",
+	});
 
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
 	const [createMoreCard, setCreateMoreCard] = useState<boolean>(false);
@@ -61,7 +52,6 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 		loading: fetchingCardInfo,
 		error: fetchCardInfoError,
 		fetch: fetchCardInfo,
-		statusCode: fetchCardStatus,
 	} = useFetch<IAPIResponse<TCard>>(cardId ? `/cards/${cardId}` : "", {
 		method: "GET",
 		headers: {
@@ -95,6 +85,7 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 				bank_code: fetchCardInfoResult.results.bank_code,
 				card_color: fetchCardInfoResult.results.card_color,
 				card_number: fetchCardInfoResult.results.card_number,
+				card_balance: fetchCardInfoResult.results.card_balance,
 			});
 			setLoadingCardInfo(false);
 		}
@@ -147,27 +138,18 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 	}, [submitResult, submitError]);
 
 	const resetForm = () => {
-		setCardData(
-			mode === "create"
-				? {
-						card_name: "",
-						card_balance_init: 0,
-						bank_code: "VIETCOMBANK",
-						card_color: "red",
-						card_number: "",
-					}
-				: {
-						card_name: "",
-						bank_code: "VIETCOMBANK",
-						card_color: "red",
-						card_number: "",
-					}
-		);
+		setCardData({
+			card_name: "",
+			card_balance: 0,
+			bank_code: "VIETCOMBANK",
+			card_color: "red",
+			card_number: "",
+		});
 		setValidateErrors([]);
 	};
 
-	const onChangeValue = <K extends keyof CardFormData>(key: K, value: CardFormData[K]) => {
-		if (getFieldError(validateErrors, key)) {
+	const onChangeValue = <K extends keyof (TAddNewCard | TUpdateCard)>(key: K, value: any) => {
+		if (getFieldError(validateErrors, key as string)) {
 			setValidateErrors((prev) => prev.filter((error) => error.instancePath !== `${key}`));
 		}
 
@@ -183,7 +165,7 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 
 	const cardBalance =
 		mode === "create"
-			? (cardData as TAddNewCard).card_balance_init
+			? (cardData as TAddNewCard).card_balance
 			: (fetchCardInfoResult?.results?.card_balance ?? 0);
 
 	return (
@@ -243,16 +225,16 @@ export default function CardForm({ mode, cardId, initialData, onSuccess }: CardF
 									<Input
 										isRequired
 										endContent={SITE_CONFIG.CURRENCY_STRING}
-										errorMessage={getFieldError(validateErrors, "card_balance_init")?.message}
-										isInvalid={!!getFieldError(validateErrors, "card_balance_init")}
+										errorMessage={getFieldError(validateErrors, "card_balance")?.message}
+										isInvalid={!!getFieldError(validateErrors, "card_balance")}
 										label={"Current Balance"}
 										labelPlacement={"outside"}
 										size={"lg"}
 										type={"number"}
-										value={(cardData as TAddNewCard).card_balance_init.toString()}
+										value={(cardData as TAddNewCard).card_balance.toString()}
 										variant={"bordered"}
 										onValueChange={(value) =>
-											onChangeValue("card_balance_init", +value as any)
+											onChangeValue("card_balance", +value as any)
 										}
 									/>
 								)}
