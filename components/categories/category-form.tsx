@@ -1,17 +1,14 @@
 import { Input } from "@heroui/input";
-import { Radio, RadioGroup } from "@heroui/radio";
 import { useEffect, useState } from "react";
-import clsx from "clsx";
-import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 
 import { useCategoryFormEndpoint } from "@/hooks/useCategoryFormEndpoint";
 import { ZodCustomError } from "@/types/zod";
 import CustomForm from "@/components/shared/form/custom-form";
-import { LIST_COLORS } from "@/types/global";
+import ColorPicker from "@/components/shared/color-picker";
 import { TCategory, TAddCategoryPayload } from "@/types/category";
-import { setForm } from "@/utils/set-form";
+import { ensureHexColor } from "@/utils/color-conversion";
 import { getFieldError } from "@/utils/get-field-error";
 
 interface NewCategoryProps {
@@ -24,7 +21,7 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 	const { useCreateCategory, useUpdateCategory } = useCategoryFormEndpoint();
 	const [categoryForm, setCategoryForm] = useState<TAddCategoryPayload>({
 		category_name: "",
-		color: "red",
+		color: "#6366F1",
 	});
 
 	const [validateErrors, setValidateErrors] = useState<ZodCustomError[]>([]);
@@ -32,20 +29,20 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 	const resetForm = () => {
 		setCategoryForm({
 			category_name: "",
-			color: "red",
+			color: "#6366F1",
 		});
 		setValidateErrors([]);
 	};
 
-	const createHook = useCreateCategory();
-	const updateHook = useUpdateCategory(categoryInfo?.category_id ?? -1);
+	const createCategory = useCreateCategory();
+	const updateCategory = useUpdateCategory(categoryInfo?.category_id ?? -1);
 
 	const {
 		data: formActionResult,
 		loading: formActionLoading,
 		error: formActionError,
 		fetch: formAction,
-	} = action === "add" ? createHook : updateHook;
+	} = action === "add" ? createCategory : updateCategory;
 
 	useEffect(() => {
 		if (formActionResult) {
@@ -78,6 +75,12 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 		}
 	}, [formActionResult, formActionError]);
 
+	const handleSubmitForm = () => {
+		formAction({
+			body: categoryForm,
+		});
+	}
+
 	useEffect(() => {
 		console.log(categoryInfo);
 
@@ -98,7 +101,7 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 			isLoading={formActionLoading}
 			loadingText={action === "add" ? "Adding..." : "Updating..."}
 			submitButtonText={action === "add" ? "Add new Category" : "Update Category"}
-			onSubmit={formAction}
+			onSubmit={handleSubmitForm}
 		>
 			<Input
 				isRequired
@@ -112,42 +115,19 @@ export default function CategoryForm({ categoryInfo, onSuccess, action = "add" }
 				value={categoryForm.category_name}
 				variant={"bordered"}
 				onValueChange={(e) =>
-					setForm<TAddCategoryPayload>("category_name", e, validateErrors, setValidateErrors, setCategoryForm)
+					setCategoryForm({ ...categoryForm, category_name: e })
 				}
 			/>
-			<RadioGroup
-				errorMessage={getFieldError(validateErrors, "color")?.message}
-				isInvalid={!!getFieldError(validateErrors, "color")}
-				label={"Select Color"}
-				name={"color"}
-				value={categoryForm.color}
-				onValueChange={(e) =>
-					setForm<TAddCategoryPayload>("color", e, validateErrors, setValidateErrors, setCategoryForm)
-				}
-			>
-				<div className={"flex flex-wrap gap-2"}>
-					{LIST_COLORS.map((color) => (
-						<Radio
-							key={color}
-							className={"capitalize"}
-							classNames={{
-								label: "flex items-center gap-1",
-							}}
-							value={color}
-						>
-							<div className={clsx("w-6 h-6 bg-gradient-to-br rounded-md", `background-${color}`)} />
-							{color}
-						</Radio>
-					))}
-				</div>
-			</RadioGroup>
-			<Divider />
+			<ColorPicker
+				label="Category Color"
+				value={ensureHexColor(categoryForm.color)}
+				onChange={(color) => setCategoryForm({ ...categoryForm, color })}
+			/>
 			<div className={"flex sm:flex-row flex-col sm:items-center gap-2"}>
 				<p className={"text-sm"}>Preview:</p>
 				<Chip
-					classNames={{
-						base: `background-${categoryForm.color} text-white`,
-					}}
+					className="text-white"
+					style={{ backgroundColor: ensureHexColor(categoryForm.color) }}
 				>
 					{categoryForm.category_name || "Category Name Here"}
 				</Chip>

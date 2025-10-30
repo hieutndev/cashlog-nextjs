@@ -6,19 +6,30 @@ import { QUERY_STRING } from "@/configs/query-string";
 import { TCategory, TAddCategoryPayload, TUpdateCategoryPayload } from "@/types/category";
 import { ApiError } from "@/types/api-error";
 import { TUser } from "@/types/user";
-import { randomCardColor } from "@/utils/random-color";
+import { getRandomHexColor } from "@/utils/color-conversion";
 import { VALIDATE_MESSAGE } from "@/utils/api/zod-validate-message";
-import { LIST_COLORS } from "@/types/global";
+
+// Zod schema for HEX color validation: #RRGGBB or #RRGGBBAA format
+const hexColorSchema = z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/, {
+	message: "Color must be in HEX format (#RRGGBB or #RRGGBBAA)",
+});
 
 export const addCategoryPayload = z.object({
 	category_name: z.string().min(1, { message: VALIDATE_MESSAGE.REQUIRED_VALUE }),
-	color: z.enum(LIST_COLORS, { message: VALIDATE_MESSAGE.INVALID_ENUM_VALUE })
+	color: hexColorSchema,
 });
 
 export const updateCategoryPayload = addCategoryPayload;
 
 export const createMultipleCategoriesPayload = z.object({
 	category_names: z.array(z.string().min(1)).min(1)
+}).optional();
+
+export const createBulkCategoriesPayload = z.object({
+	categories: z.array(z.object({
+		category_name: z.string().min(1, { message: VALIDATE_MESSAGE.REQUIRED_VALUE }),
+		color: hexColorSchema,
+	})).min(1)
 });
 
 export const categorizeCategoriesPayload = z.object({
@@ -163,7 +174,7 @@ export const createMultipleCategories = async (category_names: string[], user_id
 			.filter((_v) => _v)
 			.forEach(async (category) => {
 				base_query += QUERY_STRING.CREATE_NEW_CATEGORY;
-				base_values.push([category, randomCardColor(), user_id]);
+				base_values.push([category, getRandomHexColor(), user_id]);
 				was_created_count++;
 
 				creation_logs.push({
@@ -183,5 +194,63 @@ export const createMultipleCategories = async (category_names: string[], user_id
 		};
 	} catch (error: unknown) {
 		throw new ApiError(error instanceof Error ? error.message : "Error in createMultipleCategories", 500);
+	}
+};
+
+export const createBulkCategories = async (
+	categories: Array<{ category_name: string; color: string }>,
+	user_id: TUser["user_id"]
+) => {
+	try {
+		let base_query: string = "";
+		let base_values: any[] = [];
+		let was_created_count: number = 0;
+
+		const creation_logs: {
+			category_name: string;
+			message: string;
+		}[] = [];
+
+		const should_create = await Promise.all(
+			categories.map(async (category) => {
+				if (!await hasCategory(category.category_name, user_id)) {
+					return category;
+				} else {
+					creation_logs.push({
+						category_name: category.category_name,
+						message: "Already Exists",
+					});
+
+					return null;
+				}
+			})
+		);
+
+		should_create
+			.filter((_v) => _v)
+			.forEach((category) => {
+				if (category) {
+					base_query += QUERY_STRING.CREATE_NEW_CATEGORY;
+					base_values.push([category.category_name, category.color, user_id]);
+					was_created_count++;
+
+					creation_logs.push({
+						category_name: category.category_name,
+						message: "New",
+					});
+				}
+			});
+
+		if (base_query) {
+			await dbQuery<ResultSetHeader>(base_query, base_values.flat());
+		}
+
+		return {
+			was_created_count,
+			user_categories: await getAllCategoriesOfUser(user_id),
+			creation_logs
+		};
+	} catch (error: unknown) {
+		throw new ApiError(error instanceof Error ? error.message : "Error in createBulkCategories", 500);
 	}
 };

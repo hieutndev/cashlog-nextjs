@@ -23,7 +23,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
 	try {
-		const userId = getFromHeaders(request, "x-user-id", "");
+		const userId = getFromHeaders<TUser['user_id']>(request, "x-user-id", 0);
+
 		const requestBody = await request.json();
 
 		const { is_valid, errors } = zodValidate(addCategoryPayload, requestBody);
@@ -41,6 +42,8 @@ export async function POST(request: Request) {
 			{ status: 201 }
 		);
 	} catch (error: unknown) {
+		console.log("🚀 ~ POST ~ error:", error)
+
 		return handleError(error);
 	}
 }

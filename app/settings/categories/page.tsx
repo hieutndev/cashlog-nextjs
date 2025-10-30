@@ -12,11 +12,13 @@ import { useWindowSize } from "hieutndev-toolkit";
 
 import { useCategoryEndpoint } from "@/hooks/useCategoryEndpoint";
 import CategoryForm from "@/components/categories/category-form";
+import BulkCategoryForm from "@/components/categories/bulk-category-form";
 import { TCategory } from "@/types/category";
 import ICONS from "@/configs/icons";
 import { sliceText } from "@/utils/string";
 import { BREAK_POINT } from "@/configs/break-point";
 import CustomModal from "@/components/shared/custom-modal/custom-modal";
+import { ensureHexColor } from "@/utils/color-conversion";
 
 const categoryColumns = [
 	{ key: "category_name", label: "Category" },
@@ -27,7 +29,7 @@ export default function CategoriesPage() {
 	const { width } = useWindowSize();
 	const { useGetCategories, useDeleteCategory } = useCategoryEndpoint();
 
-	const [formAction, setFormAction] = useState<"add" | "edit">("add");
+	const [formAction, setFormAction] = useState<"add" | "edit" | "bulk">("add");
 	const [selectedCategory, setSelectedCategory] = useState<TCategory | undefined>(undefined);
 
 	// HANDLE FETCH CATEGORY
@@ -114,6 +116,12 @@ export default function CategoriesPage() {
 		onOpenChange();
 	};
 
+	const onAddBulkCategories = () => {
+		setFormAction("bulk");
+		setSelectedCategory(undefined);
+		onOpenChange();
+	};
+
 	/* CONFIG MODAL */
 
 	const { isOpen, onOpenChange } = useDisclosure();
@@ -131,13 +139,23 @@ export default function CategoriesPage() {
 					<div className={clsx("flex flex-col gap-4 col-span-12 border-b border-gray-200 pb-4")}>
 						<div className="w-full flex items-center justify-between">
 							<h3 className={"text-2xl font-semibold"}>List Categories</h3>
-							<Button
-								color={"primary"}
-								startContent={ICONS.NEW.MD}
-								onPress={onAddNewCategory}
-							>
-								New category
-							</Button>
+							<div className="flex gap-2">
+								<Button
+									color={"secondary"}
+									startContent={ICONS.NEW.MD}
+									variant={"bordered"}
+									onPress={onAddBulkCategories}
+								>
+									Bulk Add
+								</Button>
+								<Button
+									color={"primary"}
+									startContent={ICONS.NEW.MD}
+									onPress={onAddNewCategory}
+								>
+									New category
+								</Button>
+							</div>
 						</div>
 						<Table aria-label="Categories Table" className={"max-h-128"}>
 							<TableHeader columns={categoryColumns}>
@@ -158,18 +176,17 @@ export default function CategoriesPage() {
 									<TableRow key={item.category_id}>
 										{(columnKey) => {
 											switch (columnKey) {
-												case "category_name":
-													return (
-														<TableCell>
-															<Chip
-																classNames={{
-																	base: `background-${getKeyValue(item, "color")} text-white`,
-																}}
-															>
-																{width > BREAK_POINT.LG ? getKeyValue(item, columnKey) : sliceText(getKeyValue(item, columnKey), 20)}
-															</Chip>
-														</TableCell>
-													);
+											case "category_name":
+												return (
+													<TableCell>
+														<Chip
+															className="text-white"
+															style={{ backgroundColor: ensureHexColor(getKeyValue(item, "color")) }}
+														>
+															{width > BREAK_POINT.LG ? getKeyValue(item, columnKey) : sliceText(getKeyValue(item, columnKey), 20)}
+														</Chip>
+													</TableCell>
+												);
 												case "action":
 													return (
 														<TableCell className={"flex justify-center items-center gap-1"}>
@@ -207,12 +224,16 @@ export default function CategoriesPage() {
 				</>
 			)}
 
-			<CustomModal isOpen={isOpen} title={`${formAction === "add" ? "Add new" : "Edit"} Category`} onOpenChange={onOpenChange}>
-				<CategoryForm
-					action={formAction}
-					categoryInfo={selectedCategory}
-					onSuccess={onSuccess}
-				/>
+			<CustomModal isOpen={isOpen} title={`${formAction === "add" ? "Add new" : formAction === "edit" ? "Edit" : "Bulk Add"} ${formAction === "add" || formAction === "edit" ? "Category" : "Categories"}`} onOpenChange={onOpenChange}>
+				{formAction === "bulk" ? (
+					<BulkCategoryForm onSuccess={onSuccess} />
+				) : (
+					<CategoryForm
+						action={formAction as "add" | "edit"}
+						categoryInfo={selectedCategory}
+						onSuccess={onSuccess}
+					/>
+				)}
 			</CustomModal>
 		</div>
 	);

@@ -20,6 +20,7 @@ export const API_ENDPOINT = {
     },
     CATEGORIES: {
         BASE: '/categories',
+        CREATES: '/categories/creates',
     },
     USERS: {
         SIGN_UP: '/users/sign-up',
