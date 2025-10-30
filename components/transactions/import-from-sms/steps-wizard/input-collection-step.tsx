@@ -6,6 +6,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Alert } from "@heroui/alert";
 import Image from "next/image";
 import { useState } from "react";
+import { Chip } from "@heroui/chip";
 
 import { getBankLogo } from "@/configs/bank";
 import { TCard } from "@/types/card";
@@ -38,7 +39,7 @@ export default function InputCollectionStep({
   onManualTextChange,
   onManualInputSubmit,
 }: InputCollectionStepProps) {
-  const [inputMode, setInputMode] = useState<"sms" | "manual">("sms");
+  const [inputMode, setInputMode] = useState<"sms" | "manual">("manual");
 
   const smsCharCount = smsText.length;
   const manualCharCount = manualText.length;
@@ -67,28 +68,29 @@ export default function InputCollectionStep({
       />
 
       {/* Input Mode Toggle */}
-      <div className="w-full flex gap-2 max-w-2xl">
-        <Button
-          className="flex-1"
-          color={inputMode === "sms" ? "primary" : "default"}
-          variant={inputMode === "sms" ? "flat" : "bordered"}
-          onPress={() => setInputMode("sms")}
-        >
-          SMS Import
-        </Button>
+      <div className="max-w-2xl flex gap-2">
         <Button
           className="flex-1"
           color={inputMode === "manual" ? "primary" : "default"}
-          variant={inputMode === "manual" ? "flat" : "bordered"}
+          variant={inputMode === "manual" ? "solid" : "ghost"}
           onPress={() => setInputMode("manual")}
         >
           Manual Input
         </Button>
+        <Button
+          className="flex-1"
+          color={inputMode === "sms" ? "primary" : "default"}
+          variant={inputMode === "sms" ? "solid" : "ghost"}
+          onPress={() => setInputMode("sms")}
+        >
+          SMS Import
+        </Button>
+
       </div>
 
       {/* SMS Import Mode */}
       {inputMode === "sms" && (
-        <div className="w-full flex flex-col gap-4 max-w-2xl">
+        <div className="w-full flex flex-col gap-4">
           <Select
             label="Select Card"
             labelPlacement="outside"
@@ -150,7 +152,7 @@ export default function InputCollectionStep({
             label="SMS Messages"
             labelPlacement="outside"
             maxRows={20}
-            minRows={6}
+            minRows={20}
             placeholder="Paste SMS messages from your bank here. One message per line."
             value={smsText}
             variant="bordered"
@@ -161,42 +163,44 @@ export default function InputCollectionStep({
 
       {/* Manual Input Mode */}
       {inputMode === "manual" && (
-        <div className="w-full flex flex-col gap-4 max-w-2xl">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm font-semibold text-blue-900 mb-2">Format Instructions:</p>
-            <p className="text-xs text-blue-800 mb-3">
-              Each line represents one transaction with pipe-delimited fields:
-            </p>
-            <code className="text-xs bg-white border border-blue-200 rounded p-2 block mb-3 overflow-x-auto">
-              card_identifier | amount | date | description | category_name
-            </code>
-            <div className="text-xs text-blue-800 space-y-1">
-              <p><strong>card_identifier:</strong> Full card number or last 4 digits (use * prefix for last 4 digit match)</p>
-              <p><strong>amount:</strong> Positive for income, negative for expenses</p>
-              <p><strong>date:</strong> YYYY-MM-DD format</p>
-              <p><strong>description:</strong> Transaction description</p>
-              <p><strong>category_name:</strong> Exact category name</p>
-            </div>
-            <div className="mt-3 pt-3 border-t border-blue-200">
-              <p className="text-xs text-blue-800 font-semibold mb-2">Example:</p>
-              <code className="text-xs bg-white border border-blue-200 rounded p-2 block">
-                1234 | -50000 | 2025-01-15 | Coffee | Food & Dining<br/>
-                *5678 | 1000000 | 2025-01-16 | Salary | Income
-              </code>
-            </div>
-          </div>
-
+        <div className="w-full flex flex-row gap-4">
           <Textarea
+            className="w-2/3"
             description={`${manualCharCount} characters`}
             label="Manual Transactions"
             labelPlacement="outside"
             maxRows={20}
-            minRows={6}
+            minRows={20}
             placeholder="Enter transactions in the format shown above. One transaction per line."
             value={manualText}
             variant="bordered"
             onValueChange={onManualTextChange}
           />
+          <div className="w-1/3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+            <p className="text-base font-semibold text-blue-900 mb-2">Format Instructions:</p>
+            <p className=" text-sm text-blue-800 mb-3">
+              Each line represents one transaction with pipe-delimited fields:
+            </p>
+            <code className="text-sm  bg-white border border-blue-200 rounded p-2 block mb-3 overflow-x-auto">
+              card_identifier | amount | date | description | category_name
+            </code>
+            <div className="text-sm  text-blue-800 space-y-1">
+              <p><Chip size="sm">card_identifier</Chip>: Full card number or some last digits (use <strong>*</strong> prefix for last digit match)</p>
+              <p><Chip size="sm">amount</Chip>: <strong>Positive (+)</strong> for income, <strong>Negative (-)</strong> for expenses</p>
+              <p><Chip size="sm">date</Chip>: Accept <strong>`YYYY-MM-DD`</strong>, <strong>`DD/MM/YYYY`</strong>, <strong>`DD/MM/YY`</strong>, <strong>`DD/MM`</strong> format</p>
+              <p><Chip size="sm">description</Chip>: Transaction description</p>
+              <p><Chip size="sm">category_name</Chip>: Exact category name</p>
+            </div>
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <p className="text-sm  text-blue-800 font-semibold mb-2">Example:</p>
+              <code className="text-sm  bg-white border border-blue-200 rounded p-2 block">
+                1234 |50000 | 2025-01-15 | Coffee | Food & Dining<br />
+                *5678 | 1000000 | 2025-01-16 | Salary | Income
+              </code>
+            </div>
+          </div>
+
+
         </div>
       )}
 

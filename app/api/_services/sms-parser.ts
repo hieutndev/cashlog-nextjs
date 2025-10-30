@@ -533,22 +533,42 @@ export type TParseManualResult = {
   };
 };
 
-/**
- * Parse a single line of pipe-delimited transaction data
- * Format: card_identifier | amount | date | description | category_name
- *
- * Returns a complete transaction object with fallback values for invalid fields.
- * This function does NOT return early on errors - it continues parsing all fields
- * and uses fallback values for any invalid data.
- */
+function parseManualDateString(dateString: string): string {
+  // Try multiple date formats
+  const dateFormats = [
+    "YYYY-MM-DD",  // 2025-10-30
+    "DD/MM/YYYY",  // 30/10/2025
+    "DD/MM/YY",    // 30/10/25
+    "DD/MM",       // 30/10 (assumes current year)
+  ];
+
+  for (const format of dateFormats) {
+    const dateObj = moment(dateString, format, true);
+
+    if (dateObj.isValid()) {
+      // If only DD/MM format, use current year
+      if (format === "DD/MM") {
+        const currentYear = moment().year();
+
+        dateObj.year(currentYear);
+      }
+
+      return dateObj.format("YYYY-MM-DD");
+    }
+  }
+
+  // If no format matches, return empty string
+  return "";
+}
+
 function parseManualTransactionLine(
-  line: string,
+  line_text: string,
   cards: TCard[],
   categories: TCategory[],
-  lineIndex: number
+  line_index: number
 ): ParsedManualTransaction {
-  const trimmedLine = line.trim();
-  const originalText = line;
+  const trimmedLine = line_text.trim();
+  const originalText = line_text;
 
   // Initialize with fallback values
   const result: ParsedManualTransaction = {
@@ -562,49 +582,37 @@ function parseManualTransactionLine(
     parsingStatus: "success",
   };
 
-  // Check if line is empty
   if (!trimmedLine) {
     result.parsingStatus = "error";
-    result.errorMessage = `Line ${lineIndex + 1}: Empty line`;
+    result.errorMessage = `Line ${line_index + 1}: Empty line`;
 
     return result;
   }
 
   const parts = trimmedLine.split("|").map((p) => p.trim());
 
-  // Check if line has correct number of parts
-  if (parts.length !== 5) {
+  console.log("🚀 ~ parseManualTransactionLine ~ parts:", parts)
+
+  if (parts.length < 1) {
     result.parsingStatus = "error";
-    result.errorMessage = `Line ${lineIndex + 1}: Invalid format. Expected 5 pipe-delimited fields (card_identifier | amount | date | description | category_name), got ${parts.length}`;
+    result.errorMessage = `Line ${line_index + 1}: Invalid format. Expected at least 1 pipe-delimited fields (card_identifier | amount | date | description | category_name), got ${parts.length}`;
 
     return result;
   }
 
-  // Parse card_identifier - use fallback 0 if not found
   const card = findManualCardByIdentifier(parts[0], cards);
-
-  result.card_id = card?.card_id ?? 0;
-
-  // Parse amount - use fallback 0 if invalid
   const parsedAmount = parseFloat(parts[1]);
-
-  result.amount = isNaN(parsedAmount) ? 0 : Math.abs(parsedAmount);
-
-  // Parse date - use fallback empty string if invalid
-  const dateObj = moment(parts[2], "YYYY-MM-DD", true);
-
-  result.date = dateObj.isValid() ? parts[2] : "";
-
-  // Parse description - use fallback empty string if missing
-  result.description = parts[3] || "";
-
-  // Parse category_id - use fallback null if not found
+  const parsedDate = parseManualDateString(parts[2]);
   const category = findManualCategoryByName(parts[4], categories);
 
-  result.category_id = category?.category_id ?? null;
-
-  // Determine direction based on original amount sign
-  result.direction = parsedAmount > 0 ? "in" : "out";
+  Object.assign(result, {
+    card_id: card?.card_id ?? 0,
+    amount: isNaN(parsedAmount) ? 0 : Math.abs(parsedAmount),
+    date: parsedDate,
+    description: parts[3] || "",
+    category_id: category?.category_id ?? null,
+    direction: parsedAmount > 0 ? "in" : "out",
+  });
 
   return result;
 }
@@ -614,14 +622,13 @@ function findManualCardByIdentifier(
   cards: TCard[]
 ): TCard | null {
   if (identifier.startsWith("*")) {
-    // Match by last 4 digits
-    const last4 = identifier.substring(1);
+    // Match by last digits (e.g., *1234, *1234567)
+    const last_digits = identifier.substring(1);
 
     return (
-      cards.find((card) => card.card_number?.endsWith(last4)) || null
+      cards.find((card) => card.card_number?.endsWith(last_digits)) || null
     );
   } else {
-    // Exact match - try full card number or last 4 digits
     return (
       cards.find(
         (card) =>
@@ -632,25 +639,15 @@ function findManualCardByIdentifier(
   }
 }
 
-/**
- * Find a category by exact name match
- */
 function findManualCategoryByName(
-  categoryName: string,
-  allCategories: TCategory[]
+  category_name: string,
+  all_categories: TCategory[]
 ): TCategory | null {
   return (
-    allCategories.find((cat) => cat.category_name === categoryName) || null
+    all_categories.find((cat) => cat.category_name === category_name) || null
   );
 }
 
-/**
- * Validate and parse manual transaction input
- *
- * This function processes each line and returns a complete transaction object
- * with fallback values for any invalid fields. It does NOT fail early - instead,
- * it continues parsing all fields and collects all errors in the errorMessage.
- */
 export function parseManualTransactions(
   input_text: string,
   cards: TCard[],
@@ -660,18 +657,15 @@ export function parseManualTransactions(
   const results: ParsedManualTransaction[] = [];
 
   lines.forEach((line, lineIndex) => {
-    // Skip empty lines
     if (line.trim() === "") {
       return;
     }
 
-    // Parse the line with fallback values for all invalid fields
     const parsed = parseManualTransactionLine(line, cards, categories, lineIndex);
 
     results.push(parsed);
   });
 
-  // Calculate summary
   const summary = {
     total: results.length,
     successful: results.filter((t) => t.parsingStatus === "success").length,

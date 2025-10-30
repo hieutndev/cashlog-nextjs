@@ -91,11 +91,9 @@ export default function ImportTransactionsPage() {
         fetch: fetchCategories,
     } = useGetCategories();
 
-    // Get the selected card's bank code
     const selectedCard = allCards.find(c => c.card_id === selectedCardId);
     const selectedBankCode = selectedCard?.bank_code || "VIETCOMBANK";
 
-    // SMS parsing hook
     const {
         data: parseSMSResult,
         loading: parsingFromSMS,
@@ -103,7 +101,6 @@ export default function ImportTransactionsPage() {
         fetch: parseSMS,
     } = useParseSMS({ smsText, bankCode: selectedBankCode as any });
 
-    // Manual input parsing hook
     const {
         data: parseManualResult,
         loading: parsingFromManual,
@@ -363,7 +360,6 @@ export default function ImportTransactionsPage() {
                 description: `Successfully parsed ${parseManualResult.results.summary.successful} transactions`,
             });
 
-            // Move to step 2
             handleParseSuccess();
         }
 
@@ -375,12 +371,9 @@ export default function ImportTransactionsPage() {
                 title: "Error",
                 description: parseError.message || "Failed to parse manual input",
             });
-
-            // Don't proceed to next step on error - user stays on current page
         }
     }, [parseManualResult, parseManualError]);
 
-    // Handle import result
     useEffect(() => {
         if (createMultipleResult) {
             addToast({
