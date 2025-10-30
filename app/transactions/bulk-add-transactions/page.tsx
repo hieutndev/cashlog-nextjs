@@ -27,7 +27,7 @@ interface ParsedTransaction extends TAddTransaction {
     errorMessage?: string;
 }
 
-export default function ImportTransactionsPage() {
+export default function BulkAddTransactionsPage() {
     const { width } = useWindowSize();
 
     // Wizard state

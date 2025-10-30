@@ -141,12 +141,12 @@ export default function CategoriesPage() {
 							<h3 className={"text-2xl font-semibold"}>List Categories</h3>
 							<div className="flex gap-2">
 								<Button
-									color={"secondary"}
-									startContent={ICONS.NEW.MD}
-									variant={"bordered"}
+									color={"primary"}
+									startContent={ICONS.BULK.MD}
+									variant={"light"}
 									onPress={onAddBulkCategories}
 								>
-									Bulk Add
+									Bulk Add Categories
 								</Button>
 								<Button
 									color={"primary"}
@@ -176,17 +176,17 @@ export default function CategoriesPage() {
 									<TableRow key={item.category_id}>
 										{(columnKey) => {
 											switch (columnKey) {
-											case "category_name":
-												return (
-													<TableCell>
-														<Chip
-															className="text-white"
-															style={{ backgroundColor: ensureHexColor(getKeyValue(item, "color")) }}
-														>
-															{width > BREAK_POINT.LG ? getKeyValue(item, columnKey) : sliceText(getKeyValue(item, columnKey), 20)}
-														</Chip>
-													</TableCell>
-												);
+												case "category_name":
+													return (
+														<TableCell>
+															<Chip
+																className="text-white"
+																style={{ backgroundColor: ensureHexColor(getKeyValue(item, "color")) }}
+															>
+																{width > BREAK_POINT.LG ? getKeyValue(item, columnKey) : sliceText(getKeyValue(item, columnKey), 20)}
+															</Chip>
+														</TableCell>
+													);
 												case "action":
 													return (
 														<TableCell className={"flex justify-center items-center gap-1"}>

@@ -31,9 +31,9 @@ export default function CustomModal({ title, isOpen, onOpenChange, children, siz
             <ModalBody className="mb-4">
                 {children}
             </ModalBody>
-            <ModalFooter>
+            {customFooter && <ModalFooter>
                 {customFooter}
-            </ModalFooter>
+            </ModalFooter>}
         </ModalContent>
     </Modal>);
 }
