@@ -12,7 +12,6 @@ import { getFieldError } from "@/utils/get-field-error";
 import { ensureHexColor } from "@/utils/color-conversion";
 import ColorPicker from "@/components/shared/color-picker";
 import ICONS from "@/configs/icons";
-import CustomForm from "../shared/form/custom-form";
 
 export interface IBulkCategoryRow {
     id: string;
