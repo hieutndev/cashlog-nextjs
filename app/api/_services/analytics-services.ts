@@ -90,7 +90,7 @@ export const getCategoryStatsByUserId = async (
         if (startDate && endDate) {
             query = `SELECT
                         COALESCE(tc.category_name, 'Uncategorized') as category,
-                        COALESCE(tc.color, 'slate') as color,
+                        COALESCE(tc.color, '#64748B') as color,
                         SUM(tn.amount) as total,
                         SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as income,
                         SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as expense
@@ -347,7 +347,7 @@ export const getCategoryVolumeStats = async (
             SELECT
                 COALESCE(tc.category_id, 0) as category_id,
                 COALESCE(tc.category_name, 'Uncategorized') as category_name,
-                COALESCE(tc.color, 'slate') as color,
+                COALESCE(tc.color, '#64748B') as color,
                 SUM(CASE WHEN tn.direction = 'in' THEN tn.amount ELSE 0 END) as total_income,
                 SUM(CASE WHEN tn.direction = 'out' THEN tn.amount ELSE 0 END) as total_expense,
                 SUM(ABS(tn.amount)) as total_volume

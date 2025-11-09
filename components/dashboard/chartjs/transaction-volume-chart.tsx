@@ -5,6 +5,7 @@ import { Doughnut } from "react-chartjs-2";
 
 import { SITE_CONFIG } from "@/configs/site-config";
 import LoadingBlock from "@/components/shared/loading-block/loading-block";
+import { ensureHexColor } from "@/utils/color-conversion";
 
 ChartJS.register(ArcElement, Legend);
 
@@ -70,7 +71,7 @@ export default function TransactionVolumeChart({ data: _data, volumeData, loadin
             processedData.push({
                 category_id: null,
                 category_name: "Others",
-                color: "slate",
+                color: "#64748B",
                 total_income: othersIncome,
                 total_expense: othersExpense,
                 total_volume: othersTotal,
@@ -99,16 +100,7 @@ export default function TransactionVolumeChart({ data: _data, volumeData, loadin
             };
         }
 
-        const colorMap: Record<string, string> = {
-            red: "#ef4444", orange: "#f97316", amber: "#f59e0b", yellow: "#eab308",
-            lime: "#84cc16", green: "#22c55e", emerald: "#10b981", teal: "#14b8a6",
-            cyan: "#06b6d4", sky: "#0ea5e9", blue: "#3b82f6", indigo: "#6366f1",
-            violet: "#8b5cf6", purple: "#a855f7", fuchsia: "#d946ef", pink: "#ec4899",
-            rose: "#f43f5e", slate: "#64748b", gray: "#6b7280", zinc: "#71717a",
-            neutral: "#737373", stone: "#78716c",
-        };
-
-        const colors = categories.map(cat => colorMap[cat.color] || "#64748b");
+        const colors = categories.map(cat => ensureHexColor(cat.color));
 
         return {
             labels: categories.map(cat => cat.category_name),

@@ -28,6 +28,7 @@ import { BREAK_POINT } from "@/configs/break-point";
 import { TTransaction, TTransactionWithCardAndCategory } from "@/types/transaction";
 import { sliceText } from "@/utils/string";
 import { SITE_CONFIG } from "@/configs/site-config";
+import { ensureHexColor } from "@/utils/color-conversion";
 
 
 
@@ -496,9 +497,9 @@ export default function TransactionsPage() {
 											<TableCell className={"capitalize min-w-max"}>
 												{getKeyValue(item, columnKey) ? (
 													<Chip
-														classNames={{
-															base: `background-${getKeyValue(item, "category_color")} text-white w-max h-max px-2 py-1.5`,
-															content: `ellipsis max-w-[20ch]`,
+														className="text-white"
+														style={{
+															backgroundColor: ensureHexColor(getKeyValue(item, "category_color")),
 														}}
 													>
 														{sliceText(getKeyValue(item, columnKey), 20)}

@@ -8,6 +8,7 @@ import { Chip } from "@heroui/chip";
 import CustomModal from "@/components/shared/custom-modal/custom-modal";
 import { TCategoryBreakdown } from "@/types/dashboard";
 import { SITE_CONFIG } from "@/configs/site-config";
+import { ensureHexColor } from "@/utils/color-conversion";
 
 interface CategoryDetailsModalProps {
     isOpen: boolean;
@@ -28,15 +29,6 @@ export default function CategoryDetailsModal({
 }: CategoryDetailsModalProps) {
     const [sortBy, setSortBy] = useState<"income" | "expense">("income");
 
-    const colorMap: Record<string, string> = {
-        red: "#ef4444", orange: "#f97316", amber: "#f59e0b", yellow: "#eab308",
-        lime: "#84cc16", green: "#22c55e", emerald: "#10b981", teal: "#14b8a6",
-        cyan: "#06b6d4", sky: "#0ea5e9", blue: "#3b82f6", indigo: "#6366f1",
-        violet: "#8b5cf6", purple: "#a855f7", fuchsia: "#d946ef", pink: "#ec4899",
-        rose: "#f43f5e", slate: "#64748b", gray: "#6b7280", zinc: "#71717a",
-        neutral: "#737373", stone: "#78716c",
-    };
-
     const sortedData = [...data].sort((a, b) => {
         if (sortBy === "income") {
             return (b.income || 0) - (a.income || 0);
@@ -52,7 +44,7 @@ export default function CategoryDetailsModal({
                     <Chip
                         className="text-white"
                         style={{
-                            backgroundColor: colorMap[item.color] || "#64748b",
+                            backgroundColor: ensureHexColor(item.color),
                         }}
                     >
                         {item.category}

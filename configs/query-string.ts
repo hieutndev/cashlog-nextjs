@@ -148,7 +148,7 @@ export const QUERY_STRING = {
                          WHERE transaction_id = ?`,
 	GET_CATEGORY_STATS_BY_USER_ID: `SELECT
                                         COALESCE(tc.category_name, 'Uncategorized') as category,
-                                        COALESCE(tc.color, 'slate') as color,
+                                        COALESCE(tc.color, '#64748B') as color,
                                         SUM(tn.amount) as total
                                     FROM transactions_new tn
                                     JOIN cards c ON tn.card_id = c.card_id
